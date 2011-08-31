@@ -74,6 +74,12 @@ ol, ul, pre, table, address, fieldset, figure {
   padding: 4px 8px;
 }
 
+#menu1 a.active,
+#menu2 a.active,
+#menu3 a.active {
+  font-weight: bold;
+}
+
 #menu1 a:hover,
 #menu2 a:hover,
 #menu3 a:hover {
@@ -82,7 +88,6 @@ ol, ul, pre, table, address, fieldset, figure {
 }
 
 #menu1 { background-color: #3a3a4a; }
-#menu1 a { font-weight: bold; }
 #menu2 { padding-top: 0; }
 #menu2 a { font-size: 12pt; }
 #menu3 { padding-top: 0.1em; height: 1.2em; }
