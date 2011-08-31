@@ -1,0 +1,61 @@
+body {
+  background-color: #516480;
+  font-family: "Sawasdee", "Century Gothic", "Tahoma", "Arial", sans-serif;
+  font-size: 10pt;
+  color: white;
+}
+
+.container_12 {
+  background-color: #1e1e1e;
+}
+
+.hline {
+  border-bottom: 2px solid white;
+}
+
+.spacer {
+  height: 10px;
+}
+
+#menu {
+  background-color: #313a43;
+  height: 2.2em;
+  padding-top: 0.8em;
+  text-align: center;
+}
+
+#menu a {
+  text-transform: uppercase;
+  text-decoration: none;
+  color: white;
+}
+
+h1 { font-size: 25px; }
+h2 { font-size: 23px; }
+h3 { font-size: 21px; }
+h4 { font-size: 19px; }
+h5 { font-size: 17px; }
+h6 { font-size: 15px; }
+
+ol { list-style: decimal; }
+ul { list-style: disc; }
+li { margin-left: 30px; }
+
+p, dl, hr, h1, h2, h3, h4, h5, h6,
+ol, ul, pre, table, address, fieldset, figure {
+  margin-bottom: 20px;
+}
+
+#header {
+  position: relative;
+  height: 155px;
+  width: 540px;
+}
+
+#header h1 {
+  text-transform: uppercase;
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 0;
+}
+
