@@ -1,3 +1,5 @@
+/* vim: set et sw=2 sts=2: */
+
 body {
   background-color: #516480;
   font-family: "Sawasdee", "Century Gothic", "Tahoma", "Arial", sans-serif;
@@ -5,30 +7,14 @@ body {
   color: white;
 }
 
-.container_12 {
-  background-color: #1e1e1e;
-}
+.container_12 { background-color: #1e1e1e; }
+.hline        { margin-bottom: 10px; border-bottom: 2px solid white; }
+.space        { height: 10px; }
 
-.hline {
-  border-bottom: 2px solid white;
-}
-
-.spacer {
-  height: 10px;
-}
-
-#menu {
-  background-color: #313a43;
-  height: 2.2em;
-  padding-top: 0.8em;
-  text-align: center;
-}
-
-#menu a {
-  text-transform: uppercase;
-  text-decoration: none;
-  color: white;
-}
+.line1 { border-top: 4px solid white; border-bottom: 2px solid white; height: 10px; }
+.line2 { border-bottom: 1px solid #3a3a4a; height: 30px; }
+.line3 { border-bottom: 1px solid #3a3a4a; }
+.line4 { border-bottom: 1px solid #3a3a4a; height: 10px; }
 
 h1 { font-size: 25px; }
 h2 { font-size: 23px; }
@@ -48,14 +34,59 @@ ol, ul, pre, table, address, fieldset, figure {
 
 #header {
   position: relative;
-  height: 155px;
-  width: 540px;
+  height: 180px;
 }
 
 #header h1 {
   text-transform: uppercase;
   position: absolute;
-  bottom: 0;
+  bottom: -0.25em;
   margin-bottom: 0;
 }
 
+#header img {
+  position: absolute;
+  top: 10px;
+  right: 0;
+}
+
+#footer {
+  margin-top: 2em;
+  font-size: 9pt;
+  color: #999;
+}
+
+#menu1,
+#menu2,
+#menu3 {
+  margin-top: 10px;
+  height: 2.2em;
+  padding-top: 0.8em;
+  text-align: center;
+}
+
+#menu1 a,
+#menu2 a,
+#menu3 a {
+  text-transform: uppercase;
+  text-decoration: none;
+  color: white;
+  padding: 4px 8px;
+}
+
+#menu1 a:hover,
+#menu2 a:hover,
+#menu3 a:hover {
+  background-color: #666;
+  font-weight: bold;
+}
+
+#menu1 { background-color: #3a3a4a; }
+#menu1 a { font-weight: bold; }
+#menu2 { padding-top: 0; }
+#menu2 a { font-size: 12pt; }
+#menu3 { padding-top: 0.1em; height: 1.2em; }
+#menu3 a { font-size: 9pt; }
+
+#content { margin-top: 10px; background-color: #303040; }
+#content img { display: block; margin: 0 auto; }
