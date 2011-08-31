@@ -93,6 +93,6 @@ ol, ul, pre, table, address, fieldset, figure {
 #menu3 { padding-top: 0.1em; height: 1.2em; }
 #menu3 a { font-size: 9pt; }
 
-#content { margin-top: 10px; background-color: #303040; }
+#content { margin-top: 20px; background-color: #303040; }
 #content.comic { padding: 2em 0; }
 #content img { display: block; margin: 0 auto; }
