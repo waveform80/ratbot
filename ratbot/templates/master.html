@@ -34,12 +34,12 @@
       <div class="grid_3"><a href="${tg.url('/bio')}" class="${('', 'active')[defined('page') and page=='bio']}">Bio</a></div>
       <div class="grid_3 omega"><a href="${tg.url('/contact')}" class="${('', 'active')[defined('page') and page=='contact']}">Contact</a></div>
     </div>
-    <div class="grid_12 ${('', 'comic')[defined('page') and page in ('index', 'comics')]}" id="content">
+    <div class="grid_12" id="flash">
       <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
           <div py:if="flash" py:content="XML(flash)" />
       </py:with>
-      <div py:replace="select('*|text()')"/>
     </div>
+    <div py:replace="select('*|text()')"/>
     <div class="grid_12 line4"></div>
     <div class="grid_8" id="footer">
       <p>Copyright &copy; 2011 Holly Barden. All rights reserved.</p>

@@ -30,6 +30,10 @@ class RootController(BaseController):
     def bio(self):
         return dict(page='bio')
 
+    @expose('ratbot.templates.comics')
+    def comics(self):
+        return dict(page='comics')
+
     @expose('ratbot.templates.environ')
     def environ(self):
         return dict(environment=request.environ)
