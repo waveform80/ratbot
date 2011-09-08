@@ -21,7 +21,7 @@ except ImportError:
 
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import Unicode, Integer, DateTime
-from sqlalchemy.orm import relation, synonym
+from sqlalchemy.orm import relationship, synonym
 from ratbot.model import DeclarativeBase, metadata, DBSession
 
 __all__ = ['User', 'Group', 'Permission']
@@ -58,7 +58,7 @@ class Group(DeclarativeBase):
     group_name = Column(Unicode(128), primary_key=True)
     display_name = Column(Unicode(256))
     created = Column(DateTime, default=datetime.now)
-    users = relation('User', secondary=user_group_table, backref='groups')
+    users = relationship('User', secondary=user_group_table, backref='groups')
 
     def __repr__(self):
         return ('<Group: name=%s>' % self.group_name).encode('utf-8')
@@ -167,7 +167,7 @@ class Permission(DeclarativeBase):
 
     permission_name = Column(Unicode(128), primary_key=True)
     description = Column(Unicode(256))
-    groups = relation(Group, secondary=group_permission_table, backref='permissions')
+    groups = relationship(Group, secondary=group_permission_table, backref='permissions')
 
     def __repr__(self):
         return ('<Permission: name=%s>' % self.permission_name).encode('utf-8')
