@@ -3,14 +3,13 @@
 
 from tg import expose, flash, require, url, request, redirect
 from tg.i18n import ugettext as _, lazy_ugettext as l_
-from tgext.admin.tgadminconfig import TGAdminConfig
-from tgext.admin.controller import AdminController
+from tgext.admin import AdminConfig
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
 from ratbot.model import DBSession, metadata
 from ratbot import model
-from ratbot.controllers.secure import SecureController
+from ratbot.controllers.admin import AdminController
 from ratbot.controllers.error import ErrorController
 
 __all__ = ['RootController']
@@ -20,8 +19,7 @@ class RootController(BaseController):
     """
     The root controller for the ratbot application.
     """
-    secc = SecureController()
-    admin = AdminController(model, DBSession, config_type=TGAdminConfig)
+    admin = AdminController(model, DBSession, config_type=AdminConfig)
     error = ErrorController()
 
     @expose('ratbot.templates.index')
@@ -41,16 +39,6 @@ class RootController(BaseController):
     def data(self, **kw):
         """This method showcases how you can use the same controller for a data page and a display page"""
         return dict(params=kw)
-
-    @expose('ratbot.templates.index')
-    @require(predicates.has_permission('manage', msg=l_('Only for managers')))
-    def manage_permission_only(self, **kw):
-        return dict(page='managers stuff')
-
-    @expose('ratbot.templates.index')
-    @require(predicates.is_user('editor', msg=l_('Only for the editor')))
-    def editor_user_only(self, **kw):
-        return dict(page='editor stuff')
 
     @expose('ratbot.templates.login')
     def login(self, came_from=url('/')):

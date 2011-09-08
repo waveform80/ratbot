@@ -16,13 +16,6 @@
 
 <body py:match="body" py:attrs="select('@*')">
   <div class="container_12">
-    <py:if test="tg.auth_stack_enabled">
-    <div class="grid_12" id="auth">
-      <a py:if="not request.identity" id="login" href="${tg.url('/login')}">Login</a>
-      <a py:if="request.identity" id="login" href="${tg.url('/logout_handler')}">Logout</a>
-      <a py:if="request.identity" id="admin" href="${tg.url('/admin')}">Admin</a>
-    </div>
-    </py:if-->
     <div class="grid_12" id="header">
       <py:choose test="">
       <py:when test="defined('page') and page=='index'">
@@ -30,7 +23,7 @@
       </py:when>
       <py:otherwise>
       <h1 class="grid_7 alpha">Welcome to Ratbot Comics</h1>
-      <img class="grid_5 omega" src="images/logo.png" />
+      <img class="grid_5 omega" src="${tg.url('/images/logo.png')}" />
       </py:otherwise>
       </py:choose>
     </div>
@@ -48,9 +41,16 @@
       <div py:replace="select('*|text()')"/>
     </div>
     <div class="grid_12 line4"></div>
-    <div class="grid_12" id="footer">
+    <div class="grid_8" id="footer">
       <p>Copyright &copy; 2011 Holly Barden. All rights reserved.</p>
     </div>
+    <py:if test="tg.auth_stack_enabled">
+    <div class="grid_4" id="auth">
+      <a py:if="not request.identity" id="login" href="${tg.url('/login')}">Login</a>
+      <a py:if="request.identity" id="login" href="${tg.url('/logout_handler')}">Logout</a>
+      <a py:if="request.identity" id="admin" href="${tg.url('/admin')}">Admin</a>
+    </div>
+    </py:if>
   </div>
 </body>
 </html>

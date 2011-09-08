@@ -50,6 +50,8 @@ def bootstrap(command, conf, vars):
         c.id = u'misc'
         c.title = u'Miscellaneous'
 
+        model.DBSession.add(c)
+
         model.DBSession.flush()
     except IntegrityError:
         print 'Warning, there was a problem adding your initial data; it may have already been added'

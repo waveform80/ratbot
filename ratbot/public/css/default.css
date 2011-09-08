@@ -32,6 +32,9 @@ ol, ul, pre, table, address, fieldset, figure {
   margin-bottom: 20px;
 }
 
+a { text-decoration: none; color: white; }
+a:hover { text-decoration: underline; }
+
 #header {
   position: relative;
   height: 180px;
@@ -54,6 +57,13 @@ ol, ul, pre, table, address, fieldset, figure {
   margin-top: 2em;
   font-size: 9pt;
   color: #999;
+}
+
+#auth {
+  margin-top: 2em;
+  font-size: 9pt;
+  color: #999;
+  text-align: right;
 }
 
 #menu1,
@@ -96,3 +106,6 @@ ol, ul, pre, table, address, fieldset, figure {
 #content { margin-top: 20px; background-color: #303040; }
 #content.comic { padding: 2em 0; }
 #content img { display: block; margin: 0 auto; }
+
+#loginform label { display: block; margin: 0.5em 2em; }
+#loginform input[type=submit] { margin: 1em 2em; }
