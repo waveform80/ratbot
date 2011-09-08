@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="">
+<head py:match="head" py:attrs="select('@*')">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
+          py:attrs="dict(content='%s; charset=%s' % (response.content_type, response.charset))" />
+    <title py:if="False">Your title goes here</title>
+    <meta py:replace="select('*')"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/reset.css')}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/960.css')}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/default.css')}" />
+</head>
+
+<body py:match="body" py:attrs="select('@*')">
+  <div class="container_12">
+    <!--py:if test="tg.auth_stack_enabled">
+    <div class="grid_12" id="auth">
+      <a py:if="not request.identity" id="login" href="${tg.url('/login')}">Login</a>
+      <a py:if="request.identity" id="login" href="${tg.url('/logout_handler')}">Logout</a>
+      <a py:if="request.identity" id="admin" href="${tg.url('/admin')}">Admin</a>
+    </div>
+    </py:if-->
+    <div class="grid_12" id="header">
+      <py:choose test="">
+      <py:when test="defined('page') and page=='index'">
+      <h1>Welcome to Ratbot Comics</h1>
+      </py:when>
+      <py:otherwise>
+      <h1 class="grid_7 alpha">Welcome to Ratbot Comics</h1>
+      <img class="grid_5 omega" src="images/logo.png" />
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_12 line1"></div>
+    <div class="grid_12" id="menu1">
+      <div class="grid_3 alpha"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Home</a></div>
+      <div class="grid_3"><a href="${tg.url('/comics')}" class="${('', 'active')[defined('page') and page=='comics']}">Comics</a></div>
+      <div class="grid_3"><a href="${tg.url('/bio')}" class="${('', 'active')[defined('page') and page=='bio']}">Bio</a></div>
+      <div class="grid_3 omega"><a href="${tg.url('/contact')}" class="${('', 'active')[defined('page') and page=='contact']}">Contact</a></div>
+    </div>
+    <div class="grid_12 ${('', 'comic')[defined('page') and page in ('index', 'comics')]}" id="content">
+      <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+          <div py:if="flash" py:content="XML(flash)" />
+      </py:with>
+      <div py:replace="select('*|text()')"/>
+    </div>
+    <div class="grid_12 line4"></div>
+    <div class="grid_12" id="footer">
+      <p>Copyright &copy; 2011 Holly Barden. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
