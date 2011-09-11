@@ -9,6 +9,7 @@ __all__ = ['new_page_form', 'new_comic_form', 'alter_comic_form']
 
 class ComicForm(TableForm):
     show_errors = True
+    hover_help = True
     fields = [
         HiddenField('old_id'),
         TextField('id', validator=NotEmpty, label_text='ID', help_text='Specify a unique ID for the comic'),
@@ -19,6 +20,7 @@ class ComicForm(TableForm):
 
 class NewPageForm(TableForm):
     show_errors = True
+    hover_help = True
     fields = [
         SingleSelectField('comic_id', validator=NotEmpty, label_text='Comic', help_text='Please select a comic'),
         TextField('issue_number', validator=Int, label_text='Issue #', help_text='Please enter an issue number'),
