@@ -7,7 +7,7 @@ from datetime import datetime
 import sys
 
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, Column
-from sqlalchemy.types import Unicode, Integer, DateTime
+from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
 from sqlalchemy.orm import relationship, synonym
 from ratbot.model import DeclarativeBase, metadata, DBSession
 
@@ -21,10 +21,11 @@ class Comic(DeclarativeBase):
 
     __tablename__ = 'comics'
 
-    id = Column(Unicode(16), primary_key=True)
-    title = Column(Unicode(256))
+    id = Column(Unicode(20), primary_key=True)
+    title = Column(Unicode(100))
+    description = Column(Unicode)
     created = Column(DateTime, default=datetime.now)
-    author = Column(Unicode(128), ForeignKey('users.user_name'))
+    author = Column(Unicode(100), ForeignKey('users.user_name'))
     issues = relationship('Issue', backref='comic')
 
     def __repr__(self):
@@ -41,9 +42,10 @@ class Issue(DeclarativeBase):
 
     __tablename__ = 'issues'
 
-    comic_id = Column(Unicode(16), ForeignKey('comics.id'), primary_key=True)
+    comic_id = Column(Unicode(20), ForeignKey('comics.id'), primary_key=True)
     number = Column(Integer, primary_key=True)
-    title = Column(Unicode(256))
+    title = Column(Unicode(100))
+    description = Column(Unicode)
     created = Column(DateTime, default=datetime.now)
     pages = relationship('Page', backref='issue')
 
@@ -68,12 +70,14 @@ class Page(DeclarativeBase):
         {},
     )
 
-    comic_id = Column(Unicode(16), primary_key=True)
+    comic_id = Column(Unicode(20), primary_key=True)
     issue_number = Column(Integer, primary_key=True)
     number = Column(Integer, primary_key=True)
     created = Column(DateTime, default=datetime.now)
     published = Column(DateTime, default=datetime.now)
-    filename = Column(Unicode(256))
+    vector = Column(LargeBinary(10485760))
+    bitmap = Column(LargeBinary(10485760))
+    thumbnail = Column(LargeBinary(1048576))
 
     def __repr__(self):
         return '<Page: comic=%s, issue=%d, page=%d>' % (

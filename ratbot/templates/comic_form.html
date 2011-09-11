@@ -8,18 +8,12 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
-  <title>Comics</title>
+  <title>New Comic</title>
 </head>
 
 <body>
-  <div class="grid_12 line2"></div>
-  <div class="grid_12" id="menu2">
-    <div class="grid_4 alpha"><a href="${tg.url('/comics/mms')}">Major Mass Spec</a></div>
-    <div class="grid_4"><a href="${tg.url('/comics/name')}">Insert Name Here</a></div>
-    <div class="grid_4 omega"><a href="${tg.url('/comics/misc')}">Misc.</a></div>
-  </div>
   <div class="grid_12" id="content">
-    <p>Welcome to the comics viewer!</p>
+    <div py:replace="tmpl_context.form(value)">Input Form</div>
   </div>
 </body>
 </html>

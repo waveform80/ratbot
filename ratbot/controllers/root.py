@@ -11,6 +11,7 @@ from ratbot.model import DBSession, metadata
 from ratbot import model
 from ratbot.controllers.admin import AdminController
 from ratbot.controllers.error import ErrorController
+from ratbot.controllers.comic import ComicController
 
 __all__ = ['RootController']
 
@@ -20,6 +21,7 @@ class RootController(BaseController):
     The root controller for the ratbot application.
     """
     admin = AdminController(model, DBSession, config_type=AdminConfig)
+    comics = ComicController()
     error = ErrorController()
 
     @expose('ratbot.templates.index')
@@ -29,10 +31,6 @@ class RootController(BaseController):
     @expose('ratbot.templates.bio')
     def bio(self):
         return dict(page='bio')
-
-    @expose('ratbot.templates.comics')
-    def comics(self):
-        return dict(page='comics')
 
     @expose('ratbot.templates.environ')
     def environ(self):
