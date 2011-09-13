@@ -13,7 +13,7 @@
 
 <body>
   <div class="grid_12" id="content">
-    <div py:replace="tmpl_context.form()">Input Form</div>
+    <div py:replace="tmpl_context.form(value, child_args=dict(comic_id=dict(options=comic_ids)))">Input Form</div>
   </div>
 </body>
 </html>

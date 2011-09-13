@@ -22,9 +22,9 @@ class Comic(DeclarativeBase):
     __tablename__ = 'comics'
 
     id = Column(Unicode(20), primary_key=True)
-    title = Column(Unicode(100))
-    description = Column(Unicode)
-    created = Column(DateTime, default=datetime.now)
+    title = Column(Unicode(100), nullable=False, unique=True)
+    description = Column(Unicode, default='', nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
     author = Column(Unicode(100), ForeignKey('users.user_name'))
     issues = relationship('Issue', backref='comic')
 
@@ -44,9 +44,9 @@ class Issue(DeclarativeBase):
 
     comic_id = Column(Unicode(20), ForeignKey('comics.id'), primary_key=True)
     number = Column(Integer, primary_key=True)
-    title = Column(Unicode(100))
-    description = Column(Unicode)
-    created = Column(DateTime, default=datetime.now)
+    title = Column(Unicode(100), nullable=False)
+    description = Column(Unicode, default='', nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
     pages = relationship('Page', backref='issue')
 
     def __repr__(self):
@@ -73,8 +73,8 @@ class Page(DeclarativeBase):
     comic_id = Column(Unicode(20), primary_key=True)
     issue_number = Column(Integer, primary_key=True)
     number = Column(Integer, primary_key=True)
-    created = Column(DateTime, default=datetime.now)
-    published = Column(DateTime, default=datetime.now)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    published = Column(DateTime, default=datetime.now, nullable=False)
     vector = Column(LargeBinary(10485760))
     bitmap = Column(LargeBinary(10485760))
     thumbnail = Column(LargeBinary(1048576))

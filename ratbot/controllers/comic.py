@@ -7,10 +7,11 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form
+from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form
 from ratbot.model import DBSession, metadata, Comic, Issue, Page
+import transaction
 
-__all__ = ['RootController']
+__all__ = ['ComicController']
 
 class ComicController(BaseController):
     """
@@ -25,7 +26,7 @@ class ComicController(BaseController):
         tmpl_context.form = new_comic_form
         return dict(
             page='new_comic',
-            value=kw
+            value=kw,
         )
 
     @expose('ratbot.templates.comic_form')
@@ -43,13 +44,14 @@ class ComicController(BaseController):
 
     @validate(new_comic_form, error_handler=new_comic)
     @expose()
-    def create_comic(self, **kw):
+    def insert_comic(self, **kw):
         comic = Comic()
         comic.id = kw['id']
         comic.title = kw['title']
         comic.description = kw['description']
         DBSession.add(comic)
         DBSession.flush()
+        transaction.commit()
         flash('Comic added successfully')
         redirect('index')
 
@@ -60,8 +62,63 @@ class ComicController(BaseController):
         comic.id = kw['id']
         comic.title = kw['title']
         comic.description = kw['description']
-        DBSession.add(comic)
         DBSession.flush()
+        transaction.commit()
+        flash('Comic updated successfully')
+        redirect('index')
+
+    @expose('ratbot.templates.issue_form')
+    def new_issue(self, **kw):
+        tmpl_context.form = new_issue_form
+        return dict(
+            page='new_issue',
+            value=kw,
+            comic_ids=DBSession.query(Comic.id, Comic.title),
+        )
+
+    @expose('ratbot.templates.issue_form')
+    def alter_issue(self, old_comic, old_number, **kw):
+        tmpl_context.form = alter_issue_form
+        if not kw:
+            value = DBSession.query(Issue).\
+                filter(Issue.comic_id==old_comic).\
+                filter(Issue.number==old_number).one()
+            value.old_comic = old_comic
+            value.old_number = old_number
+        else:
+            value = kw
+        return dict(
+            page='alter_issue',
+            value=value,
+            comic_ids=DBSession.query(Comic.id, Comic.title),
+        )
+
+    @validate(new_issue_form, error_handler=new_issue)
+    @expose()
+    def insert_issue(self, **kw):
+        issue = Issue()
+        issue.comic_id = kw['comic_id']
+        issue.number = kw['number']
+        issue.title = kw['title']
+        issue.description = kw['description']
+        DBSession.add(issue)
+        DBSession.flush()
+        transaction.commit()
+        flash('Issue added successfully')
+        redirect('index')
+
+    @validate(alter_issue_form, error_handler=alter_issue)
+    @expose()
+    def update_issue(self, **kw):
+        issue = DBSession.query(Issue).\
+            filter(Issue.comic_id==kw['old_comic']).\
+            filter(Issue.number==kw['old_number']).one()
+        issue.comic_id = kw['comic_id']
+        issue.number = kw['number']
+        issue.title = kw['title']
+        issue.description = kw['description']
+        DBSession.flush()
+        transaction.commit()
         flash('Comic updated successfully')
         redirect('index')
 
@@ -76,17 +133,17 @@ class ComicController(BaseController):
 
     @validate(new_page_form, error_handler=new_page)
     @expose()
-    def create_page(self, **kw):
+    def insert_page(self, **kw):
         page = Page()
         page.comic_id = kw['comic_id']
         page.issue_number = kw['issue_number']
         page.number = kw['number']
-        page.created = datetime.datetime.now()
         page.published = kw['published']
         page.vector = kw['vector'].value
         page.bitmap = kw['bitmap'].value
         DBSession.add(page)
         DBSession.flush()
+        transaction.commit()
         flash('Page added successfully')
         redirect('index')
 

@@ -5,17 +5,30 @@ from tw.forms import TableForm, CalendarDatePicker, CalendarDateTimePicker, Spac
 from tw.forms.validators import Int, NotEmpty, DateConverter, DateTimeConverter
 from tg import url
 
-__all__ = ['new_page_form', 'new_comic_form', 'alter_comic_form']
+__all__ = ['new_page_form', 'new_comic_form', 'alter_comic_form', 'new_issue_form', 'alter_issue_form']
 
 class ComicForm(TableForm):
     show_errors = True
     hover_help = True
     fields = [
         HiddenField('old_id'),
-        TextField('id', validator=NotEmpty, label_text='ID', help_text='Specify a unique ID for the comic'),
-        TextField('title', validator=NotEmpty, label_text='Title', help_text='Specify the title for the comic'),
+        TextField('id', size=10, validator=NotEmpty, label_text='ID', help_text='Specify a unique ID for the comic'),
         Spacer(),
+        TextField('title', size=50, validator=NotEmpty, label_text='Title', help_text='Specify the title for the comic'),
         TextArea('description', validator=NotEmpty, label_text='Description', help_text='Specify the description for the comic'),
+    ]
+
+class IssueForm(TableForm):
+    show_errors = True
+    hover_help = True
+    fields = [
+        HiddenField('old_comic'),
+        HiddenField('old_number'),
+        SingleSelectField('comic_id', validator=NotEmpty, label_text='Comic', help_text='Select the comic the issue belongs to'),
+        TextField('number', size=4, validator=Int, label_text='Issue #', help_text='Specify the issue number'),
+        Spacer(),
+        TextField('title', size=50, validator=NotEmpty, label_text='Title', help_text='Specify the title for the issue'),
+        TextArea('description', validator=NotEmpty, label_text='Description', help_text='Specify the description for the issue'),
     ]
 
 class NewPageForm(TableForm):
@@ -23,8 +36,8 @@ class NewPageForm(TableForm):
     hover_help = True
     fields = [
         SingleSelectField('comic_id', validator=NotEmpty, label_text='Comic', help_text='Please select a comic'),
-        TextField('issue_number', validator=Int, label_text='Issue #', help_text='Please enter an issue number'),
-        TextField('number', validator=Int, label_text='Page #', help_text='Please enter a page number'),
+        TextField('issue_number', size=4, validator=Int, label_text='Issue #', help_text='Please enter an issue number'),
+        TextField('number', size=4, validator=Int, label_text='Page #', help_text='Please enter a page number'),
         Spacer(),
         CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Please enter the date to publish the page'),
         Spacer(),
@@ -32,6 +45,8 @@ class NewPageForm(TableForm):
         FileField('bitmap', help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
     ]
 
-new_comic_form = ComicForm('new_comic_form', action=url('/comics/create_comic'))
+new_comic_form = ComicForm('new_comic_form', action=url('/comics/insert_comic'))
 alter_comic_form = ComicForm('alter_comic_form', action=url('/comics/update_comic'))
-new_page_form = NewPageForm('new_page_form', action=url('/comics/create_page'))
+new_issue_form = IssueForm('new_issue_form', action=url('/comics/insert_issue'))
+alter_issue_form = IssueForm('alter_issue_form', action=url('/comics/update_issue'))
+new_page_form = NewPageForm('new_page_form', action=url('/comics/insert_page'))
