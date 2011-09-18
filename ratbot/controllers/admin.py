@@ -7,7 +7,8 @@ from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
 from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form
-from ratbot.model import DBSession, Comic, Issue, Page
+from ratbot.widgets.auth import new_user_form, new_group_form, new_permission_form, alter_user_form, alter_group_form, alter_permission_form
+from ratbot.model import DBSession, Comic, Issue, Page, User, Group, Permission
 import transaction
 
 __all__ = ['AdminController']
@@ -23,9 +24,17 @@ class AdminController(BaseController):
     def pages(self, comic, issue):
         return dict(data=[i for i in DBSession.query(Page.number).filter(Page.comic_id==comic).filter(Page.issue_number==issue)])
 
-    @expose()
+    @expose('ratbot.templates.admin')
     def index(self):
-        pass
+        return dict(
+            method='admin_index',
+            comics=DBSession.query(Comic).order_by(Comic.id),
+            issues=DBSession.query(Issue).order_by(Issue.comic_id, Issue.number),
+            pages=DBSession.query(Page).order_by(Page.comic_id, Page.issue_number, Page.number),
+            users=DBSession.query(User).order_by(User.user_name),
+            groups=DBSession.query(Group).order_by(Group.group_name),
+            permissions=DBSession.query(Permission).order_by(Permission.permission_name),
+        )
 
     @expose('ratbot.templates.user_form')
     def new_user(self, **kw):
@@ -104,6 +113,7 @@ class AdminController(BaseController):
         group.group_name = kw['group_name']
         group.display_name = kw['display_name']
         group.users = DBSession.query(User).filter(User.user_name in kw['users'])
+        group.permissions = DBSession.query(Permission).filter(Permission.permission_name in kw['permissions'])
         DBSession.add(group)
         DBSession.flush()
         transaction.commit()
@@ -117,6 +127,7 @@ class AdminController(BaseController):
         group.group_name = kw['group_name']
         group.display_name = kw['display_name']
         group.users = DBSession.query(User).filter(User.user_name in kw['users'])
+        group.permissions = DBSession.query(Permission).filter(Permission.permission_name in kw['permissions'])
         DBSession.flush()
         transaction.commit()
         flash('Group updated successfully')
@@ -142,6 +153,31 @@ class AdminController(BaseController):
             method='alter_permission',
             value=value,
         )
+
+    @validate(new_permission_form, error_handler=new_permission)
+    @expose()
+    def insert_permission(self, **kw):
+        permission = Permission()
+        permission.permission_name = kw['permission_name']
+        permission.display_name = kw['display_name']
+        permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
+        DBSession.add(permission)
+        DBSession.flush()
+        transaction.commit()
+        flash('Permission added successfully')
+        redirect('index')
+
+    @validate(alter_permission_form, error_handler=alter_permission)
+    @expose()
+    def update_permission(self, old_id, **kw):
+        permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
+        permission.permission_name = kw['permission_name']
+        permission.display_name = kw['display_name']
+        permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
+        DBSession.flush()
+        transaction.commit()
+        flash('Permission updated successfully')
+        redirect('index')
 
     @expose('ratbot.templates.comic_form')
     def new_comic(self, **kw):

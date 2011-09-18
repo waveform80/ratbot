@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
+  <title>Administration</title>
+</head>
+
+<body>
+  <div class="grid_12 comic" id="content">
+    <h3>Comics</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Title</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="comic in comics">
+          <td>${comic.id}</td>
+          <td>${comic.title}</td>
+          <td>
+            <a href="${td.url('/admin/alter_comic/%s' % comic.id)}">Alter Comic</a>
+            <a href="${td.url('/admin/remove_comic/%s' % comic.id)}">Remove Comic</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <a href="${td.url('/admin/new_comic')}">New Comic</a>
+    <h3>Issues</h3>
+    <table>
+      <thead><tr><th>Comic</th><th>Number</th><th>Title</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="issue in issues">
+          <td>${issue.comic_id}</td>
+          <td>${issue.number}</td>
+          <td>${issue.title}</td>
+          <td>
+            <a href="${td.url('/admin/alter_issue/%s/%d' % (issue.comic_id, issue.number)}">Alter Issue</a>
+            <a href="${td.url('/admin/remove_issue/%s/%d' % (issue.comic_id, issue.number)}">Remove Issue</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <a href="${td.url('/admin/new_issue')}">New Issue</a>
+    <div class="clear"></div>
+    <h3>News</h3>
+  </div>
+</body>
+</html>

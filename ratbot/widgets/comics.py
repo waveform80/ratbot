@@ -45,8 +45,8 @@ class NewPageForm(TableForm):
         FileField('bitmap', help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
     ]
 
-new_comic_form = ComicForm('new_comic_form', action=url('/comics/insert_comic'))
-alter_comic_form = ComicForm('alter_comic_form', action=url('/comics/update_comic'))
-new_issue_form = IssueForm('new_issue_form', action=url('/comics/insert_issue'))
-alter_issue_form = IssueForm('alter_issue_form', action=url('/comics/update_issue'))
-new_page_form = NewPageForm('new_page_form', action=url('/comics/insert_page'))
+new_comic_form = ComicForm('new_comic_form', action=url('/admin/insert_comic'))
+new_issue_form = IssueForm('new_issue_form', action=url('/admin/insert_issue'))
+new_page_form = NewPageForm('new_page_form', action=url('/admin/insert_page'))
+alter_comic_form = ComicForm('alter_comic_form', action=url('/admin/update_comic'))
+alter_issue_form = IssueForm('alter_issue_form', action=url('/admin/update_issue'))
