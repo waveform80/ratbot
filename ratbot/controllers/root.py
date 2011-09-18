@@ -3,12 +3,10 @@
 
 from tg import expose, flash, require, url, request, redirect
 from tg.i18n import ugettext as _, lazy_ugettext as l_
-from tgext.admin import AdminConfig
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.model import DBSession, metadata
-from ratbot import model
+from ratbot.model import DBSession, Page
 from ratbot.controllers.admin import AdminController
 from ratbot.controllers.error import ErrorController
 from ratbot.controllers.comic import ComicController
@@ -20,21 +18,23 @@ class RootController(BaseController):
     """
     The root controller for the ratbot application.
     """
-    admin = AdminController(model, DBSession, config_type=AdminConfig)
+    admin = AdminController()
     comics = ComicController()
     error = ErrorController()
 
     @expose('ratbot.templates.index')
     def index(self):
-        return dict(page='index')
+        pages = list(DBSession.query(Page).order_by(Page.published.desc()).limit(3))
+        while len(pages) < 3:
+            pages.append(None)
+        return dict(
+            method='index',
+            pages=pages,
+        )
 
     @expose('ratbot.templates.bio')
     def bio(self):
-        return dict(page='bio')
-
-    @expose('ratbot.templates.environ')
-    def environ(self):
-        return dict(environment=request.environ)
+        return dict(method='bio')
 
     @expose('ratbot.templates.data')
     @expose('json')

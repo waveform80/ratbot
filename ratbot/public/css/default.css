@@ -3,7 +3,7 @@
 body {
   background-color: #516480;
   font-family: "Sawasdee", "Century Gothic", "Tahoma", "Arial", sans-serif;
-  font-size: 10pt;
+  font-size: 13px;
   color: white;
 }
 
@@ -55,13 +55,13 @@ a:hover { text-decoration: underline; }
 
 #footer {
   margin-top: 2em;
-  font-size: 9pt;
+  font-size: 11px;
   color: #999;
 }
 
 #auth {
   margin-top: 2em;
-  font-size: 9pt;
+  font-size: 11px;
   color: #999;
   text-align: right;
 }
@@ -75,10 +75,15 @@ a:hover { text-decoration: underline; }
   text-align: center;
 }
 
+#menu1,
+#menu2,
+#menu3 {
+  text-transform: uppercase;
+}
+
 #menu1 a,
 #menu2 a,
 #menu3 a {
-  text-transform: uppercase;
   text-decoration: none;
   color: white;
   padding: 4px 8px;
@@ -98,15 +103,16 @@ a:hover { text-decoration: underline; }
 }
 
 #menu1 { background-color: #3a3a4a; }
-#menu2 { padding-top: 0; }
-#menu2 a { font-size: 12pt; }
-#menu3 { padding-top: 0.1em; height: 1.2em; }
-#menu3 a { font-size: 9pt; }
+#menu2 { padding-top: 0; font-size: 13px; }
+#menu3 { padding-top: 0.1em; height: 1.2em; font-size: 11px; }
 
 #content { margin-top: 20px; padding: 0; background-color: #303040; }
 #content img { display: block; margin: 0 auto; }
 #content img.comic { margin: 20px auto; }
 #content form { margin: 2em; }
+#content .issues { margin-bottom: 2em; }
+#content .thumb { display: block; margin: 0 auto; text-align: center; }
+#content .thumb img { display: inline; }
 
 .fielderror { font-weight: bold; color: #f55; }
 label { margin-right: 20px; }

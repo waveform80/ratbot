@@ -14,25 +14,106 @@
 <body>
   <div class="grid_12 line2"></div>
   <div class="grid_12" id="menu2">
-    <div class="grid_4 alpha"><a href="#" class="${('', 'active')[defined('comic') and comic.comic_id=='mms']}">Major Mass Spec</a></div>
-    <div class="grid_4"><a href="#" class="${('', 'active')[defined('comic') and comic.comic_id=='name']}">Insert Name Here</a></div>
-    <div class="grid_4 omega"><a href="#" class="${('', 'active')[defined('comic') and comic.comic_id=='misc']}">Misc.</a></div>
+    <py:for each="i, c in enumerate(comics)">
+    <div class="grid_4 ${('alpha', '', 'omega')[i]}">
+      <py:choose test="bool(c.issues and c.issues[-1].pages)">
+      <py:when test="True">
+      <a class="${('', 'active')[c.id==page.comic_id]}" href="${tg.url('/comics/view/%s/%d/%d' % (c.id, c.issues[-1].number, c.issues[-1].pages[-1].number))}">${c.title}</a>
+      </py:when>
+      <py:when test="False">
+      ${c.title}
+      </py:when>
+      </py:choose>
+    </div>
+    </py:for>
   </div>
   <div class="grid_12 line3"></div>
   <div class="prefix_2 grid_8 suffix_2" id="menu3">
-    <div class="grid_2 alpha"><a href="#">First</a></div>
-    <div class="grid_2"><a href="#">&lt; Previous</a></div>
-    <div class="grid_2"><a href="#">Next &gt;</a></div>
-    <div class="grid_2 omega"><a href="#">Last</a></div>
+    <div class="grid_2 alpha">
+      <py:choose test="page.first">
+      <py:when test="None">
+      First
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.first.issue_number, page.first.number))}">First</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2">
+      <py:choose test="page.previous">
+      <py:when test="None">
+      &lt; Previous
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.previous.issue_number, page.previous.number))}">&lt; Previous</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2">
+      <py:choose test="page.next">
+      <py:when test="None">
+      Next &gt;
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.next.issue_number, page.next.number))}">Next &gt;</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2 omega">
+      <py:choose test="page.last">
+      <py:when test="None">
+      Last
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.last.issue_number, page.last.number))}">Last</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
   </div>
   <div class="grid_12" id="content">
-    <img class="comic" src="${tg.url('/comics/png/%s/%d/%d' % (comic.comic_id, comic.issue_number, comic.number))}" />
+    <img class="comic" src="${tg.url('/comics/png/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}" />
   </div>
   <div class="prefix_2 grid_8 suffix_2" id="menu3">
-    <div class="grid_2 alpha"><a href="#">First</a></div>
-    <div class="grid_2"><a href="#">&lt; Previous</a></div>
-    <div class="grid_2"><a href="#">Next &gt;</a></div>
-    <div class="grid_2 omega"><a href="#">Last</a></div>
+    <div class="grid_2 alpha">
+      <py:choose test="page.first">
+      <py:when test="None">
+      First
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.first.issue_number, page.first.number))}">First</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2">
+      <py:choose test="page.previous">
+      <py:when test="None">
+      &lt; Previous
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.previous.issue_number, page.previous.number))}">&lt; Previous</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2">
+      <py:choose test="page.next">
+      <py:when test="None">
+      Next &gt;
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.next.issue_number, page.next.number))}">Next &gt;</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
+    <div class="grid_2 omega">
+      <py:choose test="page.last">
+      <py:when test="None">
+      Last
+      </py:when>
+      <py:otherwise>
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.last.issue_number, page.last.number))}">Last</a>
+      </py:otherwise>
+      </py:choose>
+    </div>
   </div>
 </body>
 </html>
