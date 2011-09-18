@@ -42,6 +42,7 @@ class AdminController(BaseController):
         return dict(
             method='new_user',
             value=kw,
+            group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
     @expose('ratbot.templates.user_form')
@@ -55,6 +56,7 @@ class AdminController(BaseController):
         return dict(
             method='alter_user',
             value=value,
+            group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
     @validate(new_user_form, error_handler=new_user)
@@ -65,6 +67,7 @@ class AdminController(BaseController):
         user.email_address = kw['email_address']
         user.display_name = kw['display_name']
         user.password = kw['password']
+        user.group_names = kw['group_names']
         DBSession.add(user)
         DBSession.flush()
         transaction.commit()
@@ -74,15 +77,25 @@ class AdminController(BaseController):
     @validate(alter_user_form, error_handler=alter_user)
     @expose()
     def update_user(self, old_id, **kw):
-        user = DBSession.query(User).filter(User.user_name==kw['old_id']).one()
+        user = DBSession.query(User).filter(User.user_name==old_id).one()
         user.user_name = kw['user_name']
         user.email_address = kw['email_address']
-        user.display_name = ['display_name']
-        if kw['password']:
+        user.display_name = kw['display_name']
+        user.group_names = kw['group_names']
+        if user.password != kw['password']:
             user.password = kw['password']
         DBSession.flush()
         transaction.commit()
         flash('User updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_user(self, old_id):
+        user = DBSession.query(User).filter(User.user_name==user_name).one()
+        DBSession.delete(user)
+        DBSession.flush()
+        transaction.commit()
+        flash('User deleted successfully')
         redirect('index')
 
     @expose('ratbot.templates.group_form')
@@ -91,6 +104,8 @@ class AdminController(BaseController):
         return dict(
             method='new_group',
             value=kw,
+            user_names=DBSession.query(User.user_name, User.user_name),
+            permission_names=DBSession.query(Permission.permission_name, Permission.permission_name),
         )
 
     @expose('ratbot.templates.group_form')
@@ -104,6 +119,8 @@ class AdminController(BaseController):
         return dict(
             method='alter_group',
             value=value,
+            user_names=DBSession.query(User.user_name, User.user_name),
+            permission_names=DBSession.query(Permission.permission_name, Permission.permission_name),
         )
 
     @validate(new_group_form, error_handler=new_group)
@@ -112,8 +129,8 @@ class AdminController(BaseController):
         group = Group()
         group.group_name = kw['group_name']
         group.display_name = kw['display_name']
-        group.users = DBSession.query(User).filter(User.user_name in kw['users'])
-        group.permissions = DBSession.query(Permission).filter(Permission.permission_name in kw['permissions'])
+        group.user_names = kw['user_names']
+        group.permission_names = kw['permission_names']
         DBSession.add(group)
         DBSession.flush()
         transaction.commit()
@@ -126,11 +143,20 @@ class AdminController(BaseController):
         group = DBSession.query(Group).filter(Group.group_name==old_id).one()
         group.group_name = kw['group_name']
         group.display_name = kw['display_name']
-        group.users = DBSession.query(User).filter(User.user_name in kw['users'])
-        group.permissions = DBSession.query(Permission).filter(Permission.permission_name in kw['permissions'])
+        group.user_names = kw['user_names']
+        group.permission_names = kw['permission_names']
         DBSession.flush()
         transaction.commit()
         flash('Group updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_group(self, old_id):
+        group = DBSession.query(Group).filter(Group.group_name==old_id).one()
+        DBSession.delete(group)
+        DBSession.flush()
+        transaction.commit()
+        flash('Group deleted successfully')
         redirect('index')
 
     @expose('ratbot.templates.permission_form')
@@ -139,6 +165,7 @@ class AdminController(BaseController):
         return dict(
             method='new_permission',
             value=kw,
+            group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
     @expose('ratbot.templates.permission_form')
@@ -152,6 +179,7 @@ class AdminController(BaseController):
         return dict(
             method='alter_permission',
             value=value,
+            group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
     @validate(new_permission_form, error_handler=new_permission)
@@ -160,7 +188,7 @@ class AdminController(BaseController):
         permission = Permission()
         permission.permission_name = kw['permission_name']
         permission.description = kw['description']
-        permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
+        permission.group_names = kw['group_names']
         DBSession.add(permission)
         DBSession.flush()
         transaction.commit()
@@ -173,10 +201,19 @@ class AdminController(BaseController):
         permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
         permission.permission_name = kw['permission_name']
         permission.description = kw['description']
-        permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
+        permission.group_names = kw['group_names']
         DBSession.flush()
         transaction.commit()
         flash('Permission updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_permission(self, old_id):
+        permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
+        DBSession.delete(permission)
+        DBSession.flush()
+        transaction.commit()
+        flash('Permission deleted successfully')
         redirect('index')
 
     @expose('ratbot.templates.comic_form')

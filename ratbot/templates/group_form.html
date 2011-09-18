@@ -24,7 +24,10 @@
       <py:otherwise>Alter Group &quot;${value['group_name']}&quot;</py:otherwise>
       </py:choose>
     </h3>
-    <div py:replace="tmpl_context.form(value)">Input Form</div>
+    <div py:replace="tmpl_context.form(value, child_args=dict(
+      user_names=dict(options=user_names),
+      permission_names=dict(options=permission_names)
+    ))">Input Form</div>
   </div>
 </body>
 </html>

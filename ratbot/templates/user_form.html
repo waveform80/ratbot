@@ -24,7 +24,9 @@
       <py:otherwise>Alter User &quot;${value['user_name']}&quot;</py:otherwise>
       </py:choose>
     </h3>
-    <div py:replace="tmpl_context.form(value)">Input Form</div>
+    <div py:replace="tmpl_context.form(value, child_args=dict(
+      group_names=dict(options=group_names)
+    ))">Input Form</div>
   </div>
 </body>
 </html>

@@ -22,6 +22,7 @@ except ImportError:
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import Unicode, Integer, DateTime
 from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.ext.associationproxy import association_proxy
 from ratbot.model import DeclarativeBase, metadata, DBSession
 
 __all__ = ['User', 'Group', 'Permission']
@@ -66,6 +67,10 @@ class Group(DeclarativeBase):
     def __unicode__(self):
         return self.group_name
 
+    @classmethod
+    def by_name(cls, name):
+        """return the group object whose name is ``name``."""
+        return DBSession.query(cls).filter_by(group_name=name).first()
 
 # The 'info' argument we're passing to the email_address and password columns
 # contain metadata that Rum (http://python-rum.org/) can use generate an
@@ -107,7 +112,7 @@ class User(DeclarativeBase):
 
     @classmethod
     def by_user_name(cls, username):
-        """Return the user object whose user name is ``username``."""
+        """return the user object whose user name is ``username``."""
         return DBSession.query(cls).filter_by(user_name=username).first()
 
     @classmethod
@@ -168,9 +173,23 @@ class Permission(DeclarativeBase):
     permission_name = Column(Unicode(128), primary_key=True)
     description = Column(Unicode(256))
     groups = relationship(Group, secondary=group_permission_table, backref='permissions')
+    group_names = association_proxy('groups', 'group_name')
 
     def __repr__(self):
         return ('<Permission: name=%s>' % self.permission_name).encode('utf-8')
 
     def __unicode__(self):
         return self.permission_name
+
+    @classmethod
+    def by_name(cls, name):
+        """return the group object whose name is ``name``."""
+        return DBSession.query(cls).filter_by(permission_name=name).first()
+
+# Configure association proxies (must be done after class definition otherwise
+# we can't specify the creators correctly)
+
+User.group_names = association_proxy('groups', 'group_name', creator=Group.by_name)
+Group.user_names = association_proxy('users', 'user_name', creator=User.by_user_name)
+Group.permission_names = association_proxy('permissions', 'permission_name', creator=Permission.by_name)
+Permission.group_names = association_proxy('groups', 'group_name', creator=Group.by_name)
