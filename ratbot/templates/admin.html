@@ -12,23 +12,36 @@
 </head>
 
 <body>
-  <div class="grid_12 comic" id="content">
+  <div class="grid_12" id="content">
     <h3>Comics</h3>
+    <a href="${tg.url('/admin/new_comic')}">[New Comic]</a>
+    <py:choose test="comics.count()">
+    <py:when test="0">
+    <p>No comics found in the database</p>
+    </py:when>
+    <py:otherwise>
     <table>
       <thead><tr><th>ID</th><th>Title</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="comic in comics">
+        <tr py:for="i, comic in enumerate(comics)" class="${('even', 'odd')[i % 2]}">
           <td>${comic.id}</td>
           <td>${comic.title}</td>
           <td>
-            <a href="${td.url('/admin/alter_comic/%s' % comic.id)}">Alter Comic</a>
-            <a href="${td.url('/admin/remove_comic/%s' % comic.id)}">Remove Comic</a>
+            <a href="${tg.url('/admin/alter_comic/%s' % comic.id)}">[Alter Comic]</a>
+            <a href="${tg.url('/admin/remove_comic/%s' % comic.id)}">[Remove Comic]</a>
           </td>
         </tr>
       </tbody>
     </table>
-    <a href="${td.url('/admin/new_comic')}">New Comic</a>
+    </py:otherwise>
+    </py:choose>
     <h3>Issues</h3>
+    <a href="${tg.url('/admin/new_issue')}">[New Issue]</a>
+    <py:choose test="issues.count()">
+    <py:when test="0">
+    <p>No issues found in the database</p>
+    </py:when>
+    <py:otherwise>
     <table>
       <thead><tr><th>Comic</th><th>Number</th><th>Title</th><th>Actions</th></tr></thead>
       <tbody>
@@ -37,15 +50,106 @@
           <td>${issue.number}</td>
           <td>${issue.title}</td>
           <td>
-            <a href="${td.url('/admin/alter_issue/%s/%d' % (issue.comic_id, issue.number)}">Alter Issue</a>
-            <a href="${td.url('/admin/remove_issue/%s/%d' % (issue.comic_id, issue.number)}">Remove Issue</a>
+            <a href="${tg.url('/admin/alter_issue/%s/%d' % (issue.comic_id, issue.number))}">[Alter Issue]</a>
+            <a href="${tg.url('/admin/remove_issue/%s/%d' % (issue.comic_id, issue.number))}">[Remove Issue]</a>
           </td>
         </tr>
       </tbody>
     </table>
-    <a href="${td.url('/admin/new_issue')}">New Issue</a>
-    <div class="clear"></div>
-    <h3>News</h3>
+    </py:otherwise>
+    </py:choose>
+    <h3>Pages</h3>
+    <a href="${tg.url('/admin/new_page')}">[New Page]</a>
+    <py:choose test="pages.count()">
+    <py:when test="0">
+    <p>No pages found in the database</p>
+    </py:when>
+    <py:otherwise>
+    <table>
+      <thead><tr><th>Comic</th><th>Issue</th><th>Number</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="page in pages">
+          <td>${page.comic_id}</td>
+          <td>${page.issue_number}</td>
+          <td>${page.number}</td>
+          <td>
+            <a href="${tg.url('/admin/alter_page/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">[Alter Page]</a>
+            <a href="${tg.url('/admin/remove_page/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">[Remove Page]</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </py:otherwise>
+    </py:choose>
+    <h3>Users</h3>
+    <a href="${tg.url('/admin/new_user')}">[New User]</a>
+    <py:choose test="users.count()">
+    <py:when test="0">
+    <p>No users found in the database</p>
+    </py:when>
+    <py:otherwise>
+    <table>
+      <thead><tr><th>User</th><th>E-mail</th><th>Full name</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="user in users">
+          <td>${user.user_name}</td>
+          <td>${user.email_address}</td>
+          <td>${user.display_name}</td>
+          <td>
+            <a href="${tg.url('/admin/alter_user/%s' % user.user_name)}">[Alter User]</a>
+            <a href="${tg.url('/admin/remove_user/%s' % user.user_name)}">[Remove User]</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </py:otherwise>
+    </py:choose>
+    <h3>Groups</h3>
+    <a href="${tg.url('/admin/new_group')}">[New Group]</a>
+    <py:choose test="groups.count()">
+    <py:when test="0">
+    <p>No groups found in the database</p>
+    </py:when>
+    <py:otherwise>
+    <table>
+      <thead><tr><th>Group</th><th>Display name</th><th>Users</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="group in groups">
+          <td>${group.group_name}</td>
+          <td>${group.display_name}</td>
+          <td>${len(group.users)}</td>
+          <td>
+            <a href="${tg.url('/admin/alter_group/%s' % group.group_name)}">[Alter Group]</a>
+            <a href="${tg.url('/admin/remove_group/%s' % group.group_name)}">[Remove Group]</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </py:otherwise>
+    </py:choose>
+    <h3>Permissions</h3>
+    <a href="${tg.url('/admin/new_permission')}">[New Permission]</a>
+    <py:choose test="permissions.count()">
+    <py:when test="0">
+    <p>No permissions found in the database</p>
+    </py:when>
+    <py:otherwise>
+    <table>
+      <thead><tr><th>Permission</th><th>Description</th><th>Groups</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="permission in permissions">
+          <td>${permission.permission_name}</td>
+          <td>${permission.description}</td>
+          <td>${len(permission.groups)}</td>
+          <td>
+            <a href="${tg.url('/admin/alter_permission/%s' % permission.permission_name)}">[Alter Permission]</a>
+            <a href="${tg.url('/admin/remove_permission/%s' % permission.permission_name)}">[Remove Permission]</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </py:otherwise>
+    </py:choose>
   </div>
 </body>
 </html>

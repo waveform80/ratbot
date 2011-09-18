@@ -159,7 +159,7 @@ class AdminController(BaseController):
     def insert_permission(self, **kw):
         permission = Permission()
         permission.permission_name = kw['permission_name']
-        permission.display_name = kw['display_name']
+        permission.description = kw['description']
         permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
         DBSession.add(permission)
         DBSession.flush()
@@ -172,7 +172,7 @@ class AdminController(BaseController):
     def update_permission(self, old_id, **kw):
         permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
         permission.permission_name = kw['permission_name']
-        permission.display_name = kw['display_name']
+        permission.description = kw['description']
         permission.groups = DBSession.query(Group).filter(Group.group_name in kw['users'])
         DBSession.flush()
         transaction.commit()

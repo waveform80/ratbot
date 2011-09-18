@@ -106,10 +106,9 @@ a:hover { text-decoration: underline; }
 #menu2 { padding-top: 0; font-size: 13px; }
 #menu3 { padding-top: 0.1em; height: 1.2em; font-size: 11px; }
 
-#content { margin-top: 20px; padding: 0; background-color: #303040; }
+#content { margin-top: 20px; background-color: #303040; }
 #content img { display: block; margin: 0 auto; }
-#content img.comic { margin: 20px auto; }
-#content form { margin: 2em; }
+#content img.comic { margin: 0 auto; }
 #content .issues { margin-bottom: 2em; }
 #content .thumb { display: block; margin: 0 auto; text-align: center; }
 #content .thumb img { display: inline; }
@@ -123,3 +122,10 @@ textarea.has_error { background-color: #faa; }
 
 #loginform label { display: block; margin: 0.5em 2em; }
 #loginform input[type=submit] { margin: 1em 2em; }
+
+table { width: 100%; }
+td, th { border: 2px solid #303040; padding: 2px 4px; }
+th { font-weight: bold; background: #516480; }
+tr.odd { background: #505060; }
+
+form tr.odd { background: transparent; }

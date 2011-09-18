@@ -8,11 +8,22 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
-  <title>New Comic Page</title>
+  <title>
+    <py:choose test="method">
+    <py:when test="'new_page'">New Page</py:when>
+    <py:otherwise>Alter Page &quot;${value['comic_id']}-${value['issue_number']}-${value['number']}&quot;</py:otherwise>
+    </py:choose>
+  </title>
 </head>
 
 <body>
   <div class="grid_12" id="content">
+    <h3>
+      <py:choose test="method">
+      <py:when test="'new_page'">New Page</py:when>
+      <py:otherwise>Alter Page &quot;${value['comic_id']}-${value['issue_number']}-${value['number']}&quot;</py:otherwise>
+      </py:choose>
+    </h3>
     <div py:replace="tmpl_context.form(child_args=dict(comic_id=dict(options=comic_ids)))">Input Form</div>
   </div>
 </body>

@@ -12,13 +12,15 @@
 </head>
 
 <body>
+  <div class="grid_12" id="content">
+    <h3>Login</h3>
     <!-- TODO Set focus on username -->
     <form id="loginform" action="${tg.url('/login_handler', params=dict(came_from=came_from.encode('utf-8'), __logins=login_counter.encode('utf-8')))}" method="post" accept-charset="UTF-8">
-        <h2>Login</h2>
         <label for="login">Username: <input type="text" id="login" name="login" tabindex="1" /></label>
         <label for="password">Password: <input type="password" id="password" name="password" tabindex="2" /></label>
         <label for="remember"><input type="checkbox" id="remember" name="remember" tabindex="3" value="2252000"/> Remember me</label>
         <input type="submit" id="submit" tabindex="4" value="Login" />
     </form>
+  </div>
 </body>
 </html>

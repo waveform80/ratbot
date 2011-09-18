@@ -8,11 +8,22 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
-  <title>New Permission</title>
+  <title>
+    <py:choose test="method">
+    <py:when test="'new_permission'">New Permission</py:when>
+    <py:otherwise>Alter Permission &quot;${value['permission_name']}&quot;</py:otherwise>
+    </py:choose>
+  </title>
 </head>
 
 <body>
   <div class="grid_12" id="content">
+    <h3>
+      <py:choose test="method">
+      <py:when test="'new_permission'">New Permission</py:when>
+      <py:otherwise>Alter Permission &quot;${value['permission_name']}&quot;</py:otherwise>
+      </py:choose>
+    </h3>
     <div py:replace="tmpl_context.form(value)">Input Form</div>
   </div>
 </body>

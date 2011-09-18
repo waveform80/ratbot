@@ -39,10 +39,10 @@ class NewPageForm(TableForm):
         TextField('issue_number', size=4, validator=Int, label_text='Issue #', help_text='Please enter an issue number'),
         TextField('number', size=4, validator=Int, label_text='Page #', help_text='Please enter a page number'),
         Spacer(),
-        CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Please enter the date to publish the page'),
+        CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Please enter the date and time to publish the page'),
         Spacer(),
-        FileField('vector', help_text='Please specify the filename of the vector (SVG) variant of the page'),
-        FileField('bitmap', help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
+        FileField('vector', validator=NotEmpty, help_text='Please specify the filename of the vector (SVG) variant of the page'),
+        FileField('bitmap', validator=NotEmpty, help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
     ]
 
 new_comic_form = ComicForm('new_comic_form', action=url('/admin/insert_comic'))
