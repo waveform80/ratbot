@@ -14,6 +14,23 @@
     <py:otherwise>Alter Page &quot;${value['comic_id']}-${value['issue_number']}-${value['number']}&quot;</py:otherwise>
     </py:choose>
   </title>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("select#new_page_form_comic_id").change(function() {
+        $.getJSON("issues/" + $(this).val(), {}, function(r) {
+          $("input#new_page_form_issue_number").val(r.data[r.data.length - 1]);
+          $("input#new_page_form_issue_number").change();
+        });
+      });
+      $("input#new_page_form_issue_number").change(function() {
+        $.getJSON("pages/" + $("select#new_page_form_comic_id").val() + "/" + $(this).val(), {}, function(r) {
+          $("input#new_page_form_number").val(r.data.length + 1);
+        });
+      });
+      $("select#new_page_form_comic_id").change();
+      $("input#new_page_form_published").focus();
+    });
+  </script>
 </head>
 
 <body>

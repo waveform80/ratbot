@@ -14,6 +14,11 @@
     <py:otherwise>Alter User &quot;${value['user_name']}&quot;</py:otherwise>
     </py:choose>
   </title>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("input#new_user_form_user_name").focus();
+    });
+  </script>
 </head>
 
 <body>

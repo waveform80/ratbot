@@ -18,11 +18,11 @@ class AdminController(BaseController):
 
     @expose('json')
     def issues(self, comic):
-        return dict(data=[i for i in DBSession.query(Issue.number).filter(Issue.comic_id==comic)])
+        return dict(data=[issue.number for issue in DBSession.query(Issue).filter(Issue.comic_id==comic)])
 
     @expose('json')
     def pages(self, comic, issue):
-        return dict(data=[i for i in DBSession.query(Page.number).filter(Page.comic_id==comic).filter(Page.issue_number==issue)])
+        return dict(data=[page.number for page in DBSession.query(Page).filter(Page.comic_id==comic).filter(Page.issue_number==issue)])
 
     @expose('ratbot.templates.admin')
     def index(self):

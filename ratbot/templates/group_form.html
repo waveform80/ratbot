@@ -14,6 +14,11 @@
     <py:otherwise>Alter Group &quot;${value['group_name']}&quot;</py:otherwise>
     </py:choose>
   </title>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("input#new_group_form_group_name").focus();
+    });
+  </script>
 </head>
 
 <body>

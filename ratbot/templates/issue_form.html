@@ -14,6 +14,17 @@
     <py:otherwise>Alter Issue &quot;${value['title']}&quot;</py:otherwise>
     </py:choose>
   </title>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("select#new_issue_form_comic_id").change(function() {
+        $.getJSON("issues/" + $(this).val(), {}, function(r) {
+          $("input#new_issue_form_number").val(r.data.length + 1);
+        });
+      });
+      $("select#new_issue_form_comic_id").change();
+      $("input#new_issue_form_title").focus();
+    });
+  </script>
 </head>
 
 <body>

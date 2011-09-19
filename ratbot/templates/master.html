@@ -8,10 +8,11 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
           py:attrs="dict(content='%s; charset=%s' % (response.content_type, response.charset))" />
     <title py:if="False">Your title goes here</title>
-    <meta py:replace="select('*')"/>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/reset.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/960.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/default.css')}" />
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <meta py:replace="select('*')"/>
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
@@ -27,11 +28,9 @@
       <div class="grid_3"><a href="${tg.url('/bio')}" class="${('', 'active')[defined('method') and method=='bio']}">Bio</a></div>
       <div class="grid_3 omega"><a href="${tg.url('/contact')}" class="${('', 'active')[defined('method') and method=='contact']}">Contact</a></div>
     </div>
-    <div class="grid_12" id="flash">
-      <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-          <div py:if="flash" py:content="XML(flash)" />
-      </py:with>
-    </div>
+    <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+    <div py:if="flash" py:content="XML(flash)" class="grid_12" />
+    </py:with>
     <div py:replace="select('*|text()')"/>
     <div class="grid_12 line4"></div>
     <div class="grid_8" id="footer">
