@@ -33,6 +33,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
+        "PIL",
         "TurboGears2 >= 2.1.2",
         "Genshi",
         "zope.sqlalchemy >= 0.4",
