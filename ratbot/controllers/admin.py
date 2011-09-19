@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Comic Controller"""
 
-from tg import expose, validate, flash, require, redirect, tmpl_context
+from tg import expose, validate, flash, require, redirect, tmpl_context, url
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
@@ -59,6 +59,15 @@ class AdminController(BaseController):
             group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
+    @expose('ratbot.templates.confirmation')
+    def remove_user(self, user_name):
+        return dict(
+            method='remove_user',
+            prompt='Are you sure you wish to delete user "%s"?' % user_name,
+            params=dict(user_name=user_name),
+            action=url('/admin/delete_user'),
+        )
+
     @validate(new_user_form, error_handler=new_user)
     @expose()
     def insert_user(self, **kw):
@@ -90,7 +99,7 @@ class AdminController(BaseController):
         redirect('index')
 
     @expose()
-    def delete_user(self, old_id):
+    def delete_user(self, user_name, confirm):
         user = DBSession.query(User).filter(User.user_name==user_name).one()
         DBSession.delete(user)
         DBSession.flush()
@@ -123,6 +132,15 @@ class AdminController(BaseController):
             permission_names=DBSession.query(Permission.permission_name, Permission.permission_name),
         )
 
+    @expose('ratbot.templates.confirmation')
+    def remove_group(self, group_name):
+        return dict(
+            method='remove_group',
+            prompt='Are you sure you wish to delete group "%s"?' % group_name,
+            params=dict(group_name=group_name),
+            action=url('/admin/delete_group'),
+        )
+
     @validate(new_group_form, error_handler=new_group)
     @expose()
     def insert_group(self, **kw):
@@ -151,8 +169,8 @@ class AdminController(BaseController):
         redirect('index')
 
     @expose()
-    def delete_group(self, old_id):
-        group = DBSession.query(Group).filter(Group.group_name==old_id).one()
+    def delete_group(self, group_name, confirm):
+        group = DBSession.query(Group).filter(Group.group_name==group_name).one()
         DBSession.delete(group)
         DBSession.flush()
         transaction.commit()
@@ -182,6 +200,15 @@ class AdminController(BaseController):
             group_names=DBSession.query(Group.group_name, Group.group_name),
         )
 
+    @expose('ratbot.templates.confirmation')
+    def remove_permission(self, permission_name):
+        return dict(
+            method='remove_permission',
+            prompt='Are you sure you wish to delete permission "%s"?' % permission_name,
+            params=dict(permission_name=permission_name),
+            action=url('/admin/delete_permission'),
+        )
+
     @validate(new_permission_form, error_handler=new_permission)
     @expose()
     def insert_permission(self, **kw):
@@ -208,8 +235,8 @@ class AdminController(BaseController):
         redirect('index')
 
     @expose()
-    def delete_permission(self, old_id):
-        permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
+    def delete_permission(self, permission_name, confirm):
+        permission = DBSession.query(Permission).filter(Permission.permission_name==permission_name).one()
         DBSession.delete(permission)
         DBSession.flush()
         transaction.commit()
@@ -237,6 +264,15 @@ class AdminController(BaseController):
             value=value,
         )
 
+    @expose('ratbot.templates.confirmation')
+    def remove_comic(self, id):
+        return dict(
+            method='remove_comic',
+            prompt='Are you sure you wish to delete comic "%s"?' % id,
+            params=dict(id=id),
+            action=url('/admin/delete_comic'),
+        )
+
     @validate(new_comic_form, error_handler=new_comic)
     @expose()
     def insert_comic(self, **kw):
@@ -260,6 +296,15 @@ class AdminController(BaseController):
         DBSession.flush()
         transaction.commit()
         flash('Comic updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_comic(self, id, confirm):
+        comic = DBSession.query(Comic).filter(Comic.id==id).one()
+        DBSession.delete(comic)
+        DBSession.flush()
+        transaction.commit()
+        flash('Comic deleted successfully')
         redirect('index')
 
     @expose('ratbot.templates.issue_form')
@@ -286,6 +331,15 @@ class AdminController(BaseController):
             method='alter_issue',
             value=value,
             comic_ids=DBSession.query(Comic.id, Comic.title),
+        )
+
+    @expose('ratbot.templates.confirmation')
+    def remove_issue(self, comic_id, number):
+        return dict(
+            method='remove_issue',
+            prompt='Are you sure you wish to delete issue "%d" of comic "%s"?' % (int(number), comic_id),
+            params=dict(comic_id=comic_id, number=int(number)),
+            action=url('/admin/delete_issue'),
         )
 
     @validate(new_issue_form, error_handler=new_issue)
@@ -315,6 +369,15 @@ class AdminController(BaseController):
         DBSession.flush()
         transaction.commit()
         flash('Comic updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_issue(self, comic_id, number, confirm):
+        issue = DBSession.query(Issue).filter(Issue.comic_id==comic_id).filter(Issue.number==number).one()
+        DBSession.delete(issue)
+        DBSession.flush()
+        transaction.commit()
+        flash('Issue deleted successfully')
         redirect('index')
 
     @expose('ratbot.templates.new_page_form')
