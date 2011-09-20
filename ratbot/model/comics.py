@@ -114,7 +114,7 @@ class Issue(DeclarativeBase):
     comic_id = Column(Unicode(20), ForeignKey('comics.id'), primary_key=True)
     number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
     title = Column(Unicode(100), nullable=False)
-    description = Column(Unicode, default='', nullable=False)
+    description = Column(Unicode, default=u'', nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     pages = relationship('Page', backref='issue', order_by=[Page.number])
 
@@ -136,7 +136,7 @@ class Comic(DeclarativeBase):
 
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(100), nullable=False, unique=True)
-    description = Column(Unicode, default='', nullable=False)
+    description = Column(Unicode, default=u'', nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     author = Column(Unicode(100), ForeignKey('users.user_name'))
     issues = relationship('Issue', backref='comic', order_by=[Issue.number])
