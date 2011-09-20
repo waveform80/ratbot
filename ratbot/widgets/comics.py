@@ -41,8 +41,8 @@ class NewPageForm(TableForm):
         Spacer(),
         CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Please enter the date and time to publish the page'),
         Spacer(),
-        FileField('vector', validator=NotEmpty, help_text='Please specify the filename of the vector (SVG) variant of the page'),
-        FileField('bitmap', validator=NotEmpty, help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
+        FileField('vector', help_text='Please specify the filename of the vector (SVG) variant of the page'),
+        FileField('bitmap', help_text='Please specify the filename of the bitmap (PNG) variant of the page'),
     ]
 
 new_comic_form = ComicForm('new_comic_form', action=url('/admin/insert_comic'))
