@@ -17,9 +17,9 @@
     <div class="grid_4 ${('alpha', '', 'omega')[i]}" py:for="i, page in enumerate(pages)">
       <div py:if="page" class="thumb">
         <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">
-          <img src="${tg.url('/comics/thumb/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}" />
-          <br />
-          ${page.issue.comic.title}, Issue ${page.issue.number}, Page ${page.number}
+          <img src="${tg.url('/comics/thumb/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}" /><br />
+          ${page.issue.comic.title}, Issue ${page.issue.number}, Page ${page.number}<br />
+          (published ${page.published.strftime('%A %d-%b-%y')})
         </a>
       </div>
     </div>

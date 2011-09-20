@@ -71,6 +71,7 @@
     </div>
   </div>
   <div class="grid_12" id="content">
+    <h3 class="comic">Issue #${page.issue_number} - ${page.issue.title}, Page ${page.number} of ${len(page.issue.pages)}</h3>
     <img class="comic" src="${tg.url('/comics/png/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}" />
   </div>
   <div class="prefix_2 grid_8 suffix_2" id="menu3">
