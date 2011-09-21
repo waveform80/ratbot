@@ -4,7 +4,7 @@
 import logging
 from tg import config
 from ratbot import model
-
+from migrate.versioning.schema import ControlledSchema
 import transaction
 
 
@@ -34,6 +34,21 @@ def bootstrap(command, conf, vars):
 
         model.DBSession.add(p)
 
+        g = model.Group()
+        g.group_name = u'authors'
+        g.display_name = u'Authors group'
+
+        g.users.append(u)
+
+        model.DBSession.add(g)
+
+        p = model.Permission()
+        p.permission_name = u'author'
+        p.description = u'This permission gives the right to publish news and comics to the bearer'
+        p.groups.append(g)
+
+        model.DBSession.add(p)
+
         c = model.Comic()
         c.id = u'mms'
         c.title = u'Major Mass Spec'
@@ -51,6 +66,10 @@ def bootstrap(command, conf, vars):
         c.title = u'Miscellaneous'
 
         model.DBSession.add(c)
+
+        schema = ControlledSchema(config['pylons.app_globals'].sa_engine, 'migration')
+        print 'Setting database version to %s' % schema.repository.latest
+        schema.update_repository_table(0, schema.repository.latest)
 
         model.DBSession.flush()
     except IntegrityError:

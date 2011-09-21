@@ -11,7 +11,7 @@
   <title>
     <py:choose test="method">
     <py:when test="'new_permission'">New Permission</py:when>
-    <py:otherwise>Alter Permission &quot;${value['permission_name']}&quot;</py:otherwise>
+    <py:otherwise>Alter Permission <q>${value['permission_name']}</q></py:otherwise>
     </py:choose>
   </title>
   <script type="text/javascript">
@@ -26,7 +26,7 @@
     <h3>
       <py:choose test="method">
       <py:when test="'new_permission'">New Permission</py:when>
-      <py:otherwise>Alter Permission &quot;${value['permission_name']}&quot;</py:otherwise>
+      <py:otherwise>Alter Permission <q>${value['permission_name']}</q></py:otherwise>
       </py:choose>
     </h3>
     <div py:replace="tmpl_context.form(value, child_args=dict(

@@ -11,7 +11,7 @@
   <title>
     <py:choose test="method">
     <py:when test="'new_comic'">New Comic</py:when>
-    <py:otherwise>Alter Comic &quot;${value['title']}&quot;</py:otherwise>
+    <py:otherwise>Alter Comic <q>${value['title']}</q></py:otherwise>
     </py:choose>
   </title>
   <script type="text/javascript">
@@ -26,7 +26,7 @@
     <h3>
       <py:choose test="method">
       <py:when test="'new_comic'">New Comic</py:when>
-      <py:otherwise>Alter Comic &quot;${value['title']}&quot;</py:otherwise>
+      <py:otherwise>Alter Comic <q>${value['title']}</q></py:otherwise>
       </py:choose>
     </h3>
     <div py:replace="tmpl_context.form(value)">Input Form</div>

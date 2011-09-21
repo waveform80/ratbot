@@ -25,6 +25,11 @@
     </div>
     <div class="clear"></div>
     <h3>News</h3>
+    <div class="news" py:for="article in news">
+      <h4>${article.title}</h4>
+      <h5>Posted ${article.created.strftime('%A, %d-%b-%y %H:%M:%S')}<py:if test="article.author"> by ${article.auth_user.display_name}</py:if></h5>
+      ${XML('&lt;div class="article"&gt;%s&lt;/div&gt;' % article.content)}
+    </div>
   </div>
 </body>
 </html>

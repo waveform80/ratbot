@@ -6,7 +6,7 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.model import DBSession, Page
+from ratbot.model import DBSession, News, Page
 from ratbot.controllers.admin import AdminController
 from ratbot.controllers.error import ErrorController
 from ratbot.controllers.comic import ComicController
@@ -24,12 +24,14 @@ class RootController(BaseController):
 
     @expose('ratbot.templates.index')
     def index(self):
+        news = DBSession.query(News).order_by(News.created.desc()).limit(5)
         pages = list(DBSession.query(Page).order_by(Page.published.desc()).limit(3))
         while len(pages) < 3:
             pages.append(None)
         return dict(
             method='index',
             pages=pages,
+            news=news,
         )
 
     @expose('ratbot.templates.bio')

@@ -11,7 +11,7 @@
   <title>
     <py:choose test="method">
     <py:when test="'new_page'">New Page</py:when>
-    <py:otherwise>Alter Page &quot;${value['comic_id']}-${value['issue_number']}-${value['number']}&quot;</py:otherwise>
+    <py:otherwise>Alter Page <q>${value['comic_id']}-${value['issue_number']}-${value['number']}</q></py:otherwise>
     </py:choose>
   </title>
   <script type="text/javascript">
@@ -38,7 +38,7 @@
     <h3>
       <py:choose test="method">
       <py:when test="'new_page'">New Page</py:when>
-      <py:otherwise>Alter Page &quot;${value['comic_id']}-${value['issue_number']}-${value['number']}&quot;</py:otherwise>
+      <py:otherwise>Alter Page <q>${value['comic_id']}-${value['issue_number']}-${value['number']}</q></py:otherwise>
       </py:choose>
     </h3>
     <div py:replace="tmpl_context.form(value, child_args=dict(comic_id=dict(options=comic_ids)))">Input Form</div>

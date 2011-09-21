@@ -10,6 +10,7 @@ from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint,
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
 from sqlalchemy.orm import relationship, synonym
 from ratbot.model import DeclarativeBase, metadata, DBSession
+from ratbot.model.auth import User
 from PIL import Image
 try:
     from cStringIO import StringIO
@@ -17,7 +18,30 @@ except ImportError:
     from StringIO import StringIO
 
 
-__all__ = ['Comic', 'Issue', 'Page']
+__all__ = ['Comic', 'Issue', 'Page', 'News']
+
+
+class News(DeclarativeBase):
+    """
+    News article definition.
+    """
+
+    __tablename__ = 'news'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(100), nullable=False)
+    content = Column(Unicode, nullable=False)
+    published = Column(DateTime, default=datetime.now, nullable=False)
+    created = Column(DateTime, default=datetime.now, nullable=False)
+    author = Column(Unicode(100), ForeignKey('users.user_name',
+        ondelete="SET NULL", onupdate="CASCADE"))
+    auth_user = relationship(User, backref='articles')
+
+    def __repr__(self):
+        return '<News: id=%d>' % self.id
+
+    def __unicode__(self):
+        return self.title
 
 
 class Page(DeclarativeBase):

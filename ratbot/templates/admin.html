@@ -13,6 +13,28 @@
 
 <body>
   <div class="grid_12" id="content">
+    <h3>News</h3>
+    <a href="${tg.url('/admin/new_news')}">[New Article]</a>
+    <py:choose test="news.count()">
+    <py:when test="0">
+    <p>No news found in the database</p>
+    </py:when>
+    <py:otherwise>
+    <table>
+      <thead><tr><th>ID</th><th>Title</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr py:for="i, article in enumerate(news)" class="${('even', 'odd')[i % 2]}">
+          <td>${article.id}</td>
+          <td>${article.title}</td>
+          <td>
+            <a href="${tg.url('/admin/alter_news/%d' % article.id)}">[Alter Article]</a>
+            <a href="${tg.url('/admin/remove_news/%d' % article.id)}">[Remove Article]</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </py:otherwise>
+    </py:choose>
     <h3>Comics</h3>
     <a href="${tg.url('/admin/new_comic')}">[New Comic]</a>
     <py:choose test="comics.count()">
@@ -45,7 +67,7 @@
     <table>
       <thead><tr><th>Comic</th><th>Number</th><th>Title</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="issue in issues">
+        <tr py:for="i, issue in enumerate(issues)" class="${('even', 'odd')[i % 2]}">
           <td>${issue.comic_id}</td>
           <td>${issue.number}</td>
           <td>${issue.title}</td>
@@ -68,7 +90,7 @@
     <table>
       <thead><tr><th>Comic</th><th>Issue</th><th>Number</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="page in pages">
+        <tr py:for="i, page in enumerate(pages)" class="${('even', 'odd')[i % 2]}">
           <td>${page.comic_id}</td>
           <td>${page.issue_number}</td>
           <td>${page.number}</td>
@@ -91,7 +113,7 @@
     <table>
       <thead><tr><th>User</th><th>E-mail</th><th>Full name</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="user in users">
+        <tr py:for="i, user in enumerate(users)" class="${('even', 'odd')[i % 2]}">
           <td>${user.user_name}</td>
           <td>${user.email_address}</td>
           <td>${user.display_name}</td>
@@ -114,7 +136,7 @@
     <table>
       <thead><tr><th>Group</th><th>Display name</th><th>Users</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="group in groups">
+        <tr py:for="i, group in enumerate(groups)" class="${('even', 'odd')[i % 2]}">
           <td>${group.group_name}</td>
           <td>${group.display_name}</td>
           <td>${len(group.users)}</td>
@@ -137,7 +159,7 @@
     <table>
       <thead><tr><th>Permission</th><th>Description</th><th>Groups</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr py:for="permission in permissions">
+        <tr py:for="i, permission in enumerate(permissions)" class="${('even', 'odd')[i % 2]}">
           <td>${permission.permission_name}</td>
           <td>${permission.description}</td>
           <td>${len(permission.groups)}</td>

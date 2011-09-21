@@ -60,4 +60,4 @@ def init_model(engine):
 
 # Import your model modules here.
 from ratbot.model.auth import User, Group, Permission
-from ratbot.model.comics import Comic, Issue, Page
+from ratbot.model.comics import Comic, Issue, Page, News

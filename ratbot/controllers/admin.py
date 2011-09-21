@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """Comic Controller"""
 
-from tg import expose, validate, flash, require, redirect, tmpl_context, url
+from tg import expose, validate, flash, require, redirect, request, tmpl_context, url
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form
+from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form, new_news_form, alter_news_form
 from ratbot.widgets.auth import new_user_form, new_group_form, new_permission_form, alter_user_form, alter_group_form, alter_permission_form
-from ratbot.model import DBSession, Comic, Issue, Page, User, Group, Permission
+from ratbot.model import DBSession, News, Comic, Issue, Page, User, Group, Permission
 import transaction
 
 __all__ = ['AdminController']
@@ -28,6 +28,7 @@ class AdminController(BaseController):
     def index(self):
         return dict(
             method='admin_index',
+            news=DBSession.query(News).order_by(News.id),
             comics=DBSession.query(Comic).order_by(Comic.id),
             issues=DBSession.query(Issue).order_by(Issue.comic_id, Issue.number),
             pages=DBSession.query(Page).order_by(Page.comic_id, Page.issue_number, Page.number),
@@ -243,6 +244,71 @@ class AdminController(BaseController):
         flash('Permission deleted successfully')
         redirect('index')
 
+    @expose('ratbot.templates.news_form')
+    def new_news(self, **kw):
+        tmpl_context.form = new_news_form
+        return dict(
+            method='new_news',
+            value=kw,
+        )
+
+    @expose('ratbot.templates.news_form')
+    def alter_news(self, id, **kw):
+        tmpl_context.form = alter_news_form
+        if not kw:
+            value = DBSession.query(News).filter(News.id==id).one()
+        else:
+            value = kw
+        return dict(
+            method='alter_news',
+            value=value,
+        )
+
+    @expose('ratbot.templates.confirmation')
+    def remove_news(self, id):
+        news = DBSession.query(News).filter(News.id==id).one()
+        return dict(
+            method='remove_news',
+            prompt='Are you sure you wish to delete article "%s"?' % news.title,
+            params=dict(id=id),
+            action=url('/admin/delete_news'),
+        )
+
+    @validate(new_news_form, error_handler=new_news)
+    @expose()
+    def insert_news(self, **kw):
+        news = News()
+        news.title = kw['title']
+        news.published = kw['published']
+        news.content = kw['content']
+        news.author = request.identity['repoze.who.userid']
+        DBSession.add(news)
+        DBSession.flush()
+        transaction.commit()
+        flash('News article added successfully')
+        redirect('index')
+
+    @validate(alter_news_form, error_handler=alter_news)
+    @expose()
+    def update_news(self, **kw):
+        news = DBSession.query(News).filter(News.id==kw['id']).one()
+        news.title = kw['title']
+        news.published = kw['published']
+        news.content = kw['content']
+        DBSession.flush()
+        transaction.commit()
+        flash('News article updated successfully')
+        redirect('index')
+
+    @expose()
+    def delete_news(self, id, confirm):
+        news = DBSession.query(News).filter(Comic.id==id).one()
+        DBSession.delete(news)
+        DBSession.flush()
+        transaction.commit()
+        flash('News article deleted successfully')
+        redirect('index')
+
     @expose('ratbot.templates.comic_form')
     def new_comic(self, **kw):
         tmpl_context.form = new_comic_form
@@ -280,6 +346,7 @@ class AdminController(BaseController):
         comic.id = kw['id']
         comic.title = kw['title']
         comic.description = kw['description']
+        comic.author = request.identity['repoze.who.userid']
         DBSession.add(comic)
         DBSession.flush()
         transaction.commit()
@@ -380,7 +447,7 @@ class AdminController(BaseController):
         flash('Issue deleted successfully')
         redirect('index')
 
-    @expose('ratbot.templates.new_page_form')
+    @expose('ratbot.templates.page_form')
     def new_page(self, **kw):
         tmpl_context.form = new_page_form
         return dict(
