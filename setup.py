@@ -33,7 +33,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "PIL",
+        "Pillow",
         "TurboGears2 >= 2.1.2",
         "Genshi",
         "zope.sqlalchemy >= 0.4",
@@ -49,7 +49,6 @@ setup(
         "repoze.who==1.0.19",
         "tgext.admin >= 0.3.9",
         "tw.forms",
-        "PIL",
     ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
