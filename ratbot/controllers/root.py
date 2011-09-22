@@ -6,10 +6,11 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.model import DBSession, News, Page
+from ratbot.model import DBSession, News, Issue, Page
 from ratbot.controllers.admin import AdminController
 from ratbot.controllers.error import ErrorController
 from ratbot.controllers.comic import ComicController
+from sqlalchemy import func
 
 __all__ = ['RootController']
 
@@ -25,12 +26,16 @@ class RootController(BaseController):
     @expose('ratbot.templates.index')
     def index(self):
         news = DBSession.query(News).order_by(News.created.desc()).limit(5)
-        pages = list(DBSession.query(Page).order_by(Page.published.desc()).limit(3))
-        while len(pages) < 3:
-            pages.append(None)
+        issues = list(DBSession.query(Issue, func.max(Page.published)).\
+            join(Page).\
+            group_by(Issue).\
+            order_by(func.max(Page.published).desc()).\
+            limit(3).all())
+        while len(issues) < 3:
+            issues.append((None, None))
         return dict(
             method='index',
-            pages=pages,
+            issues=issues,
             news=news,
         )
 

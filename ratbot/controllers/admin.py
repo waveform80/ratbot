@@ -440,7 +440,9 @@ class AdminController(BaseController):
 
     @expose()
     def delete_issue(self, comic_id, number, confirm):
-        issue = DBSession.query(Issue).filter(Issue.comic_id==comic_id).filter(Issue.number==number).one()
+        issue = DBSession.query(Issue).\
+            filter(Issue.comic_id==comic_id).\
+            filter(Issue.number==number).one()
         DBSession.delete(issue)
         DBSession.flush()
         transaction.commit()
@@ -454,6 +456,19 @@ class AdminController(BaseController):
             method='new_page',
             value=kw,
             comic_ids=DBSession.query(Comic.id, Comic.title),
+        )
+
+    @expose('ratbot.templates.confirmation')
+    def remove_issue(self, comic_id, issue_number, number):
+        return dict(
+            method='remove_page',
+            prompt='Are you sure you wish to delete page %d of issue %d of comic "%s"?' % (int(number), int(issue_number), comic_id),
+            params=dict(
+                comic_id=comic_id,
+                issue_number=int(issue_number),
+                number=int(number)
+            ),
+            action=url('/admin/delete_page'),
         )
 
     @validate(new_page_form, error_handler=new_page)
@@ -470,5 +485,17 @@ class AdminController(BaseController):
         DBSession.flush()
         transaction.commit()
         flash('Page added successfully')
+        redirect('index')
+
+    @expose()
+    def delete_issue(self, comic_id, issue_number, number, confirm):
+        page = DBSession.query(Page).\
+            filter(Page.comic_id==comic_id).\
+            filter(Page.issue_number==issue_number).\
+            filter(Page.number==number).one()
+        DBSession.delete(page)
+        DBSession.flush()
+        transaction.commit()
+        flash('Page deleted successfully')
         redirect('index')
 

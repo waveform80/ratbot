@@ -13,13 +13,13 @@
 
 <body>
   <div class="grid_12 comic" id="content">
-    <h3>Latest pages</h3>
-    <div class="grid_4 ${('alpha', '', 'omega')[i]}" py:for="i, page in enumerate(pages)">
-      <div py:if="page" class="thumb">
-        <a href="${tg.url('/comics/view/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">
-          <img src="${tg.url('/comics/thumb/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}" /><br />
-          ${page.issue.comic.title}, Issue ${page.issue.number}, Page ${page.number}<br />
-          (published ${page.published.strftime('%A %d-%b-%y')})
+    <h3>Latest issues</h3>
+    <div class="grid_4 ${('alpha', '', 'omega')[i]}" py:for="i, (issue, published) in enumerate(issues)">
+      <div py:if="issue" class="thumb">
+        <a href="${tg.url('/comics/view/%s/%d/1' % (issue.comic_id, issue.number))}">
+          <img src="${tg.url('/comics/thumb/%s/%d/1' % (issue.comic_id, issue.number))}" /><br />
+          ${issue.comic.title}, Issue ${issue.number}<br />
+          (published ${published.strftime('%A %d-%b-%Y')})
         </a>
       </div>
     </div>
@@ -27,7 +27,7 @@
     <h3>News</h3>
     <div class="news" py:for="article in news">
       <h4>${article.title}</h4>
-      <h5>Posted ${article.created.strftime('%A, %d-%b-%y %H:%M:%S')}<py:if test="article.author"> by ${article.auth_user.display_name}</py:if></h5>
+      <h5>Posted ${article.created.strftime('%A, %d-%b-%Y %H:%M:%S')}<py:if test="article.author"> by ${article.auth_user.display_name}</py:if></h5>
       ${XML('&lt;div class="article"&gt;%s&lt;/div&gt;' % article.content)}
     </div>
   </div>
