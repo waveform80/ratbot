@@ -27,6 +27,10 @@ ol { list-style: decimal; }
 ul { list-style: disc; }
 li { margin-left: 30px; }
 
+q { quotes: '“' '”'; }
+q:before { content: open-quote; }
+q:after  { content: close-quote; }
+
 p, dl, hr, h1, h2, h3, h4, h5, h6,
 ol, ul, pre, table, address, fieldset, figure {
   margin-bottom: 20px;
@@ -121,6 +125,16 @@ a:hover { text-decoration: underline; }
 #content .news h4 { margin-bottom: 0; }
 #content .news h5 { font-size: 11px; font-weight: normal; }
 #content .news .article { margin-bottom: 20px; }
+#content .bio {
+  background: white url('/images/holly.jpg') no-repeat;
+  color: black;
+  padding: 2em 2em 1em 380px;
+  height: 400px;
+}
+#content .bio a { color: black; }
+#content.links {
+  background: #303040 url('/images/logos.png') no-repeat bottom right;
+}
 
 .fielderror { font-weight: bold; color: #f55; }
 label { margin-right: 20px; }

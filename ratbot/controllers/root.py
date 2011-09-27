@@ -43,6 +43,10 @@ class RootController(BaseController):
     def bio(self):
         return dict(method='bio')
 
+    @expose('ratbot.templates.links')
+    def links(self):
+        return dict(method='links')
+
     @expose('ratbot.templates.login')
     def login(self, came_from=url('/')):
         """Start the user login."""

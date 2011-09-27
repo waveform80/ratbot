@@ -4,7 +4,6 @@
 import logging
 from tg import config
 from ratbot import model
-from migrate.versioning.schema import ControlledSchema
 import transaction
 
 
@@ -67,13 +66,18 @@ def bootstrap(command, conf, vars):
 
         model.DBSession.add(c)
 
+        model.DBSession.flush()
+
+        # Set the migration version table to the latest version
+        from migrate.versioning.schema import ControlledSchema
         schema = ControlledSchema(config['pylons.app_globals'].sa_engine, 'migration')
         print 'Setting database version to %s' % schema.repository.latest
         schema.update_repository_table(0, schema.repository.latest)
-
-        model.DBSession.flush()
     except IntegrityError:
         print 'Warning, there was a problem adding your initial data; it may have already been added'
+        transaction.abort()
+        raise
+    except:
         transaction.abort()
         raise
     else:
