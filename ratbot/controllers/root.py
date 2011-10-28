@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 
+import logging
+from datetime import datetime
 from tg import expose, flash, require, url, request, redirect
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
@@ -28,6 +30,7 @@ class RootController(BaseController):
         news = DBSession.query(News).order_by(News.created.desc()).limit(5)
         issues = list(DBSession.query(Issue, func.max(Page.published)).\
             join(Page).\
+            filter(Page.published<=datetime.now()).\
             group_by(Issue).\
             order_by(func.max(Page.published).desc()).\
             limit(3).all())

@@ -43,7 +43,8 @@ class ComicController(BaseController):
             page=DBSession.query(Page).\
                 filter(Page.comic_id==comic).\
                 filter(Page.issue_number==issue).\
-                filter(Page.number==page).one()
+                filter(Page.number==page).\
+                filter(Page.published<=datetime.datetime.now()).one()
             return page.thumbnail
         except NoResultFound:
             abort(404)
@@ -54,7 +55,8 @@ class ComicController(BaseController):
             page=DBSession.query(Page).\
                 filter(Page.comic_id==comic).\
                 filter(Page.issue_number==issue).\
-                filter(Page.number==page).one()
+                filter(Page.number==page).\
+                filter(Page.published<=datetime.datetime.now()).one()
             return page.bitmap
         except NoResultFound:
             abort(404)
@@ -65,7 +67,8 @@ class ComicController(BaseController):
             page=DBSession.query(Page).\
                 filter(Page.comic_id==comic).\
                 filter(Page.issue_number==issue).\
-                filter(Page.number==page).one()
+                filter(Page.number==page).\
+                filter(Page.published<=datetime.datetime.now()).one()
             return page.vector
         except NoResultFound:
             abort(404)
