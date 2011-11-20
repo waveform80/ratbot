@@ -485,6 +485,7 @@ class AdminController(BaseController):
         page.vector = kw['vector'].value
         DBSession.add(page)
         DBSession.flush()
+        page.issue.invalidate()
         transaction.commit()
         flash('Page added successfully')
         redirect('index')
@@ -496,6 +497,7 @@ class AdminController(BaseController):
             filter(Page.comic_id==comic_id).\
             filter(Page.issue_number==issue_number).\
             filter(Page.number==number).one()
+        page.issue.invalidate()
         DBSession.delete(page)
         DBSession.flush()
         transaction.commit()

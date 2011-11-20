@@ -82,7 +82,6 @@ class Page(DeclarativeBase):
         return self._bitmap
 
     def _set_bitmap(self, value):
-        logging.warning('_set_bitmap')
         self._bitmap = value
         # Scale the bitmap down to a thumbnail
         THUMB_MAXWIDTH = 200
@@ -103,7 +102,6 @@ class Page(DeclarativeBase):
         return self._vector
 
     def _set_vector(self, value):
-        logging.warning('_set_vector')
         self._vector = value
         # Load the SVG file
         svg = rsvg.Handle()
@@ -183,8 +181,15 @@ class Issue(DeclarativeBase):
         return '%s, issue #%d, "%s"' % (
                 self.comic.title, self.number, self.title)
 
+    def invalidate(self):
+        # Called whenever the pages change to expire the cached archive and PDF
+        # columns
+        self._archive = None
+        self._archive_updated = None
+        self._pdf = None
+        self._pdf_updated = None
+
     def _get_archive(self):
-        logging.warning('_get_archive')
         if not self.archive_updated or self.archive_updated < self.published:
             if not self.published_pages:
                 self._archive = None
@@ -215,7 +220,6 @@ class Issue(DeclarativeBase):
         raise NotImplementedError
 
     def _get_pdf(self):
-        logging.warning('_get_pdf')
         PDF_DPI = 72.0
         if not self.pdf_updated or self.pdf_updated < self.published:
             if not self.published_pages:
