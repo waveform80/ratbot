@@ -34,6 +34,7 @@ setup(
     #url='',
     install_requires=[
         "Pillow",
+        "pyPdf",
         "TurboGears2 >= 2.1.2",
         "Genshi",
         "zope.sqlalchemy >= 0.4",

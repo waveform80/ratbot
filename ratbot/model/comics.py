@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import sys
 import zipfile
+import logging
 
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
@@ -81,6 +82,7 @@ class Page(DeclarativeBase):
         return self._bitmap
 
     def _set_bitmap(self, value):
+        logging.warning('_set_bitmap')
         self._bitmap = value
         # Scale the bitmap down to a thumbnail
         THUMB_MAXWIDTH = 200
@@ -96,13 +98,12 @@ class Page(DeclarativeBase):
             s = StringIO()
             im.save(s, 'PNG', optimize=1)
         self.thumbnail = s.getvalue()
-        # Regenerate the issue's archive
-        self.issue._generate_archive()
 
     def _get_vector(self):
         return self._vector
 
     def _set_vector(self, value):
+        logging.warning('_set_vector')
         self._vector = value
         # Load the SVG file
         svg = rsvg.Handle()
@@ -117,10 +118,9 @@ class Page(DeclarativeBase):
         s = StringIO()
         surface.write_to_png(s)
         self.bitmap = s.getvalue()
-        # Regenerate the issue's PDF
-        self.issue._generate_pdf()
 
     bitmap = synonym('_bitmap', descriptor=property(_get_bitmap, _set_bitmap))
+    vector = synonym('_vector', descriptor=property(_get_vector, _set_vector))
 
     @property
     def first(self):
@@ -170,8 +170,10 @@ class Issue(DeclarativeBase):
     description = Column(Unicode, default=u'', nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     pages = relationship('Page', backref='issue', order_by=[Page.number])
-    archive = Column(LargeBinary(10485760))
-    pdf = Column(LargeBinary(10485760))
+    _archive = Column('archive', LargeBinary(10485760))
+    _archive_updated = Column('archive_updated', DateTime)
+    _pdf = Column('pdf', LargeBinary(10485760))
+    _pdf_updated = Column('pdf_updated', DateTime)
 
     def __repr__(self):
         return '<Issue: comic=%s, issue=%d>' % (
@@ -181,49 +183,100 @@ class Issue(DeclarativeBase):
         return '%s, issue #%d, "%s"' % (
                 self.comic.title, self.number, self.title)
 
-    def _generate_archive(self):
-        s = StringIO()
-        # We don't bother with compression here as PNGs are already compressed
-        archive = zipfile.ZipFile(s, 'w', zipfile.ZIP_STORED)
-        archive.comment = '%s - Issue #%d - %s\n\n%s' % (self.comic.title, self.number, self.title, self.description)
-        for page in self.published_pages:
-            archive.writestr('%02d.png' % page.number, page.bitmap)
-        self.archive = s.getvalue()
+    def _get_archive(self):
+        logging.warning('_get_archive')
+        if not self.archive_updated or self.archive_updated < self.published:
+            if not self.published_pages:
+                self._archive = None
+            else:
+                s = StringIO()
+                # We don't bother with compression here as PNGs are already
+                # compressed
+                archive = zipfile.ZipFile(s, 'w', zipfile.ZIP_STORED)
+                archive.comment = '%s - Issue #%d - %s\n\n%s' % (
+                        self.comic.title,
+                        self.number,
+                        self.title,
+                        self.description)
+                for page in self.published_pages:
+                    archive.writestr('%02d.png' % page.number, page.bitmap)
+                archive.close()
+                self._archive = s.getvalue()
+            self._archive_updated = datetime.now()
+        return self._archive
 
-    def _generate_pdf(self):
+    def _set_archive(self, value):
+        raise NotImplementedError
+
+    def _get_archive_updated(self):
+        return self._archive_updated
+
+    def _set_archive_updated(self, value):
+        raise NotImplementedError
+
+    def _get_pdf(self):
+        logging.warning('_get_pdf')
         PDF_DPI = 72.0
-        # Use cairo to generate a PDF from each page's SVG
-        # XXX What if a page only has a bitmap?
-        s = StringIO()
-        surface = cairo.PDFSurface(s, PDF_DPI / svg.props.dpi_x * svg.props.width, PDF_DPI / svg.props.dpi_y * svg.props.height)
-        context = cairo.Context(surface)
-        context.scale(PDF_DPI / svg.props.dpi_x, PDF_DPI / svg.props.dpi_y)
-        for page in self.published_pages:
-            svg = rsvg.Handle()
-            svg.write(page.vector)
-            svg.close()
-            svg.render_cairo(context)
-            svg.show_page()
-        surface.finish()
-        # Use PyPdf to rewrite the metadata on the file (cairo provides no PDF
-        # metadata manipulation). This involves generating a new PDF with new
-        # metadata and copying the pages over
-        s.seek(0)
-        pdf_in = PdfFileReader(s)
-        pdf_out = PdfFileWriter()
-        pdf_info = pdf_out._info.getObject()
-        pdf_info.update({
-            NameObject('/Title'): createStringObject(u'%s - Issue #%d - %s' % (self.comic.title, self.number, self.title)),
-            NameObject('/Author'): createStringObject(self.comic.author.display_name),
-            NameObject('/Subject'): createStringObject(pdf_in.documentInfo.subject),
-            NameObject('/Creator'): createStringObject(pdf_in.documentInfo.creator),
-            NameObject('/Producer'): createStringObject(pdf_in.documentInfo.producer),
-        })
-        for page in range(pdf_in.getNumPages()):
-            pdf_out.addPage(pdf_in.getPage(page))
-        t = StringIO()
-        pdf_out.write(t)
-        self.pdf = t.getvalue()
+        if not self.pdf_updated or self.pdf_updated < self.published:
+            if not self.published_pages:
+                self._pdf = None
+            else:
+                # Use cairo to generate a PDF from each page's SVG. To create
+                # the PDF surface we need the SVG's DPI and size. Here we
+                # simply assume that all SVGs have the same DPI and size as the
+                # first in the issue
+                # XXX What if a page only has a bitmap?
+                pdf_data = StringIO()
+                for page in self.published_pages:
+                    svg = rsvg.Handle()
+                    svg.write(page.vector)
+                    svg.close()
+                    surface = cairo.PDFSurface(pdf_data,
+                        PDF_DPI / svg.props.dpi_x * svg.props.width,
+                        PDF_DPI / svg.props.dpi_y * svg.props.height)
+                    context = cairo.Context(surface)
+                    context.scale(PDF_DPI / svg.props.dpi_x, PDF_DPI / svg.props.dpi_y)
+                    break
+                for page in self.published_pages:
+                    svg = rsvg.Handle()
+                    svg.write(page.vector)
+                    svg.close()
+                    svg.render_cairo(context)
+                    context.show_page()
+                surface.finish()
+                # Use PyPdf to rewrite the metadata on the file (cairo provides
+                # no PDF metadata manipulation). This involves generating a new
+                # PDF with new metadata and copying the pages over
+                pdf_data.seek(0)
+                pdf_in = PdfFileReader(pdf_data)
+                pdf_out = PdfFileWriter()
+                pdf_info = pdf_out._info.getObject()
+                pdf_info.update(pdf_in.documentInfo)
+                pdf_info.update({
+                    NameObject('/Title'): createStringObject(u'%s - Issue #%d - %s' % (self.comic.title, self.number, self.title)),
+                    NameObject('/Author'): createStringObject(self.comic.author.display_name if self.comic.author else u'Anonymous'),
+                })
+                for page in range(pdf_in.getNumPages()):
+                    pdf_out.addPage(pdf_in.getPage(page))
+                s = StringIO()
+                pdf_out.write(s)
+                self._pdf = s.getvalue()
+            self._pdf_updated = datetime.now()
+        return self._pdf
+
+    def _set_pdf(self, value):
+        raise NotImplementedError
+
+    def _get_pdf_updated(self):
+        return self._pdf_updated
+
+    def _set_pdf_updated(self, value):
+        raise NotImplementedError
+
+    archive = synonym('_archive', descriptor=property(_get_archive, _set_archive))
+    archive_updated = synonym('_archive_updated', descriptor=property(_get_archive_updated, _set_archive_updated))
+    pdf = synonym('_pdf', descriptor=property(_get_pdf, _set_pdf))
+    pdf_updated = synonym('_pdf_updated', descriptor=property(_get_pdf_updated, _set_pdf_updated))
 
     @property
     def published(self):
@@ -254,15 +307,6 @@ class Comic(DeclarativeBase):
     created = Column(DateTime, default=datetime.now, nullable=False)
     author = Column(Unicode(100), ForeignKey('users.user_name'))
     issues = relationship('Issue', backref='comic', order_by=[Issue.number])
-    archive = Column(LargeBinary(10485760))
-
-    @property
-    def zip(self):
-        pass
-
-    @property
-    def pdf(self):
-        pass
 
     def __repr__(self):
         return '<Comic: id=%s>' % self.id

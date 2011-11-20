@@ -53,8 +53,7 @@ class PageForm(TableForm):
         Spacer(),
         CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Select the date and time to publish the page'),
         Spacer(),
-        FileField('vector', help_text='Select the file containing the vector (SVG) variant of the page'),
-        FileField('bitmap', help_text='Select the file containing the bitmap (PNG) variant of the page'),
+        FileField('vector', label_text='Image', help_text='Select the file containing the vector (SVG) image of the page'),
     ]
 
 new_news_form = NewsForm('new_news_form', action=url('/admin/insert_news'))

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Comic Controller"""
 
+import logging
+
 from tg import expose, validate, flash, require, redirect, request, tmpl_context, url
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
@@ -459,7 +461,7 @@ class AdminController(BaseController):
         )
 
     @expose('ratbot.templates.confirmation')
-    def remove_issue(self, comic_id, issue_number, number):
+    def remove_page(self, comic_id, issue_number, number):
         return dict(
             method='remove_page',
             prompt='Are you sure you wish to delete page %d of issue %d of comic "%s"?' % (int(number), int(issue_number), comic_id),
@@ -474,13 +476,13 @@ class AdminController(BaseController):
     @validate(new_page_form, error_handler=new_page)
     @expose()
     def insert_page(self, **kw):
+        logging.warning('insert_page')
         page = Page()
         page.comic_id = kw['comic_id']
         page.issue_number = kw['issue_number']
         page.number = kw['number']
         page.published = kw['published']
         page.vector = kw['vector'].value
-        page.bitmap = kw['bitmap'].value
         DBSession.add(page)
         DBSession.flush()
         transaction.commit()
@@ -488,7 +490,8 @@ class AdminController(BaseController):
         redirect('index')
 
     @expose()
-    def delete_issue(self, comic_id, issue_number, number, confirm):
+    def delete_page(self, comic_id, issue_number, number, confirm):
+        logging.warning('delete_page')
         page = DBSession.query(Page).\
             filter(Page.comic_id==comic_id).\
             filter(Page.issue_number==issue_number).\
