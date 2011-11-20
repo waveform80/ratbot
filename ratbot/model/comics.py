@@ -286,8 +286,8 @@ class Issue(DeclarativeBase):
     def published(self):
         return DBSession.query(func.max(Page.published)).\
             filter(Page.comic_id==self.comic_id).\
-            filter(Page.issue_number==self.numebr).\
-            filter(Page.published<=datetime.now()).one()
+            filter(Page.issue_number==self.number).\
+            filter(Page.published<=datetime.now()).one()[0]
 
     @property
     def published_pages(self):
