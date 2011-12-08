@@ -41,6 +41,9 @@ class IssueForm(TableForm):
         Spacer(),
         TextField('title', size=50, validator=NotEmpty, label_text='Title', help_text='Specify the title for the issue'),
         TextArea('description', validator=NotEmpty, label_text='Description', help_text='Specify the description for the issue'),
+        Spacer(),
+        FileField('archive', label_text='Archive', help_text='Select the file containing the archive of the issue (optional - will be generated from page bitmaps if unspecified'),
+        FileField('pdf', label_text='PDF', help_text='Select the PDF file of the issue (optional - will be generated from the page vectors if unspecified'),
     ]
 
 class PageForm(TableForm):
@@ -53,7 +56,9 @@ class PageForm(TableForm):
         Spacer(),
         CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Select the date and time to publish the page'),
         Spacer(),
-        FileField('vector', label_text='Image', help_text='Select the file containing the vector (SVG) image of the page'),
+        FileField('vector', label_text='Vector Image', help_text='Select the file containing the vector (SVG) image of the page'),
+        FileField('bitmap', label_text='Bitmap Image', help_text='Select the file containing the bitmap (PNG) image of the page (optional - will be generated from the vector if unspecified'),
+        FileField('thumbnail', label_text='Thumbnail Image', help_text='Select the file containing the thumbnail (PNG) image of the page (optional - will be generated from the bitmap if unspecified'),
     ]
 
 new_news_form = NewsForm('new_news_form', action=url('/admin/insert_news'))

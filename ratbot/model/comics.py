@@ -67,8 +67,11 @@ class Page(DeclarativeBase):
     created = Column(DateTime, default=datetime.now, nullable=False)
     published = Column(DateTime, default=datetime.now, nullable=False)
     _vector = Column('vector', LargeBinary(10485760))
+    _vector_updated = Column('vector_updated', DateTime)
     _bitmap = Column('bitmap', LargeBinary(10485760))
-    thumbnail = Column(LargeBinary(1048576))
+    _bitmap_updated = Column('bitmap_updated', DateTime)
+    _thumbnail = Column('thumbnail', LargeBinary(1048576))
+    _thumbnail_updated = Column('thumbnail_updated', DateTime)
 
     def __repr__(self):
         return '<Page: comic=%s, issue=%d, page=%d>' % (
@@ -78,47 +81,80 @@ class Page(DeclarativeBase):
         return '%s, issue #%d, "%s", page #%d' % (
                 self.issue.comic.title, self.issue.number, self.issue.title, self.page_number)
 
+    def _get_thumbnail(self):
+        THUMB_MAXWIDTH = 200
+        THUMB_MAXHEIGHT = 200
+        if not self.thumbnail_updated or self.thumbnail_updated < self.bitmap_updated:
+            # Scale the bitmap down to a thumbnail
+            s = StringIO(self.bitmap)
+            im = Image.open(s)
+            (w, h) = im.size
+            if w > THUMB_MAXWIDTH or h > THUMB_MAXHEIGHT:
+                scale = min(float(THUMB_MAXWIDTH) / w, float(THUMB_MAXHEIGHT) / h)
+                w = int(round(w * scale))
+                h = int(round(h * scale))
+                im = im.convert('RGB').resize((w, h), Image.ANTIALIAS)
+                s = StringIO()
+                im.save(s, 'PNG', optimize=1)
+            self._thumbnail = s.getvalue()
+        return self._thumbnail
+
+    def _set_thumbnail(self, value):
+        self._thumbnail = value
+        self._thumbnail_updated = datetime.now()
+
+    def _get_thumbnail_updated(self):
+        return self._thumbnail_updated
+
+    def _set_thumbnail_updated(self):
+        raise NotImplementedError
+
     def _get_bitmap(self):
+        BITMAP_WIDTH = 900
+        if not self.bitmap_updated or self.bitmap_updated < self.vector_updated:
+            # Load the SVG file
+            svg = rsvg.Handle()
+            svg.write(self.vector)
+            svg.close()
+            # Convert vector to the main bitmap value
+            surface = cairo.ImageSurface(cairo.FORMAT_RGB24, BITMAP_WIDTH, int(float(BITMAP_WIDTH) * svg.props.height / svg.props.width))
+            context = cairo.Context(surface)
+            context.scale(float(surface.get_width()) / svg.props.width, float(surface.get_height()) / svg.props.height)
+            svg.render_cairo(context)
+            s = StringIO()
+            surface.write_to_png(s)
+            self._bitmap = s.getvalue()
         return self._bitmap
 
     def _set_bitmap(self, value):
         self._bitmap = value
-        # Scale the bitmap down to a thumbnail
-        THUMB_MAXWIDTH = 200
-        THUMB_MAXHEIGHT = 200
-        s = StringIO(value)
-        im = Image.open(s)
-        (w, h) = im.size
-        if w > THUMB_MAXWIDTH or h > THUMB_MAXHEIGHT:
-            scale = min(float(THUMB_MAXWIDTH) / w, float(THUMB_MAXHEIGHT) / h)
-            w = int(round(w * scale))
-            h = int(round(h * scale))
-            im = im.convert('RGB').resize((w, h), Image.ANTIALIAS)
-            s = StringIO()
-            im.save(s, 'PNG', optimize=1)
-        self.thumbnail = s.getvalue()
+        self._bitmap_updated = datetime.now()
+
+    def _get_bitmap_updated(self):
+        return self._bitmap_updated
+
+    def _set_bitmap_updated(self):
+        raise NotImplementedError
 
     def _get_vector(self):
         return self._vector
 
     def _set_vector(self, value):
         self._vector = value
-        # Load the SVG file
-        svg = rsvg.Handle()
-        svg.write(value)
-        svg.close()
-        # Convert vector to the main bitmap value
-        BITMAP_WIDTH = 900
-        surface = cairo.ImageSurface(cairo.FORMAT_RGB24, BITMAP_WIDTH, int(float(BITMAP_WIDTH) * svg.props.height / svg.props.width))
-        context = cairo.Context(surface)
-        context.scale(float(surface.get_width()) / svg.props.width, float(surface.get_height()) / svg.props.height)
-        svg.render_cairo(context)
-        s = StringIO()
-        surface.write_to_png(s)
-        self.bitmap = s.getvalue()
+        self._vector_updated = datetime.now()
+
+    def _get_vector_updated(self):
+        return self._vector_updated
+
+    def _set_vector_updated(self):
+        raise NotImplementedError
 
     bitmap = synonym('_bitmap', descriptor=property(_get_bitmap, _set_bitmap))
+    bitmap_updated = synonym('_bitmap_updated', descriptor=property(_get_bitmap_updated, _set_bitmap_updated))
     vector = synonym('_vector', descriptor=property(_get_vector, _set_vector))
+    vector_updated = synonym('_vector_updated', descriptor=property(_get_vector_updated, _set_vector_updated))
+    thumbnail = synonym('_thumbnail', descriptor=property(_get_thumbnail, _set_thumbnail))
+    thumbnail_updated = synonym('_thumbnail_updated', descriptor=property(_get_thumbnail_updated, _set_thumbnail_updated))
 
     @property
     def first(self):

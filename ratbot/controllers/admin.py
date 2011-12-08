@@ -483,6 +483,10 @@ class AdminController(BaseController):
         page.number = kw['number']
         page.published = kw['published']
         page.vector = kw['vector'].value
+        if kw['bitmap']:
+            page.bitmap = kw['bitmap'].value
+        if kw['thumbnail']:
+            page.thumbnail = kw['thumbnail'].value
         DBSession.add(page)
         DBSession.flush()
         page.issue.invalidate()
