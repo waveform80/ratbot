@@ -228,7 +228,7 @@ class Issue(DeclarativeBase):
     def _get_archive(self):
         if not self.archive_updated or self.archive_updated < self.published:
             if not self.published_pages:
-                self._archive = None
+                self.archive = None
             else:
                 s = StringIO()
                 # We don't bother with compression here as PNGs are already
@@ -242,12 +242,12 @@ class Issue(DeclarativeBase):
                 for page in self.published_pages:
                     archive.writestr('%02d.png' % page.number, page.bitmap)
                 archive.close()
-                self._archive = s.getvalue()
-            self._archive_updated = datetime.now()
+                self.archive = s.getvalue()
         return self._archive
 
     def _set_archive(self, value):
-        raise NotImplementedError
+        self._archive = value
+        self._archive_updated = datetime.now()
 
     def _get_archive_updated(self):
         return self._archive_updated
@@ -259,7 +259,7 @@ class Issue(DeclarativeBase):
         PDF_DPI = 72.0
         if not self.pdf_updated or self.pdf_updated < self.published:
             if not self.published_pages:
-                self._pdf = None
+                self.pdf = None
             else:
                 # Use cairo to generate a PDF from each page's SVG. To create
                 # the PDF surface we need the SVG's DPI and size. Here we
@@ -300,12 +300,12 @@ class Issue(DeclarativeBase):
                     pdf_out.addPage(pdf_in.getPage(page))
                 s = StringIO()
                 pdf_out.write(s)
-                self._pdf = s.getvalue()
-            self._pdf_updated = datetime.now()
+                self.pdf = s.getvalue()
         return self._pdf
 
     def _set_pdf(self, value):
-        raise NotImplementedError
+        self._pdf = value
+        self._pdf_updated = datetime.now()
 
     def _get_pdf_updated(self):
         return self._pdf_updated
