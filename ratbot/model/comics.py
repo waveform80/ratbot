@@ -96,7 +96,7 @@ class Page(DeclarativeBase):
                 im = im.convert('RGB').resize((w, h), Image.ANTIALIAS)
                 s = StringIO()
                 im.save(s, 'PNG', optimize=1)
-            self._thumbnail = s.getvalue()
+            self.thumbnail = s.getvalue()
         return self._thumbnail
 
     def _set_thumbnail(self, value):
@@ -123,7 +123,7 @@ class Page(DeclarativeBase):
             svg.render_cairo(context)
             s = StringIO()
             surface.write_to_png(s)
-            self._bitmap = s.getvalue()
+            self.bitmap = s.getvalue()
         return self._bitmap
 
     def _set_bitmap(self, value):
