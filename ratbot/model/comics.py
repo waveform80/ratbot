@@ -8,9 +8,10 @@ import sys
 import zipfile
 import logging
 
-from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func
+from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
 from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from ratbot.model import DeclarativeBase, metadata, DBSession
 from ratbot.model.auth import User
 from PIL import Image
@@ -158,37 +159,39 @@ class Page(DeclarativeBase):
 
     @property
     def first(self):
-        result = self.issue.comic.issues[0].published_pages[0]
-        if result != self:
-            return result
-        else:
-            return None
+        return DBSession.query(Page).\
+            filter(Page.comic_id == self.issue.comic.id).\
+            filter(Page.published <= datetime.now()).\
+            order_by(Page.issue_number, Page.number).first()
 
     @property
     def previous(self):
-        if self.number > 1:
-            return self.issue.published_pages[self.number - 2]
-        elif self.issue_number > 1:
-            return self.issue.comic.issues[self.issue_number - 2].published_pages[-1]
-        else:
-            return None
+        return DBSession.query(Page).\
+            filter(Page.comic_id == self.issue.comic.id).\
+            filter(Page.published <= datetime.now()).\
+            filter(or_(
+                Page.issue_number < self.issue.number,
+                and_(Page.issue_number == self.issue.number, Page.number < self.number)
+            )).\
+            order_by(Page.issue_number.desc(), Page.number.desc()).first()
 
     @property
     def next(self):
-        if self.number < self.issue.published_pages[-1].number:
-            return self.issue.published_pages[self.number]
-        elif self.issue_number < self.issue.comic.issues[-1].number:
-            return self.issue.comic.issues[self.issue_number].published_pages[0]
-        else:
-            return None
+        return DBSession.query(Page).\
+            filter(Page.comic_id == self.issue.comic.id).\
+            filter(Page.published <= datetime.now()).\
+            filter(or_(
+                Page.issue_number > self.issue.number,
+                and_(Page.issue_number == self.issue.number, Page.number > self.number)
+            )).\
+            order_by(Page.issue_number, Page.number).first()
 
     @property
     def last(self):
-        result = self.issue.comic.issues[-1].published_pages[-1]
-        if result != self:
-            return result
-        else:
-            return None
+        return DBSession.query(Page).\
+            filter(Page.comic_id == self.issue.comic.id).\
+            filter(Page.published <= datetime.now()).\
+            order_by(Page.issue_number.desc(), Page.number.desc()).first()
 
 
 class Issue(DeclarativeBase):
@@ -320,18 +323,29 @@ class Issue(DeclarativeBase):
 
     @property
     def published(self):
-        return DBSession.query(func.max(Page.published)).\
-            filter(Page.comic_id==self.comic_id).\
-            filter(Page.issue_number==self.number).\
-            filter(Page.published<=datetime.now()).one()[0]
+        try:
+            return DBSession.query(func.max(Page.published)).\
+                filter(Page.comic_id == self.comic_id).\
+                filter(Page.issue_number == self.number).\
+                filter(Page.published <= datetime.now()).one()[0]
+        except NoResultFound:
+            return None
 
     @property
     def published_pages(self):
         return DBSession.query(Page).\
-            filter(Page.comic_id==self.comic_id).\
-            filter(Page.issue_number==self.number).\
-            filter(Page.published<=datetime.now()).\
+            filter(Page.comic_id == self.comic_id).\
+            filter(Page.issue_number == self.number).\
+            filter(Page.published <= datetime.now()).\
             order_by(Page.number).all()
+
+    @property
+    def first_page(self):
+        return DBSession.query(Page).\
+            filter(Page.comic_id == self.comic_id).\
+            filter(Page.issue_number == self.number).\
+            filter(Page.published <= datetime.now()).\
+            order_by(Page.number).first()
 
 
 class Comic(DeclarativeBase):
@@ -353,4 +367,31 @@ class Comic(DeclarativeBase):
 
     def __unicode__(self):
         return self.title
+
+    @property
+    def published_issues(self):
+        return DBSession.query(Issue).\
+            join(Page).\
+            filter(Issue.comic_id == self.id).\
+            filter(Page.published <= datetime.now()).\
+            distinct().\
+            order_by(Issue.number).all()
+
+    @property
+    def first_issue(self):
+        return DBSession.query(Issue).\
+            join(Page).\
+            filter(Issue.comic_id == self.id).\
+            filter(Page.published <= datetime.now()).\
+            distinct().\
+            order_by(Issue.number).first()
+
+    @property
+    def latest_issue(self):
+        return DBSession.query(Issue).\
+            join(Page).\
+            filter(Issue.comic_id == self.id).\
+            filter(Page.published <= datetime.now()).\
+            distinct().\
+            order_by(Issue.number.desc()).first()
 

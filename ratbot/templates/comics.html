@@ -15,11 +15,11 @@
   <div class="grid_12 line2"></div>
   <div class="grid_12" id="menu2">
     <py:for each="i, c in enumerate(comics)">
-    <div class="grid_4 ${('alpha', '', 'omega')[i]}">
-      <py:if test="c.issues and c.issues[-1].pages">
-      <a href="${tg.url('/comics/view/%s/%d/%d' % (c.id, c.issues[-1].number, c.issues[-1].published_pages[-1].number))}">${c.title}</a>
+    <div py:with="issue=c.latest_issue" class="grid_4 ${('alpha', '', 'omega')[i]}">
+      <py:if test="issue">
+      <a href="${tg.url('/comics/view/%s/%d/%d' % (issue.comic_id, issue.number, issue.first_page.number))}">${c.title}</a>
       </py:if>
-      <py:if test="not c.issues or not c.issues[-1].pages">
+      <py:if test="not issue">
       ${c.title}
       </py:if>
     </div>
@@ -30,12 +30,14 @@
       <div class="grid_6 alpha">
         <h3>${comic.title}</h3>
         <p>${comic.description}</p>
-        <img src="${tg.url('/comics/thumb/%s/1/1' % comic.id)}" alt="Preview" />
+        <py:if test="comic.first_issue">
+        <img src="${tg.url('/comics/thumb/%s/%d/%d' % (comic.id, comic.first_issue.number, comic.first_issue.first_page.number))}" alt="Preview" />
+        </py:if>
       </div>
       <div class="grid_6 omega">
         <h3>Issues</h3>
         <ul>
-          <li py:for="issue in comic.issues"><a href="${tg.url('/comics/view/%s/%d/1' % (issue.comic_id, issue.number))}">#${issue.number} - ${issue.title}</a>
+          <li py:for="issue in comic.published_issues"><a href="${tg.url('/comics/view/%s/%d/%d' % (issue.comic_id, issue.number, issue.first_page.number))}">#${issue.number} - ${issue.title}</a>
             (<a href="${tg.url('/comics/pdf/%s/%d' % (issue.comic_id, issue.number))}">PDF</a>)
             (<a href="${tg.url('/comics/archive/%s/%d' % (issue.comic_id, issue.number))}">Zip</a>)
           </li>

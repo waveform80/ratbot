@@ -15,15 +15,13 @@
   <div class="grid_12 line2"></div>
   <div class="grid_12" id="menu2">
     <py:for each="i, c in enumerate(comics)">
-    <div class="grid_4 ${('alpha', '', 'omega')[i]}">
-      <py:choose test="bool(c.issues and c.issues[-1].pages)">
-      <py:when test="True">
-      <a class="${('', 'active')[c.id==page.comic_id]}" href="${tg.url('/comics/view/%s/%d/%d' % (c.id, c.issues[-1].number, c.issues[-1].pages[-1].number))}">${c.title}</a>
-      </py:when>
-      <py:when test="False">
+    <div py:with="issue=c.latest_issue" class="grid_4 ${('alpha', '', 'omega')[i]}">
+      <py:if test="issue">
+      <a class="${('', 'active')[c.id==page.comic_id]}" href="${tg.url('/comics/view/%s/%d/%d' % (issue.comic_id, issue.number, issue.first_page.number))}">${c.title}</a>
+      </py:if>
+      <py:if test="not issue">
       ${c.title}
-      </py:when>
-      </py:choose>
+      </py:if>
     </div>
     </py:for>
   </div>
