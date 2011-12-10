@@ -102,7 +102,10 @@ class Page(DeclarativeBase):
 
     def _set_thumbnail(self, value):
         self._thumbnail = value
-        self._thumbnail_updated = datetime.now()
+        if value:
+            self._thumbnail_updated = datetime.now()
+        else:
+            self._thumbnail_updated = None
 
     def _get_thumbnail_updated(self):
         return self._thumbnail_updated
@@ -129,7 +132,10 @@ class Page(DeclarativeBase):
 
     def _set_bitmap(self, value):
         self._bitmap = value
-        self._bitmap_updated = datetime.now()
+        if value:
+            self._bitmap_updated = datetime.now()
+        else:
+            self._bitmap_updated = None
 
     def _get_bitmap_updated(self):
         return self._bitmap_updated
@@ -142,7 +148,10 @@ class Page(DeclarativeBase):
 
     def _set_vector(self, value):
         self._vector = value
-        self._vector_updated = datetime.now()
+        if value:
+            self._vector_updated = datetime.now()
+        else:
+            self._vector_updated = None
 
     def _get_vector_updated(self):
         return self._vector_updated

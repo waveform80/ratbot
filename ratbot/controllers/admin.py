@@ -8,7 +8,7 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what import predicates
 
 from ratbot.lib.base import BaseController
-from ratbot.widgets.comics import new_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form, new_news_form, alter_news_form
+from ratbot.widgets.comics import new_page_form, alter_page_form, new_comic_form, alter_comic_form, new_issue_form, alter_issue_form, new_news_form, alter_news_form
 from ratbot.widgets.auth import new_user_form, new_group_form, new_permission_form, alter_user_form, alter_group_form, alter_permission_form
 from ratbot.model import DBSession, News, Comic, Issue, Page, User, Group, Permission
 import transaction
@@ -460,6 +460,25 @@ class AdminController(BaseController):
             comic_ids=DBSession.query(Comic.id, Comic.title),
         )
 
+    @expose('ratbot.templates.page_form')
+    def alter_page(self, old_comic, old_issue, old_number, **kw):
+        tmpl_context.form = alter_page_form
+        if not kw:
+            value = DBSession.query(Page).\
+                filter(Page.comic_id==old_comic).\
+                filter(Page.issue_number==old_issue).\
+                filter(Page.number==old_number).one()
+            value.old_comic = old_comic
+            value.old_issue = old_issue
+            value.old_number = old_number
+        else:
+            value = kw
+        return dict(
+            method='alter_page',
+            value=value,
+            comic_ids=DBSession.query(Comic.id, Comic.title),
+        )
+
     @expose('ratbot.templates.confirmation')
     def remove_page(self, comic_id, issue_number, number):
         return dict(
@@ -476,7 +495,6 @@ class AdminController(BaseController):
     @validate(new_page_form, error_handler=new_page)
     @expose()
     def insert_page(self, **kw):
-        logging.warning('insert_page')
         page = Page()
         page.comic_id = kw['comic_id']
         page.issue_number = kw['issue_number']
@@ -494,9 +512,29 @@ class AdminController(BaseController):
         flash('Page added successfully')
         redirect('index')
 
+    @validate(alter_page_form, error_handler=alter_page)
+    @expose()
+    def update_page(self, **kw):
+        page = Page()
+        page.comic_id = kw['comic_id']
+        page.issue_number = kw['issue_number']
+        page.number = kw['number']
+        page.published = kw['published']
+        if kw['vector']:
+            page.vector = kw['vector'].value
+        if kw['bitmap']:
+            page.bitmap = kw['bitmap'].value
+        if kw['thumbnail']:
+            page.thumbnail = kw['thumbnail'].value
+        DBSession.add(page)
+        DBSession.flush()
+        page.issue.invalidate()
+        transaction.commit()
+        flash('Page added successfully')
+        redirect('index')
+
     @expose()
     def delete_page(self, comic_id, issue_number, number, confirm):
-        logging.warning('delete_page')
         page = DBSession.query(Page).\
             filter(Page.comic_id==comic_id).\
             filter(Page.issue_number==issue_number).\

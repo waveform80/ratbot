@@ -5,7 +5,7 @@ from tw.forms import TableForm, CalendarDatePicker, CalendarDateTimePicker, Spac
 from tw.forms.validators import Int, NotEmpty, DateConverter, DateTimeConverter
 from tg import url
 
-__all__ = ['new_page_form', 'new_comic_form', 'alter_comic_form', 'new_issue_form', 'alter_issue_form']
+__all__ = ['new_page_form', 'alter_page_form', 'new_comic_form', 'alter_comic_form', 'new_issue_form', 'alter_issue_form']
 
 
 class NewsForm(TableForm):
@@ -68,3 +68,4 @@ new_page_form = PageForm('new_page_form', action=url('/admin/insert_page'))
 alter_news_form = NewsForm('alter_news_form', action=url('/admin/update_news'))
 alter_comic_form = ComicForm('alter_comic_form', action=url('/admin/update_comic'))
 alter_issue_form = IssueForm('alter_issue_form', action=url('/admin/update_issue'))
+alter_page_form = PageForm('alter_page_form', action=url('/admin/update_page'))
