@@ -89,7 +89,7 @@ class AdminController(BaseController):
     @validate(alter_user_form, error_handler=alter_user)
     @expose()
     def update_user(self, old_id, **kw):
-        user = DBSession.query(User).filter(User.user_name==old_id).one()
+        user = DBSession.query(User).filter(User.user_name == old_id).one()
         user.user_name = kw['user_name']
         user.email_address = kw['email_address']
         user.display_name = kw['display_name']
@@ -103,7 +103,7 @@ class AdminController(BaseController):
 
     @expose()
     def delete_user(self, user_name, confirm):
-        user = DBSession.query(User).filter(User.user_name==user_name).one()
+        user = DBSession.query(User).filter(User.user_name == user_name).one()
         DBSession.delete(user)
         DBSession.flush()
         transaction.commit()
@@ -124,7 +124,7 @@ class AdminController(BaseController):
     def alter_group(self, old_id, **kw):
         tmpl_context.form = alter_group_form
         if not kw:
-            value = DBSession.query(Group).filter(Group.group_name==old_id).one()
+            value = DBSession.query(Group).filter(Group.group_name == old_id).one()
             value.old_id = old_id
         else:
             value = kw
@@ -161,7 +161,7 @@ class AdminController(BaseController):
     @validate(alter_group_form, error_handler=alter_group)
     @expose()
     def update_group(self, old_id, **kw):
-        group = DBSession.query(Group).filter(Group.group_name==old_id).one()
+        group = DBSession.query(Group).filter(Group.group_name == old_id).one()
         group.group_name = kw['group_name']
         group.display_name = kw['display_name']
         group.user_names = kw['user_names']
@@ -173,7 +173,7 @@ class AdminController(BaseController):
 
     @expose()
     def delete_group(self, group_name, confirm):
-        group = DBSession.query(Group).filter(Group.group_name==group_name).one()
+        group = DBSession.query(Group).filter(Group.group_name == group_name).one()
         DBSession.delete(group)
         DBSession.flush()
         transaction.commit()
@@ -193,7 +193,7 @@ class AdminController(BaseController):
     def alter_permission(self, old_id, **kw):
         tmpl_context.form = alter_permission_form
         if not kw:
-            value = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
+            value = DBSession.query(Permission).filter(Permission.permission_name == old_id).one()
             value.old_id = old_id
         else:
             value = kw
@@ -228,7 +228,7 @@ class AdminController(BaseController):
     @validate(alter_permission_form, error_handler=alter_permission)
     @expose()
     def update_permission(self, old_id, **kw):
-        permission = DBSession.query(Permission).filter(Permission.permission_name==old_id).one()
+        permission = DBSession.query(Permission).filter(Permission.permission_name == old_id).one()
         permission.permission_name = kw['permission_name']
         permission.description = kw['description']
         permission.group_names = kw['group_names']
@@ -239,7 +239,7 @@ class AdminController(BaseController):
 
     @expose()
     def delete_permission(self, permission_name, confirm):
-        permission = DBSession.query(Permission).filter(Permission.permission_name==permission_name).one()
+        permission = DBSession.query(Permission).filter(Permission.permission_name == permission_name).one()
         DBSession.delete(permission)
         DBSession.flush()
         transaction.commit()
@@ -258,7 +258,7 @@ class AdminController(BaseController):
     def alter_news(self, id, **kw):
         tmpl_context.form = alter_news_form
         if not kw:
-            value = DBSession.query(News).filter(News.id==id).one()
+            value = DBSession.query(News).filter(News.id == id).one()
         else:
             value = kw
         return dict(
@@ -268,7 +268,7 @@ class AdminController(BaseController):
 
     @expose('ratbot.templates.confirmation')
     def remove_news(self, id):
-        news = DBSession.query(News).filter(News.id==id).one()
+        news = DBSession.query(News).filter(News.id == id).one()
         return dict(
             method='remove_news',
             prompt='Are you sure you wish to delete article "%s"?' % news.title,
@@ -293,7 +293,7 @@ class AdminController(BaseController):
     @validate(alter_news_form, error_handler=alter_news)
     @expose()
     def update_news(self, **kw):
-        news = DBSession.query(News).filter(News.id==kw['id']).one()
+        news = DBSession.query(News).filter(News.id == kw['id']).one()
         news.title = kw['title']
         news.published = kw['published']
         news.content = kw['content']
@@ -304,7 +304,7 @@ class AdminController(BaseController):
 
     @expose()
     def delete_news(self, id, confirm):
-        news = DBSession.query(News).filter(Comic.id==id).one()
+        news = DBSession.query(News).filter(Comic.id == id).one()
         DBSession.delete(news)
         DBSession.flush()
         transaction.commit()
@@ -323,7 +323,7 @@ class AdminController(BaseController):
     def alter_comic(self, old_id, **kw):
         tmpl_context.form = alter_comic_form
         if not kw:
-            value = DBSession.query(Comic).filter(Comic.id==old_id).one()
+            value = DBSession.query(Comic).filter(Comic.id == old_id).one()
             value.old_id = old_id
         else:
             value = kw
@@ -358,7 +358,7 @@ class AdminController(BaseController):
     @validate(alter_comic_form, error_handler=alter_comic)
     @expose()
     def update_comic(self, **kw):
-        comic = DBSession.query(Comic).filter(Comic.id==kw['old_id']).one()
+        comic = DBSession.query(Comic).filter(Comic.id == kw['old_id']).one()
         comic.id = kw['id']
         comic.title = kw['title']
         comic.description = kw['description']
@@ -369,7 +369,7 @@ class AdminController(BaseController):
 
     @expose()
     def delete_comic(self, id, confirm):
-        comic = DBSession.query(Comic).filter(Comic.id==id).one()
+        comic = DBSession.query(Comic).filter(Comic.id == id).one()
         DBSession.delete(comic)
         DBSession.flush()
         transaction.commit()
@@ -390,8 +390,8 @@ class AdminController(BaseController):
         tmpl_context.form = alter_issue_form
         if not kw:
             value = DBSession.query(Issue).\
-                filter(Issue.comic_id==old_comic).\
-                filter(Issue.number==old_number).one()
+                filter(Issue.comic_id == old_comic).\
+                filter(Issue.number == old_number).one()
             value.old_comic = old_comic
             value.old_number = old_number
         else:
@@ -429,8 +429,8 @@ class AdminController(BaseController):
     @expose()
     def update_issue(self, **kw):
         issue = DBSession.query(Issue).\
-            filter(Issue.comic_id==kw['old_comic']).\
-            filter(Issue.number==kw['old_number']).one()
+            filter(Issue.comic_id == kw['old_comic']).\
+            filter(Issue.number == kw['old_number']).one()
         issue.comic_id = kw['comic_id']
         issue.number = kw['number']
         issue.title = kw['title']
@@ -443,8 +443,8 @@ class AdminController(BaseController):
     @expose()
     def delete_issue(self, comic_id, number, confirm):
         issue = DBSession.query(Issue).\
-            filter(Issue.comic_id==comic_id).\
-            filter(Issue.number==number).one()
+            filter(Issue.comic_id == comic_id).\
+            filter(Issue.number == number).one()
         DBSession.delete(issue)
         DBSession.flush()
         transaction.commit()
@@ -465,9 +465,9 @@ class AdminController(BaseController):
         tmpl_context.form = alter_page_form
         if not kw:
             value = DBSession.query(Page).\
-                filter(Page.comic_id==old_comic).\
-                filter(Page.issue_number==old_issue).\
-                filter(Page.number==old_number).one()
+                filter(Page.comic_id == old_comic).\
+                filter(Page.issue_number == old_issue).\
+                filter(Page.number == old_number).one()
             value.old_comic = old_comic
             value.old_issue = old_issue
             value.old_number = old_number
@@ -515,30 +515,36 @@ class AdminController(BaseController):
     @validate(alter_page_form, error_handler=alter_page)
     @expose()
     def update_page(self, **kw):
-        page = Page()
+        page = DBSession.query(Page).\
+            filter(Page.comic_id == kw['old_comic']).\
+            filter(Page.issue_number == kw['old_issue']).\
+            filter(Page.number == kw['old_number']).one()
         page.comic_id = kw['comic_id']
         page.issue_number = kw['issue_number']
         page.number = kw['number']
         page.published = kw['published']
         if kw['vector']:
             page.vector = kw['vector'].value
-        if kw['bitmap']:
+        if kw['bitmap_null']:
+            page.bitmap = None
+        elif kw['bitmap']:
             page.bitmap = kw['bitmap'].value
-        if kw['thumbnail']:
+        if kw['thumbnail_null']:
+            page.thumbnail = None
+        elif kw['thumbnail']:
             page.thumbnail = kw['thumbnail'].value
-        DBSession.add(page)
         DBSession.flush()
         page.issue.invalidate()
         transaction.commit()
-        flash('Page added successfully')
+        flash('Page updated successfully')
         redirect('index')
 
     @expose()
     def delete_page(self, comic_id, issue_number, number, confirm):
         page = DBSession.query(Page).\
-            filter(Page.comic_id==comic_id).\
-            filter(Page.issue_number==issue_number).\
-            filter(Page.number==number).one()
+            filter(Page.comic_id == comic_id).\
+            filter(Page.issue_number == issue_number).\
+            filter(Page.number == number).one()
         page.issue.invalidate()
         DBSession.delete(page)
         DBSession.flush()

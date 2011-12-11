@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Comic Forms"""
 
-from tw.forms import TableForm, CalendarDatePicker, CalendarDateTimePicker, Spacer, SingleSelectField, TextField, TextArea, FileField, HiddenField
+from tw.forms import TableForm, CalendarDatePicker, CalendarDateTimePicker, Spacer, SingleSelectField, TextField, TextArea, FileField, HiddenField, CheckBox
 from tw.forms.validators import Int, NotEmpty, DateConverter, DateTimeConverter
 from tg import url
 
@@ -46,7 +46,7 @@ class IssueForm(TableForm):
         FileField('pdf', label_text='PDF', help_text='Select the PDF file of the issue (optional - will be generated from the page vectors if unspecified'),
     ]
 
-class PageForm(TableForm):
+class NewPageForm(TableForm):
     show_errors = True
     hover_help = True
     fields = [
@@ -61,11 +61,32 @@ class PageForm(TableForm):
         FileField('thumbnail', label_text='Thumbnail Image', help_text='Select the file containing the thumbnail (PNG) image of the page (optional - will be generated from the bitmap if unspecified'),
     ]
 
+class AlterPageForm(TableForm):
+    show_errors = True
+    hover_help = True
+    fields = [
+        HiddenField('old_comic'),
+        HiddenField('old_issue'),
+        HiddenField('old_number'),
+        SingleSelectField('comic_id', validator=NotEmpty, label_text='Comic', help_text='Select the comic the page belongs to'),
+        TextField('issue_number', size=4, validator=Int, label_text='Issue #', help_text='Specify the issue number the page belongs to'),
+        TextField('number', size=4, validator=Int, label_text='Page #', help_text='Specify the page number'),
+        Spacer(),
+        CalendarDateTimePicker('published', validator=DateTimeConverter, help_text='Select the date and time to publish the page'),
+        Spacer(),
+        FileField('vector', label_text='Vector Image', help_text='Select the file containing the vector (SVG) image of the page'),
+        FileField('bitmap', label_text='Bitmap Image', help_text='Select the file containing the bitmap (PNG) image of the page (optional - will be generated from the vector if unspecified'),
+        CheckBox('bitmap_null', label_text='Regenerate bitmap', help_text='Regenerate the bitmap image from the vector when it is next requested'),
+        FileField('thumbnail', label_text='Thumbnail Image', help_text='Select the file containing the thumbnail (PNG) image of the page (optional - will be generated from the bitmap if unspecified'),
+        CheckBox('thumbnail_null', label_text='Regenerate thumbnail', help_text='Regenerate the thumbnail image from the bitmap when it is next requested'),
+    ]
+
 new_news_form = NewsForm('new_news_form', action=url('/admin/insert_news'))
 new_comic_form = ComicForm('new_comic_form', action=url('/admin/insert_comic'))
 new_issue_form = IssueForm('new_issue_form', action=url('/admin/insert_issue'))
-new_page_form = PageForm('new_page_form', action=url('/admin/insert_page'))
+new_page_form = NewPageForm('new_page_form', action=url('/admin/insert_page'))
+
 alter_news_form = NewsForm('alter_news_form', action=url('/admin/update_news'))
 alter_comic_form = ComicForm('alter_comic_form', action=url('/admin/update_comic'))
 alter_issue_form = IssueForm('alter_issue_form', action=url('/admin/update_issue'))
-alter_page_form = PageForm('alter_page_form', action=url('/admin/update_page'))
+alter_page_form = AlterPageForm('alter_page_form', action=url('/admin/update_page'))
