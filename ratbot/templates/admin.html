@@ -43,11 +43,12 @@
     </py:when>
     <py:otherwise>
     <table>
-      <thead><tr><th>ID</th><th>Title</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Title</th><th>Issues</th><th>Actions</th></tr></thead>
       <tbody>
         <tr py:for="i, comic in enumerate(comics)" class="${('even', 'odd')[i % 2]}">
           <td>${comic.id}</td>
           <td>${comic.title}</td>
+          <td>${len(comic.issues)}</td>
           <td>
             <a href="${tg.url('/admin/alter_comic/%s' % comic.id)}">[Alter Comic]</a>
             <a href="${tg.url('/admin/remove_comic/%s' % comic.id)}">[Remove Comic]</a>
@@ -65,12 +66,12 @@
     </py:when>
     <py:otherwise>
     <table>
-      <thead><tr><th>Comic</th><th>Number</th><th>Title</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Title</th><th>Pages</th><th>Actions</th></tr></thead>
       <tbody>
         <tr py:for="i, issue in enumerate(issues)" class="${('even', 'odd')[i % 2]}">
-          <td>${issue.comic_id}</td>
-          <td>${issue.number}</td>
-          <td>${issue.title}</td>
+          <td>${issue.comic_id}/${issue.number}</td>
+          <td>${issue.comic.title} #${issue.number} - ${issue.title}</td>
+          <td>${len(issue.pages)}</td>
           <td>
             <a href="${tg.url('/admin/alter_issue/%s/%d' % (issue.comic_id, issue.number))}">[Alter Issue]</a>
             <a href="${tg.url('/admin/remove_issue/%s/%d' % (issue.comic_id, issue.number))}">[Remove Issue]</a>
@@ -88,12 +89,11 @@
     </py:when>
     <py:otherwise>
     <table>
-      <thead><tr><th>Comic</th><th>Issue</th><th>Number</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Title</th><th>Actions</th></tr></thead>
       <tbody>
         <tr py:for="i, page in enumerate(pages)" class="${('even', 'odd')[i % 2]}">
-          <td>${page.comic_id}</td>
-          <td>${page.issue_number}</td>
-          <td>${page.number}</td>
+          <td>${page.comic_id}/${page.issue_number}/${page.number}</td>
+          <td>${page.issue.comic.title} #${page.issue_number} - ${page.issue.title}, page ${page.number}</td>
           <td>
             <a href="${tg.url('/admin/alter_page/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">[Alter Page]</a>
             <a href="${tg.url('/admin/remove_page/%s/%d/%d' % (page.comic_id, page.issue_number, page.number))}">[Remove Page]</a>
