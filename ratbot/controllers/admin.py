@@ -501,9 +501,9 @@ class AdminController(BaseController):
         page.number = kw['number']
         page.published = kw['published']
         page.vector = kw['vector'].value
-        if kw['bitmap']:
+        if kw['bitmap'] is not None:
             page.bitmap = kw['bitmap'].value
-        if kw['thumbnail']:
+        if kw['thumbnail'] is not None:
             page.thumbnail = kw['thumbnail'].value
         DBSession.add(page)
         DBSession.flush()
@@ -523,15 +523,15 @@ class AdminController(BaseController):
         page.issue_number = kw['issue_number']
         page.number = kw['number']
         page.published = kw['published']
-        if kw['vector']:
+        if kw['vector'] is not None:
             page.vector = kw['vector'].value
         if kw['bitmap_null']:
             page.bitmap = None
-        elif kw['bitmap']:
+        elif kw['bitmap'] is not None:
             page.bitmap = kw['bitmap'].value
         if kw['thumbnail_null']:
             page.thumbnail = None
-        elif kw['thumbnail']:
+        elif kw['thumbnail'] is not None:
             page.thumbnail = kw['thumbnail'].value
         DBSession.flush()
         page.issue.invalidate()
