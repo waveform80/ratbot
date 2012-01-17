@@ -30,7 +30,7 @@ class ComicForm(TableForm):
         TextArea('description', validator=NotEmpty, label_text='Description', help_text='Specify the description for the comic'),
     ]
 
-class IssueForm(TableForm):
+class NewIssueForm(TableForm):
     show_errors = True
     hover_help = True
     fields = [
@@ -44,6 +44,24 @@ class IssueForm(TableForm):
         Spacer(),
         FileField('archive', label_text='Archive', help_text='Select the file containing the archive of the issue (optional - will be generated from page bitmaps if unspecified'),
         FileField('pdf', label_text='PDF', help_text='Select the PDF file of the issue (optional - will be generated from the page vectors if unspecified'),
+    ]
+
+class AlterIssueForm(TableForm):
+    show_errors = True
+    hover_help = True
+    fields = [
+        HiddenField('old_comic'),
+        HiddenField('old_number'),
+        SingleSelectField('comic_id', validator=NotEmpty, label_text='Comic', help_text='Select the comic the issue belongs to'),
+        TextField('number', size=4, validator=Int, label_text='Issue #', help_text='Specify the issue number'),
+        Spacer(),
+        TextField('title', size=50, validator=NotEmpty, label_text='Title', help_text='Specify the title for the issue'),
+        TextArea('description', validator=NotEmpty, label_text='Description', help_text='Specify the description for the issue'),
+        Spacer(),
+        FileField('archive', label_text='Archive', help_text='Select the file containing the archive of the issue (optional - will be generated from page bitmaps if unspecified'),
+        CheckBox('archive_null', label_text='Regenerate archive', help_text='Regenerate the issue archive from the page bitmaps when it is next requested'),
+        FileField('pdf', label_text='PDF', help_text='Select the PDF file of the issue (optional - will be generated from the page vectors if unspecified'),
+        CheckBox('pdf_null', label_text='Regenerate PDF', help_text='Regenerate the issue PDF from the page vectors when it is next requested'),
     ]
 
 class NewPageForm(TableForm):
@@ -83,10 +101,10 @@ class AlterPageForm(TableForm):
 
 new_news_form = NewsForm('new_news_form', action=url('/admin/insert_news'))
 new_comic_form = ComicForm('new_comic_form', action=url('/admin/insert_comic'))
-new_issue_form = IssueForm('new_issue_form', action=url('/admin/insert_issue'))
+new_issue_form = NewIssueForm('new_issue_form', action=url('/admin/insert_issue'))
 new_page_form = NewPageForm('new_page_form', action=url('/admin/insert_page'))
 
 alter_news_form = NewsForm('alter_news_form', action=url('/admin/update_news'))
 alter_comic_form = ComicForm('alter_comic_form', action=url('/admin/update_comic'))
-alter_issue_form = IssueForm('alter_issue_form', action=url('/admin/update_issue'))
+alter_issue_form = AlterIssueForm('alter_issue_form', action=url('/admin/update_issue'))
 alter_page_form = AlterPageForm('alter_page_form', action=url('/admin/update_page'))

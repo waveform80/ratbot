@@ -259,7 +259,10 @@ class Issue(DeclarativeBase):
 
     def _set_archive(self, value):
         self._archive = value
-        self._archive_updated = datetime.now()
+        if value:
+            self._archive_updated = datetime.now()
+        else:
+            self._archive_updated = None
 
     def _get_archive_updated(self):
         return self._archive_updated
@@ -317,7 +320,10 @@ class Issue(DeclarativeBase):
 
     def _set_pdf(self, value):
         self._pdf = value
-        self._pdf_updated = datetime.now()
+        if value:
+            self._pdf_updated = datetime.now()
+        else:
+            self._pdf_updated = None
 
     def _get_pdf_updated(self):
         return self._pdf_updated

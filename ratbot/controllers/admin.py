@@ -419,6 +419,10 @@ class AdminController(BaseController):
         issue.number = kw['number']
         issue.title = kw['title']
         issue.description = kw['description']
+        if kw['archive'] is not None:
+            issue.archive = kw['archive'].value
+        if kw['pdf'] is not None:
+            issue.pdf = kw['pdf'].value
         DBSession.add(issue)
         DBSession.flush()
         transaction.commit()
@@ -435,6 +439,14 @@ class AdminController(BaseController):
         issue.number = kw['number']
         issue.title = kw['title']
         issue.description = kw['description']
+        if kw['archive_null']:
+            page.archive = None
+        elif kw['archive'] is not None:
+            page.archive = kw['archive'].value
+        if kw['pdf_null']:
+            page.pdf = None
+        elif kw['pdf'] is not None:
+            page.pdf = kw['pdf'].value
         DBSession.flush()
         transaction.commit()
         flash('Comic updated successfully')
