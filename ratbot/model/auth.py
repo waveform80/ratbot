@@ -89,6 +89,7 @@ class User(DeclarativeBase):
     display_name = Column(Unicode(256))
     _password = Column('password', Unicode(128), info={'rum': {'field':'Password'}})
     created = Column(DateTime, default=datetime.now)
+    comics = relationship('Comic', backref='author_user')
 
     def __repr__(self):
         return ('<User: name=%s, email=%s, display=%s>' % (

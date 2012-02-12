@@ -321,7 +321,7 @@ class Issue(DeclarativeBase):
                 pdf_info.update(pdf_in.documentInfo)
                 pdf_info.update({
                     NameObject('/Title'): createStringObject(u'%s - Issue #%d - %s' % (self.comic.title, self.number, self.title)),
-                    NameObject('/Author'): createStringObject(self.comic.author.display_name if self.comic.author else u'Anonymous'),
+                    NameObject('/Author'): createStringObject(self.comic.author_user.display_name if self.comic.author_user else u'Anonymous'),
                 })
                 for page in range(pdf_in.getNumPages()):
                     pdf_out.addPage(pdf_in.getPage(page))
