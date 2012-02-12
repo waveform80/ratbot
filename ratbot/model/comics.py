@@ -8,7 +8,7 @@ import sys
 import zipfile
 import logging
 
-from tg import cache
+from tg import cache, config
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
 from sqlalchemy.orm import relationship, synonym
@@ -18,6 +18,7 @@ from ratbot.model.auth import User
 from PIL import Image
 from pyPdf import PdfFileWriter, PdfFileReader
 from pyPdf.generic import NameObject, createStringObject
+from paste.deploy.converters import asint
 import rsvg
 import cairo
 try:
@@ -102,7 +103,7 @@ class Page(DeclarativeBase):
         return self._thumbnail
 
     def _set_thumbnail(self, value):
-        thumbnail_cache = cache.get_cache('thumbnail', expire=3600)
+        thumbnail_cache = cache.get_cache('thumbnail', expire=asint(config.get('cache_expire', 3600)))
         thumbnail_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._thumbnail = value
         if value:
@@ -134,7 +135,7 @@ class Page(DeclarativeBase):
         return self._bitmap
 
     def _set_bitmap(self, value):
-        bitmap_cache = cache.get_cache('bitmap', expire=3600)
+        bitmap_cache = cache.get_cache('bitmap', expire=asint(config.get('cache_expire', 3600)))
         bitmap_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._bitmap = value
         if value:
@@ -154,7 +155,7 @@ class Page(DeclarativeBase):
         return self._vector
 
     def _set_vector(self, value):
-        vector_cache = cache.get_cache('vector', expire=3600)
+        vector_cache = cache.get_cache('vector', expire=asint(config.get('cache_expire', 3600)))
         vector_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._vector = value
         if value:
@@ -267,7 +268,7 @@ class Issue(DeclarativeBase):
         return self._archive
 
     def _set_archive(self, value):
-        archive_cache = cache.get_cache('archive', expire=3600)
+        archive_cache = cache.get_cache('archive', expire=asint(config.get('cache_expire', 3600)))
         archive_cache.remove_value(key=(self.comic_id, self.number))
         self._archive = value
         if value:
@@ -330,7 +331,7 @@ class Issue(DeclarativeBase):
         return self._pdf
 
     def _set_pdf(self, value):
-        pdf_cache = cache.get_cache('pdf', expire=3600)
+        pdf_cache = cache.get_cache('pdf', expire=asint(config.get('cache_expire', 3600)))
         pdf_cache.remove_value(key=(self.comic_id, self.number))
         self._pdf = value
         if value:

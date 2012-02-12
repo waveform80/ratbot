@@ -2,10 +2,11 @@
 """Comic Controller"""
 
 from datetime import datetime
-from tg import cache, expose, abort, request, response
+from tg import cache, config, expose, abort, request, response
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from tg.controllers.util import etag_cache
 from repoze.what import predicates
+from paste.deploy.converters import asint
 
 from ratbot.lib.base import BaseController
 from ratbot.model import DBSession, Comic, Issue, Page
@@ -52,7 +53,7 @@ class ComicController(BaseController):
                 filter(Page.number==page).\
                 filter(Page.published<=datetime.now()).one()
             return (p.thumbnail, p.thumbnail_updated)
-        thumbnail_cache = cache.get_cache('thumbnail', expire=3600)
+        thumbnail_cache = cache.get_cache('thumbnail', expire=asint(config.get('cache_expire', 3600)))
         try:
             (thumbnail, thumbnail_updated) = thumbnail_cache.get_value(
                 key=(comic, issue, page),
@@ -76,7 +77,7 @@ class ComicController(BaseController):
                 filter(Page.number==page).\
                 filter(Page.published<=datetime.now()).one()
             return (p.bitmap, p.bitmap_updated)
-        bitmap_cache = cache.get_cache('bitmap', expire=3600)
+        bitmap_cache = cache.get_cache('bitmap', expire=asint(config.get('cache_expire', 3600)))
         try:
             (bitmap, bitmap_updated) = bitmap_cache.get_value(
                 key=(comic, issue, page),
@@ -100,7 +101,7 @@ class ComicController(BaseController):
                 filter(Page.number==page).\
                 filter(Page.published<=datetime.now()).one()
             return (p.vector, p.vector_updated)
-        vector_cache = cache.get_cache('vector', expire=3600)
+        vector_cache = cache.get_cache('vector', expire=asint(config.get('cache_expire', 3600)))
         try:
             (vector, vector_updated) = vector_cache.get_value(
                 key=(comic, issue, page),
@@ -122,7 +123,7 @@ class ComicController(BaseController):
                 filter(Issue.number==issue).one()
             return (i.pdf, i.pdf_updated)
         response.headers['Content-Disposition'] = 'attachment;filename=%s-%s.pdf' % (comic, issue)
-        pdf_cache = cache.get_cache('pdf', expire=3600)
+        pdf_cache = cache.get_cache('pdf', expire=asint(config.get('cache_expire', 3600)))
         try:
             (pdf, pdf_updated) = pdf_cache.get_value(
                 key=(comic, issue),
@@ -144,7 +145,7 @@ class ComicController(BaseController):
                 filter(Issue.number==issue).one()
             return (i.archive, i.archive_updated)
         response.headers['Content-Disposition'] = 'attachment;filename=%s-%s.zip' % (comic, issue)
-        archive_cache = cache.get_cache('archive', expire=3600)
+        archive_cache = cache.get_cache('archive', expire=asint(config.get('cache_expire', 3600)))
         try:
             (archive, archive_updated) = archive_cache.get_value(
                 key=(comic, issue),
