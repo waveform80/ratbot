@@ -8,6 +8,7 @@ import sys
 import zipfile
 import logging
 
+from tg import cache
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
 from sqlalchemy.orm import relationship, synonym
@@ -101,6 +102,8 @@ class Page(DeclarativeBase):
         return self._thumbnail
 
     def _set_thumbnail(self, value):
+        thumbnail_cache = cache.get_cache('thumbnail', expire=3600)
+        thumbnail_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._thumbnail = value
         if value:
             self._thumbnail_updated = datetime.now()
@@ -131,11 +134,15 @@ class Page(DeclarativeBase):
         return self._bitmap
 
     def _set_bitmap(self, value):
+        bitmap_cache = cache.get_cache('bitmap', expire=3600)
+        bitmap_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._bitmap = value
         if value:
             self._bitmap_updated = datetime.now()
         else:
             self._bitmap_updated = None
+        # Invalidate the bitmap archive in the owning issue
+        self.issue.archive = None
 
     def _get_bitmap_updated(self):
         return self._bitmap_updated
@@ -147,11 +154,15 @@ class Page(DeclarativeBase):
         return self._vector
 
     def _set_vector(self, value):
+        vector_cache = cache.get_cache('vector', expire=3600)
+        vector_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
         self._vector = value
         if value:
             self._vector_updated = datetime.now()
         else:
             self._vector_updated = None
+        # Invalidate the PDF in the owning issue
+        self.issue.pdf = None
 
     def _get_vector_updated(self):
         return self._vector_updated
@@ -232,10 +243,8 @@ class Issue(DeclarativeBase):
     def invalidate(self):
         # Called whenever the pages change to expire the cached archive and PDF
         # columns
-        self._archive = None
-        self._archive_updated = None
-        self._pdf = None
-        self._pdf_updated = None
+        self.archive = None
+        self.pdf = None
 
     def _get_archive(self):
         if not self.archive_updated or self.archive_updated < self.published:
@@ -258,6 +267,8 @@ class Issue(DeclarativeBase):
         return self._archive
 
     def _set_archive(self, value):
+        archive_cache = cache.get_cache('archive', expire=3600)
+        archive_cache.remove_value(key=(self.comic_id, self.number))
         self._archive = value
         if value:
             self._archive_updated = datetime.now()
@@ -319,6 +330,8 @@ class Issue(DeclarativeBase):
         return self._pdf
 
     def _set_pdf(self, value):
+        pdf_cache = cache.get_cache('pdf', expire=3600)
+        pdf_cache.remove_value(key=(self.comic_id, self.number))
         self._pdf = value
         if value:
             self._pdf_updated = datetime.now()
