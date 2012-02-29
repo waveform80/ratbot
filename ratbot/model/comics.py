@@ -11,7 +11,7 @@ import logging
 from tg import cache, config
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
 from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
-from sqlalchemy.orm import relationship, synonym
+from sqlalchemy.orm import relationship, synonym, deferred
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from ratbot.model import DeclarativeBase, metadata, DBSession
 from ratbot.model.auth import User
@@ -69,11 +69,11 @@ class Page(DeclarativeBase):
     number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
     created = Column(DateTime, default=datetime.now, nullable=False)
     published = Column(DateTime, default=datetime.now, nullable=False)
-    _vector = Column('vector', LargeBinary(10485760))
+    _vector = deferred(Column('vector', LargeBinary(10485760)))
     _vector_updated = Column('vector_updated', DateTime)
-    _bitmap = Column('bitmap', LargeBinary(10485760))
+    _bitmap = deferred(Column('bitmap', LargeBinary(10485760)))
     _bitmap_updated = Column('bitmap_updated', DateTime)
-    _thumbnail = Column('thumbnail', LargeBinary(1048576))
+    _thumbnail = deferred(Column('thumbnail', LargeBinary(1048576)))
     _thumbnail_updated = Column('thumbnail_updated', DateTime)
 
     def __repr__(self):
@@ -142,8 +142,6 @@ class Page(DeclarativeBase):
             self._bitmap_updated = datetime.now()
         else:
             self._bitmap_updated = None
-        # Invalidate the bitmap archive in the owning issue
-        self.issue.archive = None
 
     def _get_bitmap_updated(self):
         return self._bitmap_updated
@@ -162,8 +160,6 @@ class Page(DeclarativeBase):
             self._vector_updated = datetime.now()
         else:
             self._vector_updated = None
-        # Invalidate the PDF in the owning issue
-        self.issue.pdf = None
 
     def _get_vector_updated(self):
         return self._vector_updated
