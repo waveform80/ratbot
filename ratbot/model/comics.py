@@ -3,10 +3,14 @@
 Comic model.
 """
 import os
+import os.path
+import sys
 from datetime import datetime
+from contextlib import closing
 import sys
 import zipfile
 import logging
+import tempfile
 
 from tg import cache, config
 from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
@@ -69,12 +73,6 @@ class Page(DeclarativeBase):
     number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
     created = Column(DateTime, default=datetime.now, nullable=False)
     published = Column(DateTime, default=datetime.now, nullable=False)
-    _vector = deferred(Column('vector', LargeBinary(10485760)))
-    _vector_updated = Column('vector_updated', DateTime)
-    _bitmap = deferred(Column('bitmap', LargeBinary(10485760)))
-    _bitmap_updated = Column('bitmap_updated', DateTime)
-    _thumbnail = deferred(Column('thumbnail', LargeBinary(1048576)))
-    _thumbnail_updated = Column('thumbnail_updated', DateTime)
 
     def __repr__(self):
         return '<Page: comic=%s, issue=%d, page=%d>' % (
@@ -87,7 +85,7 @@ class Page(DeclarativeBase):
     def _get_thumbnail(self):
         THUMB_MAXWIDTH = 200
         THUMB_MAXHEIGHT = 200
-        if not self.thumbnail_updated or self.thumbnail_updated < self.bitmap_updated:
+        if os.path.exists(self.bitmap_filename) and (not os.path.exists(self.thumbnail_filename) or self.thumbnail_updated < self.bitmap_updated):
             # Scale the bitmap down to a thumbnail
             s = StringIO(self.bitmap)
             im = Image.open(s)
@@ -100,26 +98,36 @@ class Page(DeclarativeBase):
                 s = StringIO()
                 im.save(s, 'PNG', optimize=1)
             self.thumbnail = s.getvalue()
-        return self._thumbnail
+        if os.path.exists(self.thumbnail_filename):
+            with open(self.thumbnail_filename, 'rb') as f:
+                return f.read()
 
     def _set_thumbnail(self, value):
         thumbnail_cache = cache.get_cache('thumbnail', expire=asint(config.get('cache_expire', 3600)))
         thumbnail_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
-        self._thumbnail = value
         if value:
-            self._thumbnail_updated = datetime.now()
+            tmpfd, tmppath = tempfile.mkstemp(dir=config['dbfiles_dir'])
+            try:
+                with closing(os.fdopen(tmpfd, 'wb')) as tmpfile:
+                    tmpfile.write(value)
+            except:
+                os.unlink(tmppath)
+                raise
+            if sys.platform.startswith('win'):
+                try:
+                    os.unlink(self.thumbnail_filename)
+                except OSError:
+                    pass
+            os.rename(tmppath, self.thumbnail_filename)
         else:
-            self._thumbnail_updated = None
-
-    def _get_thumbnail_updated(self):
-        return self._thumbnail_updated
-
-    def _set_thumbnail_updated(self):
-        raise NotImplementedError
+            try:
+                os.unlink(self.thumbnail_filename)
+            except OSError:
+                pass
 
     def _get_bitmap(self):
         BITMAP_WIDTH = 900
-        if not self.bitmap_updated or self.bitmap_updated < self.vector_updated:
+        if os.path.exists(self.vector_filename) and (not os.path.exists(self.bitmap_filename) or self.bitmap_updated < self.vector_updated):
             # Load the SVG file
             svg = rsvg.Handle()
             svg.write(self.vector)
@@ -132,47 +140,100 @@ class Page(DeclarativeBase):
             s = StringIO()
             surface.write_to_png(s)
             self.bitmap = s.getvalue()
-        return self._bitmap
+        if os.path.exists(self.bitmap_filename):
+            with open(self.bitmap_filename, 'rb') as f:
+                return f.read()
 
     def _set_bitmap(self, value):
         bitmap_cache = cache.get_cache('bitmap', expire=asint(config.get('cache_expire', 3600)))
         bitmap_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
-        self._bitmap = value
         if value:
-            self._bitmap_updated = datetime.now()
+            tmpfd, tmppath = tempfile.mkstemp(dir=config['dbfiles_dir'])
+            try:
+                with closing(os.fdopen(tmpfd, 'wb')) as tmpfile:
+                    tmpfile.write(value)
+            except:
+                os.unlink(tmppath)
+                raise
+            if sys.platform.startswith('win'):
+                try:
+                    os.unlink(self.bitmap_filename)
+                except OSError:
+                    pass
+            os.rename(tmppath, self.bitmap_filename)
         else:
-            self._bitmap_updated = None
-
-    def _get_bitmap_updated(self):
-        return self._bitmap_updated
-
-    def _set_bitmap_updated(self):
-        raise NotImplementedError
+            try:
+                os.unlink(self.bitmap_filename)
+            except OSError:
+                pass
 
     def _get_vector(self):
-        return self._vector
+        if os.path.exists(self.vector_filename):
+            with open(self.vector_filename, 'rb') as f:
+                return f.read()
 
     def _set_vector(self, value):
         vector_cache = cache.get_cache('vector', expire=asint(config.get('cache_expire', 3600)))
         vector_cache.remove_value(key=(self.comic_id, self.issue_number, self.number))
-        self._vector = value
         if value:
-            self._vector_updated = datetime.now()
+            tmpfd, tmppath = tempfile.mkstemp(suffix='.svg', dir=config['dbfiles_dir'])
+            try:
+                with closing(os.fdopen(tmpfd, 'wb')) as tmpfile:
+                    tmpfile.write(value)
+            except:
+                os.unlink(tmppath)
+                raise
+            if sys.platform.startswith('win'):
+                try:
+                    os.unlink(self.vector_filename)
+                except OSError:
+                    pass
+            os.rename(tmppath, self.vector_filename)
         else:
-            self._vector_updated = None
+            try:
+                os.unlink(self.vector_filename)
+            except OSError:
+                pass
 
-    def _get_vector_updated(self):
-        return self._vector_updated
+    bitmap = property(_get_bitmap, _set_bitmap)
+    vector = property(_get_vector, _set_vector)
+    thumbnail = property(_get_thumbnail, _set_thumbnail)
 
-    def _set_vector_updated(self):
-        raise NotImplementedError
+    @property
+    def thumbnail_filename(self):
+        return os.path.join(
+            config['dbfiles_dir'],
+            '%s_%d_%d_thumb.png' % (self.comic_id, self.issue_number, self.number)
+        )
 
-    bitmap = synonym('_bitmap', descriptor=property(_get_bitmap, _set_bitmap))
-    bitmap_updated = synonym('_bitmap_updated', descriptor=property(_get_bitmap_updated, _set_bitmap_updated))
-    vector = synonym('_vector', descriptor=property(_get_vector, _set_vector))
-    vector_updated = synonym('_vector_updated', descriptor=property(_get_vector_updated, _set_vector_updated))
-    thumbnail = synonym('_thumbnail', descriptor=property(_get_thumbnail, _set_thumbnail))
-    thumbnail_updated = synonym('_thumbnail_updated', descriptor=property(_get_thumbnail_updated, _set_thumbnail_updated))
+    @property
+    def thumbnail_updated(self):
+        if os.path.exists(self.thumbnail_filename):
+            return datetime.fromtimestamp(os.stat(self.thumbnail_filename).st_mtime)
+
+    @property
+    def bitmap_filename(self):
+        return os.path.join(
+            config['dbfiles_dir'],
+            '%s_%d_%d.png' % (self.comic_id, self.issue_number, self.number)
+        )
+
+    @property
+    def bitmap_updated(self):
+        if os.path.exists(self.bitmap_filename):
+            return datetime.fromtimestamp(os.stat(self.bitmap_filename).st_mtime)
+
+    @property
+    def vector_filename(self):
+        return os.path.join(
+            config['dbfiles_dir'],
+            '%s_%d_%d.svg' % (self.comic_id, self.issue_number, self.number)
+        )
+
+    @property
+    def vector_updated(self):
+        if os.path.exists(self.vector_filename):
+            return datetime.fromtimestamp(os.stat(self.vector_filename).st_mtime)
 
     @property
     def first(self):
@@ -224,10 +285,6 @@ class Issue(DeclarativeBase):
     description = Column(Unicode, default=u'', nullable=False)
     created = Column(DateTime, default=datetime.now, nullable=False)
     pages = relationship('Page', backref='issue', order_by=[Page.number])
-    _archive = Column('archive', LargeBinary(10485760))
-    _archive_updated = Column('archive_updated', DateTime)
-    _pdf = Column('pdf', LargeBinary(10485760))
-    _pdf_updated = Column('pdf_updated', DateTime)
 
     def __repr__(self):
         return '<Issue: comic=%s, issue=%d>' % (
@@ -244,7 +301,7 @@ class Issue(DeclarativeBase):
         self.pdf = None
 
     def _get_archive(self):
-        if not self.archive_updated or self.archive_updated < self.published:
+        if self.pages and (not os.path.exists(self.archive_filename) or self.archive_updated < self.published):
             if not self.published_pages:
                 self.archive = None
             else:
@@ -261,26 +318,36 @@ class Issue(DeclarativeBase):
                     archive.writestr('%02d.png' % page.number, page.bitmap)
                 archive.close()
                 self.archive = s.getvalue()
-        return self._archive
+        if os.path.exists(self.archive_filename):
+            with open(self.archive_filename, 'rb') as f:
+                return f.read()
 
     def _set_archive(self, value):
         archive_cache = cache.get_cache('archive', expire=asint(config.get('cache_expire', 3600)))
         archive_cache.remove_value(key=(self.comic_id, self.number))
-        self._archive = value
         if value:
-            self._archive_updated = datetime.now()
+            tmpfd, tmppath = tempfile.mkstemp(dir=config['dbfiles_dir'])
+            try:
+                with closing(os.fdopen(tmpfd, 'wb')) as tmpfile:
+                    tmpfile.write(value)
+            except:
+                os.unlink(tmppath)
+                raise
+            if sys.platform.startswith('win'):
+                try:
+                    os.unlink(self.archive_filename)
+                except OSError:
+                    pass
+            os.rename(tmppath, self.archive_filename)
         else:
-            self._archive_updated = None
-
-    def _get_archive_updated(self):
-        return self._archive_updated
-
-    def _set_archive_updated(self, value):
-        raise NotImplementedError
+            try:
+                os.unlink(self.archive_filename)
+            except OSError:
+                pass
 
     def _get_pdf(self):
         PDF_DPI = 72.0
-        if not self.pdf_updated or self.pdf_updated < self.published:
+        if self.pages and (not os.path.exists(self.pdf_filename) or self.pdf_updated < self.published):
             if not self.published_pages:
                 self.pdf = None
             else:
@@ -324,27 +391,59 @@ class Issue(DeclarativeBase):
                 s = StringIO()
                 pdf_out.write(s)
                 self.pdf = s.getvalue()
-        return self._pdf
+        if os.path.exists(self.pdf_filename):
+            with open(self.pdf_filename, 'rb') as f:
+                return f.read()
 
     def _set_pdf(self, value):
         pdf_cache = cache.get_cache('pdf', expire=asint(config.get('cache_expire', 3600)))
         pdf_cache.remove_value(key=(self.comic_id, self.number))
-        self._pdf = value
         if value:
-            self._pdf_updated = datetime.now()
+            tmpfd, tmppath = tempfile.mkstemp(dir=config['dbfiles_dir'])
+            try:
+                with closing(os.fdopen(tmpfd, 'wb')) as tmpfile:
+                    tmpfile.write(value)
+            except:
+                os.unlink(tmppath)
+                raise
+            if sys.platform.startswith('win'):
+                try:
+                    os.unlink(self.pdf_filename)
+                except OSError:
+                    pass
+            os.rename(tmppath, self.pdf_filename)
         else:
-            self._pdf_updated = None
+            try:
+                os.unlink(self.pdf_filename)
+            except OSError:
+                pass
 
-    def _get_pdf_updated(self):
-        return self._pdf_updated
+    archive = property(_get_archive, _set_archive)
+    pdf = property(_get_pdf, _set_pdf)
 
-    def _set_pdf_updated(self, value):
-        raise NotImplementedError
+    @property
+    def archive_filename(self):
+        return os.path.join(
+            config['dbfiles_dir'],
+            '%s_%d.zip' % (self.comic_id, self.number)
+        )
 
-    archive = synonym('_archive', descriptor=property(_get_archive, _set_archive))
-    archive_updated = synonym('_archive_updated', descriptor=property(_get_archive_updated, _set_archive_updated))
-    pdf = synonym('_pdf', descriptor=property(_get_pdf, _set_pdf))
-    pdf_updated = synonym('_pdf_updated', descriptor=property(_get_pdf_updated, _set_pdf_updated))
+    @property
+    def archive_updated(self):
+        if os.path.exists(self.archive_filename):
+            return datetime.fromtimestamp(os.stat(self.archive_filename).st_mtime)
+
+    @property
+    def pdf_filename(self):
+        return os.path.join(
+            config['dbfiles_dir'],
+            '%s_%d.pdf' % (self.comic_id, self.number)
+        )
+
+    @property
+    def pdf_updated(self):
+        if os.path.exists(self.pdf_filename):
+            return datetime.fromtimestamp(os.stat(self.pdf_filename).st_mtime)
 
     @property
     def published(self):
