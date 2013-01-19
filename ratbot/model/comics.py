@@ -13,9 +13,9 @@ import logging
 import tempfile
 
 from tg import cache, config
-from sqlalchemy import Table, ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
-from sqlalchemy.types import Unicode, Integer, DateTime, LargeBinary
-from sqlalchemy.orm import relationship, synonym, deferred
+from sqlalchemy import ForeignKey, ForeignKeyConstraint, CheckConstraint, Column, func, and_, or_
+from sqlalchemy.types import Unicode, Integer, DateTime
+from sqlalchemy.orm import relationship, synonym
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from ratbot.model import DeclarativeBase, metadata, DBSession
 from ratbot.model.auth import User

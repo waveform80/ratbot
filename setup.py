@@ -29,8 +29,8 @@ setup(
     name='ratbot',
     version='0.1',
     description='',
-    author='',
-    author_email='',
+    author='Dave Hughes',
+    author_email='dave@waveform.org.uk',
     #url='',
     install_requires=[
         "Pillow",
