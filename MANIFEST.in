@@ -1,4 +1,2 @@
-recursive-include ratbot/public *
-include ratbot/public/favicon.ico
-recursive-include ratbot/i18n *
-recursive-include ratbot/templates *
+include *.txt *.ini *.cfg *.rst
+recursive-include ratbot2 *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml

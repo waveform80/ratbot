@@ -1,24 +1,14 @@
-This file is for you to describe the ratbot application. Typically
-you would include information such as the information below:
+ratbot2 README
+==================
 
-Installation and Setup
-======================
+Getting Started
+---------------
 
-Install ``ratbot`` using the setup.py script::
+- cd <directory containing this file>
 
-    $ cd ratbot
-    $ python setup.py install
+- $venv/bin/python setup.py develop
 
-Create the project database for any model classes defined::
+- $venv/bin/initialize_ratbot2_db development.ini
 
-    $ paster setup-app development.ini
+- $venv/bin/pserve development.ini
 
-Start the paste http server::
-
-    $ paster serve development.ini
-
-While developing you may want the server to reload after changes in package files (or its dependencies) are saved. This can be achieved easily by adding the --reload option::
-
-    $ paster serve --reload development.ini
-
-Then you are ready to go.

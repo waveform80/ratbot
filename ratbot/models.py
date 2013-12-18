@@ -18,24 +18,32 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from pyramid.config import Configurator
-from sqlalchemy import engine_from_config
-
-from ratbot.models import (
-    DBSession,
-    Base,
+from sqlalchemy import (
+    Column,
+    Index,
+    Integer,
+    Text,
     )
 
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import (
+    scoped_session,
+    sessionmaker,
+    )
+from zope.sqlalchemy import ZopeTransactionExtension
 
-def main(global_config, **settings):
-    """
-    This function returns a Pyramid WSGI application.
-    """
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
-    config = Configurator(settings=settings)
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('home', '/')
-    config.scan()
-    return config.make_wsgi_app()
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+Base = declarative_base()
+
+
+class MyModel(Base):
+    __tablename__ = 'models'
+    id = Column(Integer, primary_key=True)
+    name = Column(Text)
+    value = Column(Integer)
+
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+Index('my_index', MyModel.name, unique=True, mysql_length=255)
