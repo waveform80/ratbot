@@ -18,37 +18,133 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from pyramid.response import Response
+from __future__ import (
+    unicode_literals,
+    absolute_import,
+    print_function,
+    division,
+    )
+str = type('')
+
+import logging
+log = logging.getLogger(__name__)
+
+import pytz
+from pyramid.decorator import reify
+from pyramid.renderers import get_renderer
+from pyramid.response import Response, FileResponse, FileIter
 from pyramid.view import view_config
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.orm import aliased
 
 from ratbot.models import (
     DBSession,
-    MyModel,
+    Page,
+    Issue,
+    Comic,
+    utcnow,
     )
 
 
-@view_config(route_name='home', renderer='templates/mytemplate.pt')
-def my_view(request):
-    try:
-        one = DBSession.query(MyModel).filter(MyModel.name == 'one').first()
-    except DBAPIError:
-        return Response(conn_err_msg, content_type='text/plain', status_int=500)
-    return {'one': one, 'project': 'ratbot'}
+class BaseView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-conn_err_msg = """\
-Pyramid is having a problem using your SQL database.  The problem
-might be caused by one of the following things:
+    @reify
+    def layout(self):
+        renderer = get_renderer('templates/layout.pt')
+        return renderer.implementation().macros['layout']
 
-1.  You may need to run the "initialize_ratbot_db" script
-    to initialize your database tables.  Check your virtual 
-    environment's "bin" directory for this script and try to run it.
+    @reify
+    def nav_bar(self):
+        renderer = get_renderer('templates/nav_bar.pt')
+        return renderer.implementation().macros['nav-bar']
 
-2.  Your database server may not be running.  Check that the
-    database server referred to by the "sqlalchemy.url" setting in
-    your "development.ini" file is running.
+    @reify
+    def site_title(self):
+        return self.request.registry.settings['site.title']
 
-After you fix the problem, please restart the Pyramid application to
-try it again.
-"""
 
+class ComicsView(BaseView):
+    @view_config(
+            route_name='index',
+            renderer='templates/index.pt')
+    def index(self):
+        first_page = aliased(Page)
+        all_pages = aliased(Page)
+        latest_issues = DBSession.query(Issue).join(all_pages).join(first_page).filter(
+                (first_page.published != None) &
+                (first_page.published <= utcnow()) &
+                (first_page.number == 1) &
+                (all_pages.published != None) &
+                (all_pages.published <= utcnow())
+                ).distinct().order_by(all_pages.published.desc())[:6]
+        return {
+                'latest_issues': latest_issues,
+                }
+
+    @view_config(
+            route_name='bio',
+            renderer='templates/bio.pt')
+    def bio(self):
+        return {}
+
+    @view_config(
+            route_name='links',
+            renderer='templates/links.pt')
+    def links(self):
+        return {}
+
+    @view_config(
+            route_name='comics',
+            renderer='templates/comics.pt')
+    def comics(self):
+        return {}
+
+    @view_config(
+            route_name='issues',
+            renderer='templates/issues.pt')
+    def issues(self):
+        return {}
+
+    @view_config(
+            route_name='issue',
+            renderer='templates/issue.pt')
+    def issue(self):
+        return {}
+
+    @view_config(route_name='issue_thumb')
+    def issue_thumb(self):
+        raise NotImplementedError
+
+    @view_config(route_name='issue_archive')
+    def issue_archive(self):
+        raise NotImplementedError
+
+    @view_config(route_name='issue_pdf')
+    def issue_pdf(self):
+        raise NotImplementedError
+
+    @view_config(
+            route_name='page',
+            renderer='templates/page.pt')
+    def page(self):
+        return {}
+
+    @view_config(route_name='page_bitmap')
+    def page_bitmap(self):
+        raise NotImplementedError
+
+    @view_config(route_name='page_vector')
+    def page_vector(self):
+        raise NotImplementedError
+
+    @view_config(route_name='page_thumb')
+    def page_thumb(self):
+        return FileResponse(
+                self.context.page.thumbnail_filename,
+                content_type='image/png')
+
+
+class AdminView(BaseView):
+    pass

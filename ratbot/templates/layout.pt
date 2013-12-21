@@ -1,0 +1,36 @@
+<foo tal:omit-tag="" metal:define-macro="layout"><!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><div metal:define-slot="title"></div> - ${view.site_title}</title>
+    <link rel="stylesheet" href="${request.static_url('ratbot:static/foundation5/css/foundation.css')}" />
+    <link rel="stylesheet" href="${request.static_url('ratbot:static/app.css')}" />
+    <script src="${request.static_url('ratbot:static/foundation5/js/modernizr.js')}"></script>
+  </head>
+  <body>
+
+    <foo metal:define-slot="content"></foo>
+
+    <footer>
+      <div class="row">
+        <div class="small-12 columns">
+          <p>Site design and content, copyright &copy; 2011-2013, <a
+              href="mailto:holly@ratbotcomics.com">Holly Jones</a>, all rights
+            reserved. <a href="https://github.com/waveform80/ratbot">Source
+            code</a> copyright &copy; 2013 <a
+              href="mailto:dave@waveform.org.uk">Dave Jones</a>, licensed
+            under the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GNU
+              GPL v3</a> or above.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="${request.static_url('ratbot:static/foundation5/js/jquery.js"></script>
+    <script src="${request.static_url('ratbot:static/foundation5/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>
+</foo>

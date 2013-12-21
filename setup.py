@@ -18,6 +18,16 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
+"""A web application for publishing comics."""
+
+# Python 3 compatibility
+from __future__ import (
+    unicode_literals,
+    absolute_import,
+    print_function,
+    division,
+    )
+str = type('')
 
 import os
 import sys
@@ -75,10 +85,11 @@ __requires__ = [
     'pyramid_debugtoolbar',
     'pyramid_mailer',
     'webhelpers<2.0dev',
-    'formencode<2.0dev',
     'zope.sqlalchemy',
     'waitress',
     'pillow<2.0dev',
+    'pypdf2',
+    'pytz',
     ]
 
 __extra_requires__ = {
