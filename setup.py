@@ -84,6 +84,7 @@ __requires__ = [
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'pyramid_mailer',
+    'pyramid_exclog',
     'webhelpers<2.0dev',
     'zope.sqlalchemy',
     'waitress',
