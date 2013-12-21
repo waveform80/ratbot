@@ -32,11 +32,21 @@ import logging
 log = logging.getLogger(__name__)
 
 from pyramid.config import Configurator
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
 from pyramid_mailer import mailer_factory_from_settings
 from sqlalchemy import engine_from_config
 
 from ratbot.models import DBSession
+from ratbot.security import (
+    RootContextFactory,
+    ComicContextFactory,
+    IssueContextFactory,
+    PageContextFactory,
+    get_user,
+    group_finder,
+    )
 
 
 ROUTES = {
@@ -44,15 +54,15 @@ ROUTES = {
     'bio':             r'/bio.html',
     'links':           r'/links.html',
     'comics':          r'/comics.html',
-    'issues':          r'/comics/{comic_id}.html',
-    'issue':           r'/comics/{comic_id}/{issue_number:\d+}.html',
-    'issue_thumb':     r'/comics/{comic_id}-{issue_number:\d+}.png',
-    'issue_archive':   r'/comics/{comic_id}-{issue_number:\d+}.zip',
-    'issue_pdf':       r'/comics/{comic_id}-{issue_number:\d+}.pdf',
-    'page':            r'/comics/{comic_id}/{issue_number:\d+}/{page_number:\d+}.html',
-    'page_bitmap':     r'/comics/images/{comic_id}/{issue_number:\d+}/{page_number:\d+}.png',
-    'page_vector':     r'/comics/images/{comic_id}/{issue_number:\d+}/{page_number:\d+}.svg',
-    'page_thumb':      r'/comics/thumbs/{comic_id}/{issue_number:\d+}/{page_number:\d+}.png',
+    'issues':          r'/comics/{comic}.html',
+    'issue':           r'/comics/{comic}/{issue:\d+}.html',
+    'issue_thumb':     r'/comics/{comic}-{issue:\d+}.png',
+    'issue_archive':   r'/comics/{comic}-{issue:\d+}.zip',
+    'issue_pdf':       r'/comics/{comic}-{issue:\d+}.pdf',
+    'page':            r'/comics/{comic}/{issue:\d+}/{page_number:\d+}.html',
+    'page_bitmap':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png',
+    'page_vector':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg',
+    'page_thumb':      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png',
     }
 
 
@@ -90,16 +100,30 @@ def main(global_config, **settings):
 
     session_factory = session_factory_from_settings(settings)
     mailer_factory = mailer_factory_from_settings(settings)
+    # XXX Need some way of grabbing the authentication secret from config
+    authn_policy = AuthTktAuthenticationPolicy(
+        'secret', hashalg='sha512', callback=group_finder)
+    authz_policy = ACLAuthorizationPolicy()
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
     config = Configurator(
             settings=settings,
             session_factory=session_factory)
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
+    config.add_request_method(get_user, b'user', reify=True)
     config.add_static_view('static', 'static', cache_max_age=3600)
     for name, url in ROUTES.items():
-        factory = None
+        if '{page:' in url:
+            factory = PageContextFactory
+        elif '{issue:' in url:
+            factory = IssueContextFactory
+        elif '{comic}' in url:
+            factory = ComicContextFactory
+        else:
+            factory = RootContextFactory
         config.add_route(name, url, factory=factory)
     config.scan()
     return config.make_wsgi_app()

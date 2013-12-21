@@ -78,7 +78,7 @@ class ComicsView(BaseView):
                 (first_page.number == 1) &
                 (all_pages.published != None) &
                 (all_pages.published <= utcnow())
-                ).distinct().order_by(all_pages.published.desc())[:6]
+                ).order_by(all_pages.published.desc()).from_self(Issue).distinct()[:6]
         return {
                 'latest_issues': latest_issues,
                 }
@@ -115,7 +115,9 @@ class ComicsView(BaseView):
 
     @view_config(route_name='issue_thumb')
     def issue_thumb(self):
-        raise NotImplementedError
+        page = self.context.issue.first_page
+        page.create_thumbnail()
+        return FileResponse(page.thumbnail_filename)
 
     @view_config(route_name='issue_archive')
     def issue_archive(self):
@@ -141,9 +143,8 @@ class ComicsView(BaseView):
 
     @view_config(route_name='page_thumb')
     def page_thumb(self):
-        return FileResponse(
-                self.context.page.thumbnail_filename,
-                content_type='image/png')
+        self.context.page.create_thumbnail()
+        return FileResponse(self.context.page.thumbnail_filename)
 
 
 class AdminView(BaseView):

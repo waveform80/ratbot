@@ -35,6 +35,7 @@ import logging
 import tempfile
 import shutil
 from datetime import datetime
+from contextlib import closing
 
 import pytz
 import rsvg
@@ -91,7 +92,7 @@ __all__ = [
 
 
 # Maximum size of a page thumbnail
-THUMB_RESOLUTION = (200, 200)
+THUMB_RESOLUTION = (100, 130)
 
 # Horizontal size to render bitmaps of a vector
 BITMAP_WIDTH = 900
@@ -224,8 +225,8 @@ class Page(Base):
     created = synonym('_created', descriptor=tz_property('_created'))
     published = synonym('_published', descriptor=tz_property('_published'))
 
-    thumbnail = file_property('thumbnail_filename', '_create_thumbnail')
-    bitmap = file_property('bitmap_filename', '_create_bitmap')
+    thumbnail = file_property('thumbnail_filename', 'create_thumbnail')
+    bitmap = file_property('bitmap_filename', 'create_bitmap')
     vector = file_property('vector_filename')
 
     thumbnail_updated = updated_property('thumbnail_filename')
@@ -264,15 +265,17 @@ class Page(Base):
             '%s_%d_%d.svg' % (self.comic_id, self.issue_number, self.number)
             )
 
-    def _create_thumbnail(self):
+    def create_thumbnail(self):
         # Ensure a bitmap exists to create the thumbnail from
-        self._create_bitmap()
+        self.create_bitmap()
         if (
                 os.path.exists(self.bitmap_filename) and
                 (not os.path.exists(self.thumbnail_filename) or
                     self.thumbnail_updated < self.bitmap_updated)
                 ):
-            img = Image.open(self.bitmap_open())
+            with closing(self.bitmap) as source:
+                img = Image.open(source)
+                img.load()
             (tw, th) = THUMB_RESOLUTION
             (iw, ih) = img.size
             if iw > tw or ih > th:
@@ -285,9 +288,10 @@ class Page(Base):
                     stream.seek(0)
                     self.thumbnail = stream
             else:
-                self.thumbnail = self.bitmap
+                with closing(self.bitmap) as source:
+                    self.thumbnail = source
 
-    def _create_bitmap(self):
+    def create_bitmap(self):
         if (
                 os.path.exists(self.vector_filename) and
                 (not os.path.exists(self.bitmap_filename) or
@@ -297,7 +301,8 @@ class Page(Base):
             # dirty hack given that svg isn't a file-like object, but too
             # tempting given that it's got a simple write() method for loading)
             svg = rsvg.Handle()
-            shutil.copyfileobj(self.vector, svg)
+            with closing(self.vector) as source:
+                shutil.copyfileobj(source, svg)
             svg.close()
             # Convert the vector to a bitmap
             surface = cairo.ImageSurface(
@@ -365,8 +370,8 @@ class Issue(Base):
 
     created = synonym('_created', descriptor=tz_property('_created'))
 
-    archive = file_property('archive_filename', '_create_archive')
-    pdf = file_property('pdf_filename', '_create_pdf')
+    archive = file_property('archive_filename', 'create_archive')
+    pdf = file_property('pdf_filename', 'create_pdf')
 
     archive_updated = updated_property('archive_filename')
     pdf_updated = updated_property('pdf_filename')
@@ -401,7 +406,7 @@ class Issue(Base):
             '%s_%d.pdf' % (self.comic_id, self.issue_number)
             )
 
-    def _create_archive(self):
+    def create_archive(self):
         if not self.published_pages.count():
             self.archive = None
         elif (not os.path.exists(self.archive_filename) or
@@ -417,12 +422,12 @@ class Issue(Base):
                             self.description,
                             )
                     for page in self.published_pages:
-                        page._create_bitmap()
+                        page.create_bitmap()
                         archive.write(page.bitmap, '%02d.png' % page.number)
                 temp.seek(0)
                 self.archive = temp
 
-    def _create_pdf(self):
+    def create_pdf(self):
         if not self.published_pages.count():
             self.pdf = None
         elif (not os.path.exists(self.pdf_filename) or
@@ -486,6 +491,10 @@ class Issue(Base):
             (Page.published != None) &
             (Page.published <= utcnow())
             ).order_by(Page.number)
+
+    @property
+    def first_page(self):
+        return self.published_pages.first()
 
     @property
     def published(self):
