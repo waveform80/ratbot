@@ -309,6 +309,11 @@ class Page(Base):
                 cairo.FORMAT_RGB24, BITMAP_WIDTH,
                 int(BITMAP_WIDTH * svg.props.height / svg.props.width))
             context = cairo.Context(surface)
+            # Paint the background of the surface white
+            context.set_source_rgb(1.0, 1.0, 1.0)
+            context.rectangle(0, 0, surface.get_width(), surface.get_height())
+            context.fill()
+            # Render the SVG onto the surface
             context.scale(
                     surface.get_width() / svg.props.width,
                     surface.get_height() / svg.props.height)
