@@ -14,7 +14,7 @@
     <div class="row">
       <div class="small-3 columns" tal:define="issue comic.latest_issue">
         <a href="${request.route_url('issues', comic=comic.id)}">
-          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="200" />
+          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" />
         </a>
       </div>
       <div class="small-9 large-6 columns">

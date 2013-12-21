@@ -16,7 +16,7 @@
       <ul class="small-block-grid-2 medium-block-grid-4">
         <li tal:repeat="issue context.comic.published_issues.order_by(Issue.number.desc())" class="comic text-center">
           <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
-            <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="200" />
+            <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" />
           </a>
           <a href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
             <h5>#${issue.number} - ${issue.title}</h5>
