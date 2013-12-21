@@ -27,7 +27,7 @@
     <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-6">
       <li tal:repeat="issue latest_issues">
         <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
-          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" />
+          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="100" />
         </a>
       </li>
     </ul>

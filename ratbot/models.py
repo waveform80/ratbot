@@ -92,7 +92,7 @@ __all__ = [
 
 
 # Maximum size of a page thumbnail
-THUMB_RESOLUTION = (100, 130)
+THUMB_RESOLUTION = (200, 300)
 
 # Horizontal size to render bitmaps of a vector
 BITMAP_WIDTH = 900
