@@ -1,0 +1,31 @@
+<foo metal:use-macro="view.layout">
+<div tal:omit-tag="True" metal:fill-slot="title">Comics</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header>
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <section tal:repeat="(index, comic) enumerate(comics)" class="comic">
+    <div class="row" tal:condition="index!=0">
+      <div class="small-12 columns">
+        <hr />
+      </div>
+    </div>
+    <div class="row">
+      <div class="small-3 columns" tal:define="issue comic.latest_issue">
+        <a href="${request.route_url('issues', comic=comic.id)}">
+          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="200" />
+        </a>
+      </div>
+      <div class="small-9 large-6 columns">
+        <h3><a href="${request.route_url('issues', comic=comic.id)}">${comic.title}</a></h3>
+        ${comic.description}
+      </div>
+      <div class="large-3 columns"></div>
+    </div>
+  </section>
+
+  <br />
+</div>
+</foo>
+

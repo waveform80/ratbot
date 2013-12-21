@@ -11,7 +11,7 @@
 
   <nav metal:define-macro="nav-bar">
     <div class="row">
-      <div class="medium-3 columns"><a href="#"><img src="${request.static_url('ratbot:static/comics.png')}" /> Comics</a></div>
+      <div class="medium-3 columns"><a href="${request.route_url('comics')}"><img src="${request.static_url('ratbot:static/comics.png')}" /> Comics</a></div>
       <div class="medium-3 columns"><a href="#"><img src="${request.static_url('ratbot:static/store.png')}" /> Store</a></div>
       <div class="medium-3 columns"><a href="#"><img src="${request.static_url('ratbot:static/blog.png')}" /> Blog</a></div>
       <div class="medium-3 columns"><a href="${request.route_url('bio')}"><img src="${request.static_url('ratbot:static/bio.png')}" /> Bio</a></div>

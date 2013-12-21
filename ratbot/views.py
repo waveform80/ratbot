@@ -99,7 +99,9 @@ class ComicsView(BaseView):
             route_name='comics',
             renderer='templates/comics.pt')
     def comics(self):
-        return {}
+        return {
+                'comics': DBSession.query(Comic),
+                }
 
     @view_config(
             route_name='issues',

@@ -14,7 +14,7 @@ header#logo img {
 footer {
     box-shadow: 0 1px 6px rgba(34, 25, 25, 0.6);
     background: #ddd;
-    padding: 30px 0;
+    padding: 20px 0;
     text-align: center;
 }
 
@@ -58,3 +58,10 @@ section#comics h2 {
     font-weight: 300;
     font-size: 16pt;
 }
+
+section.comic h3 a {
+    color: #333;
+    font-family: 'Open Sans Condensed', 'Helvetica Condensed', 'Arial Condensed', sans-serif;
+    font-weight: 300;
+}
+
