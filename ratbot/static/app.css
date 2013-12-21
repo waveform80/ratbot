@@ -59,9 +59,18 @@ section#comics h2 {
     font-size: 16pt;
 }
 
-section.comic h3 a {
-    color: #333;
+.comic h3 {
     font-family: 'Open Sans Condensed', 'Helvetica Condensed', 'Arial Condensed', sans-serif;
     font-weight: 300;
+}
+
+.comic h5 {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+h1 {
+    text-align: center;
 }
 

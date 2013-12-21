@@ -107,7 +107,9 @@ class ComicsView(BaseView):
             route_name='issues',
             renderer='templates/issues.pt')
     def issues(self):
-        return {}
+        return {
+                'Issue': Issue,
+                }
 
     @view_config(
             route_name='issue',

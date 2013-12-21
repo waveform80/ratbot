@@ -1,0 +1,36 @@
+<foo metal:use-macro="view.layout">
+<div tal:omit-tag="True" metal:fill-slot="title">${context.comic.title} Issues</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header>
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>${context.comic.title}</h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <ul class="small-block-grid-2 medium-block-grid-4">
+        <li tal:repeat="issue context.comic.published_issues.order_by(Issue.number.desc())" class="comic text-center">
+          <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
+            <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="200" />
+          </a>
+          <a href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
+            <h5>#${issue.number} - ${issue.title}</h5>
+          </a>
+          <p>
+          <a class="tiny button radius" href="${request.route_url('issue_pdf', comic=issue.comic_id, issue=issue.number)}">PDF</a>
+          <a class="tiny button radius" href="${request.route_url('issue_archive', comic=issue.comic_id, issue=issue.number)}">Zip</a>
+          </p>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</foo>
+
+
