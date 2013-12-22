@@ -32,7 +32,8 @@ log = logging.getLogger(__name__)
 import pytz
 from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
-from pyramid.response import Response, FileResponse, FileIter
+from pyramid.response import Response, FileResponse
+from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from sqlalchemy.orm import aliased
 
@@ -107,15 +108,19 @@ class ComicsView(BaseView):
             route_name='issues',
             renderer='templates/issues.pt')
     def issues(self):
+        issues = self.context.comic.published_issues.order_by(Issue.number.desc())
         return {
-                'Issue': Issue,
+                'issues': issues,
                 }
 
     @view_config(
             route_name='issue',
-            renderer='templates/issue.pt')
+            renderer='templates/page.pt')
     def issue(self):
-        return {}
+        self.context.page = self.context.issue.first_page
+        return {
+                'page_count': self.context.issue.published_pages.count(),
+                }
 
     @view_config(route_name='issue_thumb')
     def issue_thumb(self):
@@ -125,30 +130,35 @@ class ComicsView(BaseView):
 
     @view_config(route_name='issue_archive')
     def issue_archive(self):
-        raise NotImplementedError
+        self.context.issue.create_archive()
+        return FileResponse(self.context.issue.archive_filename)
 
     @view_config(route_name='issue_pdf')
     def issue_pdf(self):
-        raise NotImplementedError
+        self.context.issue.create_pdf()
+        return FileResponse(self.context.issue.pdf_filename)
 
     @view_config(
             route_name='page',
             renderer='templates/page.pt')
     def page(self):
-        return {}
-
-    @view_config(route_name='page_bitmap')
-    def page_bitmap(self):
-        raise NotImplementedError
-
-    @view_config(route_name='page_vector')
-    def page_vector(self):
-        raise NotImplementedError
+        return {
+                'page_count': self.context.issue.published_pages.count(),
+                }
 
     @view_config(route_name='page_thumb')
     def page_thumb(self):
         self.context.page.create_thumbnail()
         return FileResponse(self.context.page.thumbnail_filename)
+
+    @view_config(route_name='page_bitmap')
+    def page_bitmap(self):
+        self.context.page.create_bitmap()
+        return FileResponse(self.context.page.bitmap_filename)
+
+    @view_config(route_name='page_vector')
+    def page_vector(self):
+        return FileResponse(self.context.page.vector_filename)
 
 
 class AdminView(BaseView):

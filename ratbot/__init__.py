@@ -59,7 +59,7 @@ ROUTES = {
     'issue_thumb':     r'/comics/{comic}-{issue:\d+}.png',
     'issue_archive':   r'/comics/{comic}-{issue:\d+}.zip',
     'issue_pdf':       r'/comics/{comic}-{issue:\d+}.pdf',
-    'page':            r'/comics/{comic}/{issue:\d+}/{page_number:\d+}.html',
+    'page':            r'/comics/{comic}/{issue:\d+}/{page:\d+}.html',
     'page_bitmap':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png',
     'page_vector':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg',
     'page_thumb':      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png',

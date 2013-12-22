@@ -98,7 +98,7 @@ class RootContextFactory(object):
         ]
 
     def __init__(self, request):
-        self.comic = None
+        pass
 
 
 class ComicContextFactory(RootContextFactory):

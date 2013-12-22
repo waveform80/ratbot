@@ -19,6 +19,10 @@ except ImportError:
     crc32 = binascii.crc32
 
 
+ZIP_STORED = zipfile.ZIP_STORED
+ZIP_DEFLATED = zipfile.ZIP_DEFLATED
+
+
 class ZipFile(zipfile.ZipFile):
     def write(self, filename_or_obj, arcname=None, compress_type=None,
             mode=0o100664, modified=None):

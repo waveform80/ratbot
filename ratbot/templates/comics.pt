@@ -5,7 +5,7 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
-  <section tal:repeat="(index, comic) enumerate(comics)" class="comic">
+  <section tal:repeat="(index, comic) enumerate(comics)" id="comics">
     <div class="row" tal:condition="index != 0">
       <div class="small-12 columns">
         <hr />
@@ -18,7 +18,7 @@
         </a>
       </div>
       <div class="small-9 large-6 columns">
-        <a href="${request.route_url('issues', comic=comic.id)}"><h3>${comic.title}</h3></a>
+        <a href="${request.route_url('issues', comic=comic.id)}"><h2>${comic.title}</h2></a>
         ${comic.description}
       </div>
       <div class="large-3 columns"></div>

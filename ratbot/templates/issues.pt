@@ -5,16 +5,18 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
-  <div class="row">
-    <div class="small-12 columns">
-      <h1>${context.comic.title}</h1>
+  <header>
+    <div class="row">
+      <div class="small-12 columns">
+        <h1>${context.comic.title}</h1>
+      </div>
     </div>
-  </div>
+  </header>
 
   <div class="row">
     <div class="small-12 columns">
       <ul class="small-block-grid-2 medium-block-grid-4">
-        <li tal:repeat="issue context.comic.published_issues.order_by(Issue.number.desc())" class="comic text-center">
+        <li tal:repeat="issue issues" class="comic thumb">
           <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
             <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" />
           </a>

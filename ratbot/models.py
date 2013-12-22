@@ -71,9 +71,10 @@ from sqlalchemy.orm.exc import (
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from zope.sqlalchemy import ZopeTransactionExtension
+from pyramid.decorator import reify
 from pyramid.threadlocal import get_current_registry
 
-from ratbot.util import ZipFile
+from ratbot.util import ZipFile, ZIP_STORED
 
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
@@ -241,7 +242,7 @@ class Page(Base):
         return '%s, issue #%d, "%s", page #%d' % (
             self.issue.comic.title, self.issue.number, self.issue.title, self.number)
 
-    @property
+    @reify
     def thumbnail_filename(self):
         return os.path.join(
             get_current_registry().settings['site.files'],
@@ -249,7 +250,7 @@ class Page(Base):
             '%s_%d_%d.png' % (self.comic_id, self.issue_number, self.number)
             )
 
-    @property
+    @reify
     def bitmap_filename(self):
         return os.path.join(
             get_current_registry().settings['site.files'],
@@ -257,7 +258,7 @@ class Page(Base):
             '%s_%d_%d.png' % (self.comic_id, self.issue_number, self.number)
             )
 
-    @property
+    @reify
     def vector_filename(self):
         return os.path.join(
             get_current_registry().settings['site.files'],
@@ -323,39 +324,43 @@ class Page(Base):
                 stream.seek(0)
                 self.bitmap = stream
 
+    @reify
     def first(self):
         return DBSession.query(Page).filter(
-            (Page.comic_id == self.issue.comic.id) &
+            (Page.comic_id == self.comic_id) &
+            (Page.issue_number == self.issue_number) &
             (Page.published != None) &
             (Page.published <= utcnow())
-            ).order_by(Page.issue_number, Page.number).first()
+            ).order_by(Page.number).first()
 
+    @reify
     def last(self):
         return DBSession.query(Page).filter(
-            (Page.comic_id == self.issue.comic.id) &
+            (Page.comic_id == self.comic_id) &
+            (Page.issue_number == self.issue_number) &
             (Page.published != None) &
             (Page.published <= utcnow())
-            ).order_by(Page.issue_number.desc(), Page.number.desc()).first()
+            ).order_by(Page.number.desc()).first()
 
+    @reify
     def prior(self):
         return DBSession.query(Page).filter(
-            (Page.comic_id == self.issue.comic.id) &
+            (Page.comic_id == self.comic_id) &
+            (Page.issue_number == self.issue_number) &
             (Page.published != None) &
-            (Page.published <= utcnow()) & (
-                (Page.issue_number < self.issue.number) |
-                ((Page.issue_number == self.issue.number) & (Page.number < self.number))
-                )
-            ).order_by(Page.issue_number.desc(), Page.number.desc()).first()
+            (Page.published <= utcnow()) &
+            (Page.number < self.number)
+            ).order_by(Page.number.desc()).first()
 
+    @reify
     def next(self):
         return DBSession.query(Page).filter(
             (Page.comic_id == self.issue.comic.id) &
+            (Page.issue_number == self.issue_number) &
             (Page.published != None) &
-            (Page.published <= utcnow()) & (
-                (Page.issue_number > self.issue.number) |
-                ((Page.issue_number == self.issue_number) & (Page.number > self.number))
-                )
-            ).order_by(Page.issue_number, Page.number).first()
+            (Page.published <= utcnow()) &
+            (Page.number > self.number)
+            ).order_by(Page.number).first()
 
 
 class Issue(Base):
@@ -395,20 +400,20 @@ class Issue(Base):
         self.archive = None
         self.pdf = None
 
-    @property
+    @reify
     def archive_filename(self):
         return os.path.join(
             get_current_registry().settings['site.files'],
             'archives',
-            '%s_%d.zip' % (self.comic_id, self.issue_number)
+            '%s_%d.zip' % (self.comic_id, self.number)
             )
 
-    @property
+    @reify
     def pdf_filename(self):
         return os.path.join(
             get_current_registry().settings['site.files'],
             'pdfs',
-            '%s_%d.pdf' % (self.comic_id, self.issue_number)
+            '%s_%d.pdf' % (self.comic_id, self.number)
             )
 
     def create_archive(self):
@@ -419,9 +424,9 @@ class Issue(Base):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
                 # We don't bother with compression here as PNGs are already
                 # compressed (and zip usually can't do any better)
-                with ZipFile(temp, 'w', zipfile.ZIP_STORED) as archive:
+                with ZipFile(temp, 'w', ZIP_STORED) as archive:
                     archive.comment = '%s - Issue #%d - %s\n\n%s' % (
-                            self.comic_title,
+                            self.comic.title,
                             self.number,
                             self.title,
                             self.description,
@@ -453,7 +458,7 @@ class Issue(Base):
                     context = cairo.Context(surface)
                     context.scale(
                             PDF_DPI / svg.props.dpi_x,
-                            PDF_DPI / svg.props.dpi_Y)
+                            PDF_DPI / svg.props.dpi_y)
                     break
                 for page in self.published_pages:
                     svg = rsvg.Handle()
@@ -495,19 +500,42 @@ class Issue(Base):
             (Page.issue_number == self.number) &
             (Page.published != None) &
             (Page.published <= utcnow())
-            ).order_by(Page.number)
+            )
 
-    @property
+    @reify
     def first_page(self):
-        return self.published_pages.first()
+        return self.published_pages.order_by(Page.number).first()
 
-    @property
+    @reify
+    def last_page(self):
+        return self.published_pages.order_by(Page.number.desc()).first()
+
+    @reify
+    def prior(self):
+        return DBSession.query(Issue).join(Page).filter(
+            (Issue.comic_id == self.comic_id) &
+            (Issue.number < self.number) &
+            (Page.published != None) &
+            (Page.published <= utcnow())
+            ).order_by(Issue.number.desc()).first()
+
+    @reify
+    def next(self):
+        return DBSession.query(Issue).join(Page).filter(
+            (Issue.comic_id == self.comic_id) &
+            (Issue.number < self.number) &
+            (Page.published != None) &
+            (Page.published <= utcnow())
+            ).order_by(Issue.number).first()
+
+    @reify
     def published(self):
         # XXX Should be able to derive this from the published_pages query above
         try:
             return DBSession.query(func.max(Page.published)).filter(
                 (Page.comic_id == self.comic_id) &
                 (Page.issue_number == self.number) &
+                (Page.published != None) &
                 (Page.published <= utcnow())
                 ).scalar()
         except NoResultFound:
@@ -541,7 +569,7 @@ class Comic(Base):
                 (Issue.comic_id == self.id) &
                 (Page.published != None) &
                 (Page.published <= utcnow())
-                ).distinct()
+                )
 
     @property
     def first_issue(self):
