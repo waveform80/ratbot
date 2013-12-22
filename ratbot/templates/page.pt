@@ -20,10 +20,9 @@
         <img src="${request.route_url('page_bitmap', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
       </div>
     </div>
-    <br />
-    <div class="row" tal:condition="page_count &gt; 1">
-      <div class="small-12 columns pagination-centered">
-        <ul class="pagination">
+    <div class="row">
+      <div class="medium-6 columns">
+        <ul class="pagination" tal:condition="page_count &gt; 1">
           <li class="arrow" tal:condition="context.page.prior"><a href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.prior.number)}">&laquo; Prior</a></li>
           <li class="arrow unavailable" tal:condition="not context.page.prior"><a href="#">&laquo; Prior</a></li>
           <li tal:repeat="page context.issue.published_pages" tal:attributes="class 'current' if page == context.page else None">
@@ -32,6 +31,11 @@
           <li class="arrow" tal:condition="context.page.next"><a href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.next.number)}">Next &raquo;</a></li>
           <li class="arrow unavailable" tal:condition="not context.page.next"><a href="#">Next &raquo;</a></li>
         </ul>
+      </div>
+      <div class="medium-6 columns" id="details">
+        <p>
+        <strong>Published:</strong> ${context.page.published.strftime('%A, %d %B %Y, %H:%M')}
+        </p>
       </div>
     </div>
   </section>

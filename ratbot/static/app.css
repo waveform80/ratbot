@@ -91,9 +91,6 @@ section#latest h2 {
     font-size: 16pt;
 }
 
-section#comics {
-}
-
 .thumb img {
     max-height: 300px;
 }
@@ -103,6 +100,11 @@ section#page {
 }
 
 section#page img {
-    max-width: 900px;
+    margin-bottom: 1em;
 }
 
+section#page #details p {
+    text-align: right;
+    color: #666;
+    font-size: 10pt;
+}
