@@ -52,6 +52,7 @@ from ratbot.security import (
 ROUTES = {
     'index':           r'/',
     'bio':             r'/bio.html',
+    'blog':            r'/{comic:blog}/{issue:\d+}.html',
     'links':           r'/links.html',
     'comics':          r'/comics.html',
     'issues':          r'/comics/{comic}.html',
@@ -120,7 +121,7 @@ def main(global_config, **settings):
             factory = PageContextFactory
         elif '{issue:' in url:
             factory = IssueContextFactory
-        elif '{comic}' in url:
+        elif '{comic' in url:
             factory = ComicContextFactory
         else:
             factory = RootContextFactory

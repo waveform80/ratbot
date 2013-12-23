@@ -85,6 +85,12 @@ class ComicsView(BaseView):
                 }
 
     @view_config(
+            route_name='blog',
+            renderer='templates/blog.pt')
+    def blog(self):
+        return {}
+
+    @view_config(
             route_name='bio',
             renderer='templates/bio.pt')
     def bio(self):
