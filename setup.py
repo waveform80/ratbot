@@ -82,6 +82,7 @@ __requires__ = [
     'sqlalchemy<0.9dev',
     'transaction',
     'pyramid_tm',
+    'pyramid_beaker',
     'pyramid_debugtoolbar',
     'pyramid_mailer',
     'pyramid_exclog',
