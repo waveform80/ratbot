@@ -1,0 +1,41 @@
+<foo metal:use-macro="view.layout">
+<div tal:omit-tag="True" metal:fill-slot="title">Blog</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header>
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <div class="row">
+    <div class="medium-8 columns">
+      <section id="blog">
+        <h2>${context.issue.title}</h2>
+
+        <div tal:repeat="page pages" id="${page.number}">
+          <div class="lsf-icon" title="calendar">${page.published.strftime('%d %b %Y')}</div>
+          ${view.render_markup(page.markup, page.description)}
+          <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
+        </div>
+      </section>
+    </div>
+
+    <div class="medium-4 columns">
+      <div class="panel header-flush">
+        <h3>Other Posts</h3>
+        <section id="bloglist">
+          <ul class="side-nav">
+            <li tal:repeat="issue issues">
+            <a
+              tal:attributes="class 'active' if context.issue == issue else None"
+              href="${request.route_url('blog_issue', comic=issue.comic_id, issue=issue.number)}">${issue.title}</a>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <br />
+</div>
+</foo>
+
+

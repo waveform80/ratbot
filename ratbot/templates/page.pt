@@ -1,7 +1,7 @@
 <foo metal:use-macro="view.layout">
 <div tal:omit-tag="True" metal:fill-slot="title">${context.issue.title}, page ${context.page.number}</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
-  <header>
+  <header class="spaced">
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
@@ -19,6 +19,9 @@
       <div class="small-12 columns">
         <img src="${request.route_url('page_bitmap', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
       </div>
+    </div>
+    <div class="row" tal:condition="context.page.description">
+      ${view.render_markup(context.page.markup, context.page.description)}
     </div>
     <div class="row">
       <div class="medium-6 columns">

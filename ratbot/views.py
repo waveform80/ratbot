@@ -35,8 +35,10 @@ from pyramid.renderers import get_renderer
 from pyramid.response import Response, FileResponse
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
+from ratbot.markup import render
 from ratbot.models import (
     DBSession,
     Page,
@@ -44,6 +46,8 @@ from ratbot.models import (
     Comic,
     utcnow,
     )
+
+
 
 
 class BaseView(object):
@@ -65,6 +69,9 @@ class BaseView(object):
     def site_title(self):
         return self.request.registry.settings['site.title']
 
+    def render_markup(self, language, source):
+        return render(language, source)
+
 
 class ComicsView(BaseView):
     @view_config(
@@ -84,11 +91,26 @@ class ComicsView(BaseView):
                 'latest_issues': latest_issues,
                 }
 
+    @view_config(route_name='blog_index')
+    def blog_index(self):
+        return HTTPFound(
+            location=self.request.route_url(
+                'blog_issue',
+                comic=self.request.matchdict['comic'],
+                issue=DBSession.query(func.max(Issue.number)).\
+                    filter(Issue.comic_id == self.request.matchdict['comic']).scalar()
+                    ))
+
     @view_config(
-            route_name='blog',
+            route_name='blog_issue',
             renderer='templates/blog.pt')
-    def blog(self):
-        return {}
+    def blog_issue(self):
+        pages = self.context.issue.published_pages.order_by(Page.number.desc())
+        issues = self.context.issue.comic.published_issues.order_by(Issue.number.desc())
+        return {
+                'pages':  pages,
+                'issues': issues,
+                }
 
     @view_config(
             route_name='bio',
@@ -107,7 +129,7 @@ class ComicsView(BaseView):
             renderer='templates/comics.pt')
     def comics(self):
         return {
-                'comics': DBSession.query(Comic),
+                'comics': DBSession.query(Comic).filter(Comic.id != 'blog'),
                 }
 
     @view_config(

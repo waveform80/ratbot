@@ -1,7 +1,7 @@
 <foo metal:use-macro="view.layout">
 <div tal:omit-tag="True" metal:fill-slot="title">Bio</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
-  <header>
+  <header class="spaced">
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 

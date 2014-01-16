@@ -52,7 +52,8 @@ from ratbot.security import (
 ROUTES = {
     'index':           r'/',
     'bio':             r'/bio.html',
-    'blog':            r'/{comic:blog}/{issue:\d+}.html',
+    'blog_index':      r'/{comic:blog}/',
+    'blog_issue':      r'/{comic:blog}/{issue:\d+}.html',
     'links':           r'/links.html',
     'comics':          r'/comics.html',
     'issues':          r'/comics/{comic}.html',
@@ -117,9 +118,9 @@ def main(global_config, **settings):
     config.add_request_method(get_user, b'user', reify=True)
     config.add_static_view('static', 'static', cache_max_age=3600)
     for name, url in ROUTES.items():
-        if '{page:' in url:
+        if '{page' in url:
             factory = PageContextFactory
-        elif '{issue:' in url:
+        elif '{issue' in url:
             factory = IssueContextFactory
         elif '{comic' in url:
             factory = ComicContextFactory

@@ -172,37 +172,6 @@ def updated_property(filename_attr):
     return property(getter)
 
 
-class News(Base):
-    """
-    News article definition.
-    """
-
-    __tablename__ = 'news'
-
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    title = Column(Unicode(100), nullable=False)
-    content = Column(Unicode, nullable=False)
-    author = Column(Unicode(100), nullable=False)
-    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
-    _published = Column('published', DateTime, default=datetime.utcnow, nullable=True)
-
-    created = synonym('_created', descriptor=tz_property('_created'))
-    published = synonym('_published', descriptor=tz_property('_published'))
-
-    def __repr__(self):
-        return '<News: id=%d>' % self.id
-
-    def __unicode(self):
-        return self.title
-
-    @classmethod
-    def by_id(cls, id):
-        try:
-            return DBSession.query(cls).filter_by(id=id).one()
-        except NoResultFound:
-            return None
-
-
 class Page(Base):
     """
     Represents one page of a comic issue. A Page belongs to exactly one Issue.
@@ -222,6 +191,8 @@ class Page(Base):
             'created', DateTime, default=datetime.utcnow, nullable=False)
     _published = Column(
             'published', DateTime, default=datetime.utcnow, nullable=True)
+    markup = Column(Unicode(8), default='html', nullable=False)
+    description = Column(UnicodeText, default='', nullable=False)
 
     created = synonym('_created', descriptor=tz_property('_created'))
     published = synonym('_published', descriptor=tz_property('_published'))
@@ -373,6 +344,7 @@ class Issue(Base):
     comic_id = Column(Unicode(20), ForeignKey('comics.id'), primary_key=True)
     number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
     title = Column(Unicode(500), nullable=False)
+    markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(Unicode, default='', nullable=False)
     _created = Column(
             'created', DateTime, default=datetime.utcnow, nullable=False)
@@ -551,6 +523,7 @@ class Comic(Base):
 
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(200), nullable=False, unique=True)
+    markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
     _created = Column(
             'created', DateTime, default=datetime.utcnow, nullable=False)

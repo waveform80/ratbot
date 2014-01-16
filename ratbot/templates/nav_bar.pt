@@ -4,7 +4,7 @@
       <ul class="small-block-grid-2 medium-block-grid-4">
         <li><a href="${request.route_url('index')}"><img src="${request.static_url('ratbot:static/home.png')}" /> Home</a></li>
         <li><a href="#"><img src="${request.static_url('ratbot:static/store.png')}" /> Store</a></li>
-        <li><a href="#"><img src="${request.static_url('ratbot:static/blog.png')}" /> Blog</a></li>
+        <li><a href="${request.route_url('blog_index', comic='blog')}"><img src="${request.static_url('ratbot:static/blog.png')}" /> Blog</a></li>
         <li><a href="${request.route_url('bio')}"><img src="${request.static_url('ratbot:static/bio.png')}" /> Bio</a></li>
       </ul>
     </div>

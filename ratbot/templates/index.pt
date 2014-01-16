@@ -15,7 +15,7 @@
         <ul class="small-block-grid-2 medium-block-grid-4">
           <li><a href="${request.route_url('comics')}"><img src="${request.static_url('ratbot:static/comics.png')}" /> Comics</a></li>
           <li><a href="#"><img src="${request.static_url('ratbot:static/store.png')}" /> Store</a></li>
-          <li><a href="#"><img src="${request.static_url('ratbot:static/blog.png')}" /> Blog</a></li>
+          <li><a href="${request.route_url('blog_index', comic='blog')}"><img src="${request.static_url('ratbot:static/blog.png')}" /> Blog</a></li>
           <li><a href="${request.route_url('bio')}"><img src="${request.static_url('ratbot:static/bio.png')}" /> Bio</a></li>
         </ul>
       </div>
@@ -32,7 +32,7 @@
       <div class="small-12 columns">
         <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-6">
           <li tal:repeat="issue latest_issues">
-            <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
+            <a class="th radius" href="${request.route_url('blog_issue', comic='blog', issue=issue.number) if issue.comic_id == 'blog' else request.route_url('issue', comic=issue.comic_id, issue=issue.number)}">
               <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" width="100" />
             </a>
           </li>

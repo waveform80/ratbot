@@ -92,6 +92,9 @@ __requires__ = [
     'pillow<2.0dev',
     'pypdf2',
     'pytz',
+    'bleach<2.0dev',
+    'markdown<3.0dev',
+    'docutils<1.0dev',
     ]
 
 __extra_requires__ = {
