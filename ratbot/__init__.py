@@ -66,6 +66,10 @@ ROUTES = {
     'page_vector':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg',
     'page_thumb':      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png',
     'admin_index':     r'/admin/index.html',
+    'admin_user':      r'/admin/users/{user}.html',
+    'admin_user_new':  r'/admin/users/create.do',
+    'admin_comic':     r'/admin/comics/{comic}.html',
+    'admin_comic_new': r'/admin/comics/create.do',
     'logout':          r'/logout.do',
     }
 

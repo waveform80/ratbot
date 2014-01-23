@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="50px" width="50px" version="1.1" xmlns:cc="http://creativecommons.org/ns#" viewBox="0 0 50 50" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<metadata>
+<rdf:RDF>
+<cc:Work rdf:about="">
+<dc:format>image/svg+xml</dc:format>
+<dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+<dc:title>Facebook</dc:title>
+</cc:Work>
+</rdf:RDF>
+</metadata>
+<title>Facebook</title>
+<description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+<path sketch:type="MSShapeGroup" fill="#222" d="M25,50c13.807,0,25-11.193,25-25s-11.193-25-25-25-25,11.193-25,25,11.193,25,25,25zm0-3c12.15,0,22-9.85,22-22s-9.85-22-22-22-22,9.85-22,22,9.85,22,22,22z" fill-rule="evenodd"/>
+<path d="m11.357,34.639-0.83557,4.8572,4.8572-0.83557,20.882-20.882-4.0217-4.0217zm22.429-22.429,4.0217,4.0217,1.0165-1.0165-0.0221-0.0221c0.91971-1.054,0.94728-2.6152-0.20432-3.7714s-2.6138-1.1583-3.6627-0.36075zm-20.353,22.566,18.694-18.694,1.812,1.812-18.694,18.694z" fill-rule="evenodd" fill="#222"/>
+</svg>

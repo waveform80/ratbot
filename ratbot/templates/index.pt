@@ -64,7 +64,7 @@
       </div>
       <div class="small-12 columns" tal:condition="request.user">
         <h2>Logged in as: ${request.user.name}</h2>
-        <a href="${request.route_url('admin_index')}" tal:condition="request.user.admin">
+        <a href="${request.route_url('admin_index')}" tal:condition="view.has_permission(Permission.view_admin)">
           <img src="${request.static_url('ratbot:static/Administration.opt.svg')}"
             width="48" alt="Administration" title="Administration" />
         </a>

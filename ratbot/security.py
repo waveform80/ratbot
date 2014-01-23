@@ -44,35 +44,38 @@ from ratbot.models import (
     User,
     )
 
-# Permissions
-CREATE_USER      = 'create_user'
-EDIT_USER        = 'edit_user'
-DESTROY_USER     = 'destroy_user'
-CREATE_COMIC     = 'create_comic'
-EDIT_COMIC       = 'edit_comic'
-DESTROY_COMIC    = 'destroy_comic'
-VIEW_COMIC       = 'view_comic'
-VIEW_UNPUBLISHED = 'view_unpublished'
 
-# Permission groups
-ANONYMOUS_PERMISSIONS = (
-        VIEW_COMIC,
-        )
-AUTHENTICATED_PERMISSIONS = ANONYMOUS_PERMISSIONS + ()
-AUTHOR_PERMISSIONS = AUTHENTICATED_PERMISSIONS + (
-        CREATE_COMIC,
-        EDIT_COMIC,
-        DESTROY_COMIC,
-        VIEW_UNPUBLISHED,
-        )
-ADMIN_PERMISSIONS = AUTHOR_PERMISSIONS + (
-        CREATE_USER,
-        EDIT_USER,
-        DESTROY_USER,
-        )
+class Permission(object):
+    create_user      = 'create_user'
+    edit_user        = 'edit_user'
+    destroy_user     = 'destroy_user'
+    create_comic     = 'create_comic'
+    edit_comic       = 'edit_comic'
+    destroy_comic    = 'destroy_comic'
+    view_admin       = 'view_admin'
+    view_comic       = 'view_comic'
+    view_unpublished = 'view_unpublished'
 
-AUTHOR_PRINCIPAL = 'author'
-ADMIN_PRINCIPAL = 'admin'
+    anonymous = (
+            view_comic,
+            )
+    authenticated = anonymous + ()
+    author = authenticated + (
+            create_comic,
+            edit_comic,
+            destroy_comic,
+            view_unpublished,
+            )
+    admin = author + (
+            create_user,
+            edit_user,
+            destroy_user,
+            view_admin,
+            )
+
+class Principal(object):
+    author = 'author'
+    admin = 'admin'
 
 
 class RequestWithUser(Request):
@@ -89,10 +92,10 @@ class RequestWithUser(Request):
 
 class RootContextFactory(object):
     __acl__ = [
-        (Allow, Everyone,         ANONYMOUS_PERMISSIONS),
-        (Allow, Authenticated,    AUTHENTICATED_PERMISSIONS),
-        (Allow, AUTHOR_PRINCIPAL, AUTHOR_PERMISSIONS),
-        (Allow, ADMIN_PRINCIPAL,  ADMIN_PERMISSIONS),
+        (Allow, Everyone,         Permission.anonymous),
+        (Allow, Authenticated,    Permission.authenticated),
+        (Allow, Principal.author, Permission.author),
+        (Allow, Principal.admin,  Permission.admin),
         ]
 
     def __init__(self, request):
@@ -145,8 +148,8 @@ def group_finder(user_name, request):
     principals = []
     if isinstance(request.context, (ComicContextFactory, IssueContextFactory, PageContextFactory)):
         if user.id == request.context.comic.author_id:
-            principals.append(AUTHOR_PRINCIPAL)
+            principals.append(Principal.author)
     if user.admin:
-        principals.append(ADMIN_PRINCIPAL)
+        principals.append(Principal.admin)
     return principals
 

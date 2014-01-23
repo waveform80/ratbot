@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="50px"
+   width="50px"
+   version="1.1"
+   viewBox="0 0 50 50"
+   id="svg2"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="Edit.opt.svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="952"
+     inkscape:window-height="1017"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="9.44"
+     inkscape:cx="17.945465"
+     inkscape:cy="19.131688"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <metadata
+     id="metadata4">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Facebook</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title
+     id="title6">Facebook</title>
+  <description
+     id="description8">Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+  <path
+     d="M25,50c13.807,0,25-11.193,25-25s-11.193-25-25-25-25,11.193-25,25,11.193,25,25,25zm0-3c12.15,0,22-9.85,22-22s-9.85-22-22-22-22,9.85-22,22,9.85,22,22,22z"
+     fill-rule="evenodd"
+     sketch:type="MSShapeGroup"
+     fill="#222"
+     id="path10" />
+  <path
+     d="m 11.357,34.639 -0.83557,4.8572 4.8572,-0.83557 20.882,-20.882 -4.0217,-4.0217 z m 22.429,-22.429 4.0217,4.0217 1.0165,-1.0165 -0.0221,-0.0221 c 0.91971,-1.054 0.94728,-2.6152 -0.20432,-3.7714 -1.1516,-1.1562 -2.6138,-1.1583 -3.6627,-0.36075 z m -20.353407,22.566407 18.694,-18.694 1.812,1.812 -18.694,18.694 z"
+     id="path12"
+     inkscape:connector-curvature="0"
+     style="fill:#222222;fill-rule:evenodd"
+     sodipodi:nodetypes="ccccccccccsccccccc" />
+</svg>

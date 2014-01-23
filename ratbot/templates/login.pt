@@ -1,0 +1,9 @@
+<foo metal:use-macro="view.layout">
+<div tal:omit-tag="True" metal:fill-slot="title">Login</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <pre>
+  ${result}
+  </pre>
+</div>
+</foo>
+

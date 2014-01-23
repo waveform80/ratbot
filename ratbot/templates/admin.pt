@@ -1,0 +1,78 @@
+<foo metal:use-macro="view.layout">
+<div tal:omit-tag="True" metal:fill-slot="title">Administration</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header class="spaced">
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <section>
+    <div class="row">
+      <div class="small-12 columns">
+        <h2>Users
+          <a href="${request.route_url('admin_user_new')}">
+            <img
+              src="${request.static_url('ratbot:static/Add.svg')}"
+              width="32" alt="Add User" title="Add User" />
+          </a>
+        </h2>
+        <table>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Display Name</th>
+              <th>Administrator</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr tal:repeat="user users">
+              <td><a href="${request.route_url('admin_user', user=user.id)}">${user.id}</a></td>
+              <td>${user.name}</td>
+              <td>${'Yes' if user.admin else ''}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <hr />
+    </div>
+  </div>
+
+  <section>
+    <div class="row">
+      <div class="small-12 columns">
+        <h2>Comics
+          <a href="${request.route_url('admin_comic_new')}">
+            <img
+              src="${request.static_url('ratbot:static/Add.svg')}"
+              width="32" alt="Add Comic" title="Add Comic" />
+          </a>
+        </h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Comic ID</th>
+              <th>Title</th>
+              <th>Issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr tal:repeat="comic comics">
+              <td>${comic.id}</td>
+              <td>${comic.title}</td>
+              <td>${len(comic.issues)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <br />
+</div>
+</foo>
+
+

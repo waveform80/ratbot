@@ -36,7 +36,7 @@ from pyramid.renderers import get_renderer
 from pyramid.response import Response, FileResponse
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
-from pyramid.security import remember, forget
+from pyramid.security import remember, forget, has_permission
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
@@ -50,6 +50,17 @@ from ratbot.models import (
     Comic,
     User,
     utcnow,
+    )
+from ratbot.security import (
+    Permission,
+    Principal,
+    )
+from ratbot.forms import (
+    Form,
+    FormRendererFoundation,
+    )
+from ratbot.schemas import (
+    UserSchema,
     )
 
 
@@ -75,6 +86,9 @@ class BaseView(object):
     def render_markup(self, language, source):
         return render(language, source)
 
+    def has_permission(self, permission):
+        return has_permission(permission, self.context, self.request)
+
 
 class ComicsView(BaseView):
     @view_config(
@@ -91,6 +105,7 @@ class ComicsView(BaseView):
                 (all_pages.published <= utcnow())
                 ).order_by(all_pages.published.desc()).from_self(Issue).distinct()[:6]
         return {
+                'Permission': Permission,
                 'latest_issues': latest_issues,
                 'login_url': login_url,
                 }
@@ -236,6 +251,44 @@ class LoginView(BaseView):
 
 
 class AdminView(BaseView):
-    pass
+    @view_config(
+            route_name='admin_index',
+            permission=Permission.view_admin,
+            renderer='templates/admin.pt')
+    def index(self):
+        return {
+                'comics': DBSession.query(Comic).order_by(Comic.id),
+                'users': DBSession.query(User).order_by(User.id),
+                }
 
+    @view_config(
+            route_name='admin_user_new',
+            permission=Permission.create_user,
+            renderer='templates/user.pt')
+    def user_new(self):
+        form = Form(
+                self.request,
+                schema=UserSchema,
+                variable_decode=True)
+        if form.validate():
+            user = form.bind(User())
+            DBSession.add(user)
+            DBSession.flush()
+            return HTTPFound(location=self.request.route_url('admin_index'))
+        return dict(form=FormRendererFoundation(form))
 
+    @view_config(
+            route_name='admin_user',
+            permission=Permission.edit_user,
+            renderer='templates/user.pt')
+    def user_edit(self):
+        user = DBSession.query(User).get(self.request.matchdict['user'])
+        form = Form(
+                self.request,
+                obj=user,
+                schema=UserSchema,
+                variable_decode=True)
+        if form.validate():
+            form.bind(user)
+            return HTTPFound(location=self.request.route_url('admin_index'))
+        return dict(form=FormRendererFoundation(form))
