@@ -26,6 +26,7 @@ from __future__ import (
     )
 str = type('')
 
+import json
 import logging
 log = logging.getLogger(__name__)
 
@@ -33,10 +34,13 @@ import pytz
 from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
 from pyramid.response import Response, FileResponse
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
+from pyramid.security import remember, forget
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import NoResultFound
+from velruse.api import login_url
 
 from ratbot.markup import render
 from ratbot.models import (
@@ -44,10 +48,9 @@ from ratbot.models import (
     Page,
     Issue,
     Comic,
+    User,
     utcnow,
     )
-
-
 
 
 class BaseView(object):
@@ -89,6 +92,7 @@ class ComicsView(BaseView):
                 ).order_by(all_pages.published.desc()).from_self(Issue).distinct()[:6]
         return {
                 'latest_issues': latest_issues,
+                'login_url': login_url,
                 }
 
     @view_config(route_name='blog_index')
@@ -189,5 +193,49 @@ class ComicsView(BaseView):
         return FileResponse(self.context.page.vector_filename)
 
 
+class LoginView(BaseView):
+    @view_config(
+            context='velruse.AuthenticationComplete',
+            renderer='templates/login.pt')
+    def login_complete(self):
+        try:
+            email = self.context.profile['verifiedEmail']
+        except KeyError:
+            # No verified e-mail in profile
+            return HTTPForbidden()
+        try:
+            user = DBSession.query(User).filter(User.id == email).one()
+        except NoResultFound:
+            user = User(id=email, name=self.context.profile.get('displayName', email))
+            DBSession.add(user)
+            DBSession.flush()
+        return HTTPFound(
+            location=self.request.route_url('index'),
+            headers=remember(self.request, user.id))
+        #result = {
+        #    'provider_type': self.context.provider_type,
+        #    'provider_name': self.context.provider_name,
+        #    'profile': self.context.profile,
+        #    'credentials': self.context.credentials,
+        #    }
+        #return {
+        #    'result': json.dumps(result, indent=4),
+        #    }
+
+    @view_config(
+            context='velruse.AuthenticationDenied')
+    def login_denied(self):
+        return HTTPForbidden()
+
+    @view_config(
+            route_name='logout')
+    def logout(self):
+        return HTTPFound(
+            location=self.request.route_url('index'),
+            headers=forget(self.request))
+
+
 class AdminView(BaseView):
     pass
+
+

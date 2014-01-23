@@ -40,11 +40,11 @@ from sqlalchemy import engine_from_config
 
 from ratbot.models import DBSession
 from ratbot.security import (
+    RequestWithUser,
     RootContextFactory,
     ComicContextFactory,
     IssueContextFactory,
     PageContextFactory,
-    get_user,
     group_finder,
     )
 
@@ -65,16 +65,26 @@ ROUTES = {
     'page_bitmap':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png',
     'page_vector':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg',
     'page_thumb':      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png',
+    'admin_index':     r'/admin/index.html',
+    'logout':          r'/logout.do',
     }
 
 
 def main(global_config, **settings):
     """Returns the Pyramid WSGI application"""
-    # Check we're not using production.ini verbatim
-    for key in ('authn.secret', 'session.secret'):
+    # Ensure we're not using production.ini verbatim
+    for key in (
+            'authn.secret',
+            'session.secret',
+            'login.google.consumer_key',
+            'login.google.consumer_secret',
+            'login.facebook.consumer_key',
+            'login.facebook.consumer_secret',
+            ):
         if settings.get(key) == 'CHANGEME':
             raise ValueError('You must specify a new value for %s' % key)
 
+    # Ensure paths are configured appropriately
     files_dir = settings['site.files']
     for d in (
             files_dir,
@@ -111,11 +121,16 @@ def main(global_config, **settings):
 
     config = Configurator(
             settings=settings,
-            session_factory=session_factory)
+            session_factory=session_factory,
+            request_factory=RequestWithUser,
+            )
+    config.include('velruse.providers.google_oauth2')
+    config.include('velruse.providers.facebook')
+    config.add_google_oauth2_login_from_settings(prefix='login.google.')
+    config.add_facebook_login_from_settings(prefix='login.facebook.')
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
-    config.add_request_method(get_user, b'user', reify=True)
     config.add_static_view('static', 'static', cache_max_age=3600)
     for name, url in ROUTES.items():
         if '{page' in url:

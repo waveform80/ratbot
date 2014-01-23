@@ -53,6 +53,7 @@ from sqlalchemy import (
     event,
     )
 from sqlalchemy.types import (
+    Boolean,
     Unicode,
     UnicodeText,
     Integer,
@@ -87,7 +88,7 @@ __all__ = [
     'Comic',
     'Issue',
     'Page',
-    'News',
+    'User',
     'utcnow',
     ]
 
@@ -523,11 +524,12 @@ class Comic(Base):
 
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(200), nullable=False, unique=True)
+    author_id = Column(
+            'author_id', Unicode(200), ForeignKey('users.id'), nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
     _created = Column(
             'created', DateTime, default=datetime.utcnow, nullable=False)
-    author = Column(Unicode(100), nullable=False)
     issues = relationship(Issue, backref='comic', order_by=[Issue.number])
 
     def __repr__(self):
@@ -551,4 +553,31 @@ class Comic(Base):
     @property
     def latest_issue(self):
         return self.published_issues.order_by(Issue.number.desc()).first()
+
+
+class User(Base):
+    """
+    Represents a comic reader or author on the site. All authentication is
+    handled by third-party providers so here we only store the user's site
+    authorizations.
+    """
+
+    __tablename__ = 'users'
+
+    id = Column(Unicode(200), primary_key=True)
+    name = Column(Unicode(200), nullable=False)
+    admin = Column(Boolean, default=False, nullable=False)
+    comics = relationship(Comic, backref='author')
+
+    @reify
+    def issues(self):
+        return DBSession.query(Issue).join(Page).join(User).filter(
+            (User.id == self.id)
+            ).distinct()
+
+    @reify
+    def comics(self):
+        return DBSession.query(Comic).join(Issue).join(Page).join(User).filter(
+            (User.id == self.id)
+            ).distinct()
 

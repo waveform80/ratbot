@@ -122,6 +122,10 @@ ul li.comic {
     text-align: center;
 }
 
+.thumb img {
+    max-height: 300px;
+}
+
 section#latest {
     background: #262626;
     padding: 20px 0 40px 0;
@@ -135,8 +139,16 @@ section#latest h2 {
     font-size: 16pt;
 }
 
-.thumb img {
-    max-height: 300px;
+section#auth {
+    background: #535353;
+    padding: 20px 0 40px 0;
+    text-align: center;
+}
+
+section#auth h2 {
+    font-family: 'Open Sans Condensed', 'Helvetica Condensed', 'Arial Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 16pt;
 }
 
 section#page {

@@ -95,6 +95,7 @@ __requires__ = [
     'bleach<2.0dev',
     'markdown<3.0dev',
     'docutils<1.0dev',
+    'velruse<2.0dev',
     ]
 
 __extra_requires__ = {

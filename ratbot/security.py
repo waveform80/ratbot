@@ -27,6 +27,7 @@ from __future__ import (
 str = type('')
 
 
+from pyramid.request import Request
 from pyramid.decorator import reify
 from pyramid.security import (
     Allow,
@@ -40,6 +41,7 @@ from ratbot.models import (
     Comic,
     Issue,
     Page,
+    User,
     )
 
 # Permissions
@@ -73,20 +75,16 @@ AUTHOR_PRINCIPAL = 'author'
 ADMIN_PRINCIPAL = 'admin'
 
 
-def get_user(request):
-    user_name = unauthenticated_userid(request)
-    if user_name is not None:
-        # TODO return a proper user object here
-        return user_name
+class RequestWithUser(Request):
+    @reify
+    def db(self):
+        return DBSession()
 
-def group_finder(user_name, request):
-    user = request.user
-    principals = []
-    if request.context is not None:
-        if user.name == request.context.comic.author:
-            principals.append(AUTHOR_PRINCIPAL)
-    if user.is_admin:
-        principals.append(ADMIN_PRINCIPAL)
+    @reify
+    def user(self):
+        user_id = unauthenticated_userid(self)
+        if user_id:
+            return DBSession.query(User).get(user_id)
 
 
 class RootContextFactory(object):
@@ -138,4 +136,17 @@ class PageContextFactory(RootContextFactory):
     @reify
     def comic(self):
         return self.issue.comic
+
+
+def group_finder(user_name, request):
+    user = request.user
+    if not user:
+        return None
+    principals = []
+    if isinstance(request.context, (ComicContextFactory, IssueContextFactory, PageContextFactory)):
+        if user.id == request.context.comic.author_id:
+            principals.append(AUTHOR_PRINCIPAL)
+    if user.admin:
+        principals.append(ADMIN_PRINCIPAL)
+    return principals
 
