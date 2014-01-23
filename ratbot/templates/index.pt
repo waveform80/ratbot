@@ -46,26 +46,32 @@
       <div class="small-12 columns" tal:condition="not request.user">
         <h2>Login</h2>
         <a href="${login_url(request, 'facebook')}">
-          <img src="${request.static_url('ratbot:static/Facebook.svg')}"
+          <img src="${request.static_url('ratbot:static/Facebook.opt.svg')}"
             width="48" alt="Login with Facebook" title="Login with Facebook" />
         </a>
         <a href="${login_url(request, 'google')}">
-          <img src="${request.static_url('ratbot:static/Google+.svg')}"
+          <img src="${request.static_url('ratbot:static/Google+.opt.svg')}"
             width="48" alt="Login with Google+" title="Login with Google+" />
         </a>
         <a href="#">
-          <img src="${request.static_url('ratbot:static/Twitter.svg')}"
+          <img src="${request.static_url('ratbot:static/Twitter.opt.svg')}"
             width="48" alt="Login with Twitter" title="Login with Twitter" />
         </a>
         <a href="#">
-          <img src="${request.static_url('ratbot:static/LinkedIn.svg')}"
+          <img src="${request.static_url('ratbot:static/LinkedIn.opt.svg')}"
             width="48" alt="Login with LinkedIn" title="Login with LinkedIn" />
         </a>
       </div>
       <div class="small-12 columns" tal:condition="request.user">
         <h2>Logged in as: ${request.user.name}</h2>
-        <a href="${request.route_url('admin_index')}" tal:condition="request.user.admin">Administration</a>
-        <a href="${request.route_url('logout')}">Logout</a>
+        <a href="${request.route_url('admin_index')}" tal:condition="request.user.admin">
+          <img src="${request.static_url('ratbot:static/Administration.opt.svg')}"
+            width="48" alt="Administration" title="Administration" />
+        </a>
+        <a href="${request.route_url('logout')}">
+          <img src="${request.static_url('ratbot:static/Logout.opt.svg')}"
+            width="48" alt="Logout" title="Logout" />
+        </a>
       </div>
     </div>
   </section>
