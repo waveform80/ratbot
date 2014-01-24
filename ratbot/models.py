@@ -525,7 +525,7 @@ class Comic(Base):
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(200), nullable=False, unique=True)
     author_id = Column(
-            'author_id', Unicode(200), ForeignKey('users.id'), nullable=False)
+            Unicode(200), ForeignKey('users.id'), nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
     _created = Column(
@@ -567,17 +567,19 @@ class User(Base):
     id = Column(Unicode(200), primary_key=True)
     name = Column(Unicode(200), nullable=False)
     admin = Column(Boolean, default=False, nullable=False)
+    markup = Column(Unicode(8), default='html', nullable=False)
+    description = Column(UnicodeText, default='', nullable=False)
     comics = relationship(Comic, backref='author')
+
+    def __repr__(self):
+        return '<User: id=%s>' % self.id
+
+    def __unicode__(self):
+        return self.name
 
     @reify
     def issues(self):
         return DBSession.query(Issue).join(Page).join(User).filter(
-            (User.id == self.id)
-            ).distinct()
-
-    @reify
-    def comics(self):
-        return DBSession.query(Comic).join(Issue).join(Page).join(User).filter(
             (User.id == self.id)
             ).distinct()
 

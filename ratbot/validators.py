@@ -33,7 +33,9 @@ from formencode import (
     validators,
     )
 
+from ratbot.markup import MARKUP_LANGUAGES
 from ratbot.models import (
+    DBSession,
     Comic,
     Issue,
     Page,
@@ -46,8 +48,15 @@ class ValidPositiveInt(validators.Int):
         super(ValidPositiveInt, self).__init__(not_empty=True, min=0)
 
 
+class ValidUser(validators.OneOf):
+    def __init__(self):
+        super(ValidUser, self).__init__(
+            DBSession.query(User.id), not_empty=True)
+
+
 class ValidUserId(validators.Email):
-    pass
+    def __init__(self):
+        super(ValidUserId, self).__init__(not_empty=True)
 
 
 class ValidUserName(validators.UnicodeString):
@@ -58,3 +67,28 @@ class ValidUserName(validators.UnicodeString):
 
 class ValidUserAdmin(validators.Bool):
     pass
+
+
+class ValidMarkupLanguage(validators.OneOf):
+    def __init__(self):
+        super(ValidMarkupLanguage, self).__init__(
+            MARKUP_LANGUAGES.keys(), not_empty=True)
+
+
+class ValidDescription(validators.UnicodeString):
+    def __init__(self):
+        super(ValidDescription, self).__init__(not_empty=False)
+
+
+class ValidComicId(validators.Regex):
+    def __init__(self):
+        super(ValidComicId, self).__init__(
+            r'^[A-Za-z][A-Za-z0-9_-]{,19}$', not_empty=True, strip=True)
+
+
+class ValidComicTitle(validators.UnicodeString):
+    def __init__(self):
+        super(ValidComicTitle, self).__init__(
+            not_empty=True, max=Comic.__table__.c.title.type.length)
+
+

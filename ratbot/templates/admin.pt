@@ -8,29 +8,16 @@
   <section>
     <div class="row">
       <div class="small-12 columns">
-        <h2>Users
-          <a href="${request.route_url('admin_user_new')}">
-            <img
-              src="${request.static_url('ratbot:static/Add.svg')}"
-              width="32" alt="Add User" title="Add User" />
-          </a>
-        </h2>
-        <table>
-          <thead>
-            <tr>
-              <th>User ID</th>
-              <th>Display Name</th>
-              <th>Administrator</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr tal:repeat="user users">
-              <td><a href="${request.route_url('admin_user', user=user.id)}">${user.id}</a></td>
-              <td>${user.name}</td>
-              <td>${'Yes' if user.admin else ''}</td>
-            </tr>
-          </tbody>
-        </table>
+        <h2>Users</h2>
+        <ul class="medium-block-grid-2 large-block-grid-3">
+          <li tal:repeat="user users">
+            <div class="panel radius">
+              <strong><a href="${request.route_url('admin_user', user=user.id)}">${user.id}</a></strong><br />
+              <strong>${user.name}</strong> ${'(Adminstrator)' if user.admin else ''}
+            </div>
+          </li>
+        </ul>
+        <a class="small button radius" href="${request.route_url('admin_user_new')}">New User</a>
       </div>
     </div>
   </section>
@@ -44,29 +31,17 @@
   <section>
     <div class="row">
       <div class="small-12 columns">
-        <h2>Comics
-          <a href="${request.route_url('admin_comic_new')}">
-            <img
-              src="${request.static_url('ratbot:static/Add.svg')}"
-              width="32" alt="Add Comic" title="Add Comic" />
-          </a>
-        </h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Comic ID</th>
-              <th>Title</th>
-              <th>Issues</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr tal:repeat="comic comics">
-              <td>${comic.id}</td>
-              <td>${comic.title}</td>
-              <td>${len(comic.issues)}</td>
-            </tr>
-          </tbody>
-        </table>
+        <h2>Comics</h2>
+        <ul class="medium-block-grid-2 large-block-grid-3">
+          <li tal:repeat="(comic, author, issues) comics">
+            <div class="panel radius">
+              <strong><a href="${request.route_url('admin_comic', comic=comic.id)}">${comic.title}</a></strong><br />
+              Author: <strong>${author}</strong><br />
+              Issues: <strong>${issues}</strong>
+            </div>
+          </li>
+        </ul>
+        <a class="small button radius" href="${request.route_url('admin_comic_new')}">New Comic</a>
       </div>
     </div>
   </section>

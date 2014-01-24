@@ -34,9 +34,14 @@ from formencode import (
 
 from ratbot.validators import (
     ForEach,
+    ValidUser,
     ValidUserId,
     ValidUserName,
     ValidUserAdmin,
+    ValidMarkupLanguage,
+    ValidDescription,
+    ValidComicId,
+    ValidComicTitle,
     )
 
 
@@ -53,4 +58,14 @@ class UserSchema(FormSchema):
     id = ValidUserId()
     name = ValidUserName()
     admin = ValidUserAdmin()
+    markup = ValidMarkupLanguage()
+    description = ValidDescription()
+
+
+class ComicSchema(FormSchema):
+    id = ValidComicId()
+    title = ValidComicTitle()
+    author_id = ValidUser()
+    markup = ValidMarkupLanguage()
+    description = ValidDescription()
 

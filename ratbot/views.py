@@ -42,7 +42,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
 from velruse.api import login_url
 
-from ratbot.markup import render
+from ratbot.markup import MARKUP_LANGUAGES, render
 from ratbot.models import (
     DBSession,
     Page,
@@ -61,6 +61,7 @@ from ratbot.forms import (
     )
 from ratbot.schemas import (
     UserSchema,
+    ComicSchema,
     )
 
 
@@ -135,7 +136,9 @@ class ComicsView(BaseView):
             route_name='bio',
             renderer='templates/bio.pt')
     def bio(self):
-        return {}
+        return {
+                'authors': DBSession.query(User).join(Comic).distinct().order_by(User.name),
+                }
 
     @view_config(
             route_name='links',
@@ -251,13 +254,17 @@ class LoginView(BaseView):
 
 
 class AdminView(BaseView):
+    @reify
+    def markup_languages(self):
+        return MARKUP_LANGUAGES
+
     @view_config(
             route_name='admin_index',
             permission=Permission.view_admin,
             renderer='templates/admin.pt')
     def index(self):
         return {
-                'comics': DBSession.query(Comic).order_by(Comic.id),
+                'comics': DBSession.query(Comic, User.name, func.count()).join(Issue).join(User).group_by(Comic, User.name).order_by(Comic.id),
                 'users': DBSession.query(User).order_by(User.id),
                 }
 
@@ -292,3 +299,42 @@ class AdminView(BaseView):
             form.bind(user)
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(form=FormRendererFoundation(form))
+
+    @view_config(
+            route_name='admin_comic_new',
+            permission=Permission.create_comic,
+            renderer='templates/comic.pt')
+    def comic_new(self):
+        form = Form(
+                self.request,
+                schema=ComicSchema,
+                variable_decode=True)
+        if form.validate():
+            comic = form.bind(Comic())
+            DBSession.add(comic)
+            DBSession.flush()
+            return HTTPFound(location=self.request.route_url('admin_index'))
+        return dict(
+                form=FormRendererFoundation(form),
+                authors=DBSession.query(User.id, User.name).order_by(User.name),
+                )
+
+    @view_config(
+            route_name='admin_comic',
+            permission=Permission.edit_comic,
+            renderer='templates/comic.pt')
+    def comic_edit(self):
+        comic = DBSession.query(Comic).get(self.request.matchdict['comic'])
+        form = Form(
+                self.request,
+                obj=comic,
+                schema=ComicSchema,
+                variable_decode=True)
+        if form.validate():
+            form.bind(comic)
+            return HTTPFound(location=self.request.route_url('admin_index'))
+        return dict(
+                form=FormRendererFoundation(form),
+                authors=DBSession.query(User.id, User.name).order_by(User.name),
+                )
+

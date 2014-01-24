@@ -192,3 +192,10 @@ section#bloglist a.active {
     font-weight: bold;
 }
 
+textarea.mono {
+    font-family: monospace;
+}
+
+textarea.mono {
+    height: auto;
+}

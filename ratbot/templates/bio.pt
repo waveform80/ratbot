@@ -11,17 +11,11 @@
     </div>
   </div>
 
-  <div class="row">
-    <div class="large-4 columns"></div>
-    <div class="large-8 columns">
-      <p>I finished my PhD in palaeobiochemistry in 2013 and now work as a
-      technician. After getting into comics a few years ago, I decided to try
-      drawing some of my own. The Major Mass Spec series was the first one I
-      created and is based on the experiences of, and people in my research
-      group.  The Ratbot comics logo was inspred by my pet rats, Jay and Silent
-      Bob.</p>
-      <p>You can get in touch with me at <a
-      href="mailto:holly@ratbotcomics.com">holly@ratbotcomics.com</a>.</p>
+  <div class="row" tal:repeat="author authors">
+    <div class="small-12 columns">
+      <hr />
+      <h2>${author.name}</h2>
+      ${view.render_markup(author.markup, author.description)}
     </div>
   </div>
 </div>

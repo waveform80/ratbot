@@ -562,7 +562,7 @@ class FormRenderer(object):
         """
         id = id or name
         return tag.textarea(
-                name=name, value=self.value(name, content), id=id, **attrs)
+            self.value(name, content), name=name, id=id, **attrs)
 
     def select(self, name, options=None, selected_value=None, id=None, **attrs):
         """
@@ -574,15 +574,15 @@ class FormRenderer(object):
             assert isinstance(validator, validators.OneOf)
             options = validator.list
         selected_value = self.value(name, selected_value)
-        options = []
+        options_html = []
         for option in options:
             try:
                 value, label = option
             except (TypeError, ValueError):
                 value = label = option
-            options.append(tag.option(
+            options_html.append(tag.option(
                 label, value=value, selected=value==selected_value))
-        return tag.select(*options, name=name, id=id, **attrs)
+        return tag.select(*options_html, name=name, id=id, **attrs)
 
     def radio(self, name, value, id=None, checked=False, label=None, **attrs):
         """
@@ -612,6 +612,15 @@ class FormRenderer(object):
             return tag.label(checkbox, label, for_=None, id=id)
         else:
             return checkbox
+
+    def button(self, name, value='1', id=None, **attrs):
+        """
+        Outputs a form button.
+        """
+        id = id or name
+        return tag.input(
+                type_='button', name=name, value=self.value(name, value),
+                id=id, **attrs)
 
     def submit(self, name='submit', value='Submit', id=None, **attrs):
         """
@@ -759,6 +768,14 @@ class FormRendererFoundation(FormRenderer):
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
+
+    def button(self, name, value='1', id=None, cols=None, **attrs):
+        attrs = css_add_class(attrs, 'button')
+        attrs = css_add_class(attrs, 'radius')
+        result = super(FormRendererFoundation, self).button(name, value, id, **attrs)
+        return self.column(
+                name, result, self.label_columns + self.input_columns if cols is None else cols,
+                errors=False)
 
     def submit(self, name='submit', value='Submit', id=None, cancel=True,
             cols=None, **attrs):

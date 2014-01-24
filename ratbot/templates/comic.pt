@@ -1,4 +1,4 @@
-<foo metal:use-macro="view.layout" tal:define="title 'Edit User' if form.data else 'Create User'">
+<foo metal:use-macro="view.layout" tal:define="title 'Edit Comic' if form.data else 'Create Comic'">
 <div tal:omit-tag="True" metal:fill-slot="title">${title}</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
   <header class="spaced">
@@ -12,30 +12,30 @@
   </div>
 
   <section>
-    ${form.begin(id='user', inline=False)}
-
-    <div class="row">
-      <div class="small-12 columns">
-        ${form.checkbox('admin', label=' Administrator', value=1)}
-      </div>
-    </div>
+    ${form.begin(id='comic', inline=False)}
 
     <div class="row">
       <div class="medium-6 columns">
-        ${form.label('id', 'User ID')}
-        ${form.email('id', placeholder='someone@somewhere.org')}
+        ${form.label('id', 'Comic ID')}
+        ${form.email('id', placeholder='my-comic')}
         ${form.error_small('id')}
       </div>
 
       <div class="medium-6 columns">
-        ${form.label('name', 'Display Name')}
-        ${form.text('name', placeholder='Name')}
+        ${form.label('title', 'Title')}
+        ${form.email('title', placeholder='My Comic')}
         ${form.error_small('name')}
       </div>
     </div>
 
     <div class="row">
-      <div class="small-12 columns">
+      <div class="medium-6 medium-push-6 columns">
+        ${form.label('author_id', 'Author')}
+        ${form.select('author_id', options=authors)}
+        ${form.error_small('id')}
+      </div>
+
+      <div class="medium-6 medium-pull-6 columns">
         ${form.label('markup', 'Language')}
         ${form.select('markup', options=sorted(view.markup_languages.items()), selected_value='md')}
         ${form.error_small('markup')}
@@ -53,7 +53,7 @@
       <div class="small-12 columns">
         <hr />
         <span tal:condition="form.data" tal:omit-tag="True">
-          ${form.checkbox('delete', label=' Delete User', value=1)}
+          ${form.checkbox('delete', label=' Delete Comic', value=1)}
         </span>
         ${form.submit('submit', class_='small')}
       </div>
@@ -65,6 +65,7 @@
   <br />
 </div>
 </foo>
+
 
 
 
