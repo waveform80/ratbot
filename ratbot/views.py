@@ -264,7 +264,7 @@ class AdminView(BaseView):
             renderer='templates/admin.pt')
     def index(self):
         return {
-                'comics': DBSession.query(Comic, User.name, func.count()).join(Issue).join(User).group_by(Comic, User.name).order_by(Comic.id),
+                'comics': DBSession.query(Comic, User.name, func.count(Issue.number)).outerjoin(Issue).join(User).group_by(Comic, User.name).order_by(Comic.id),
                 'users': DBSession.query(User).order_by(User.id),
                 }
 
@@ -280,6 +280,7 @@ class AdminView(BaseView):
         if form.validate():
             user = form.bind(User())
             DBSession.add(user)
+            self.request.session.flash('Created user %s' % user.id)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(form=FormRendererFoundation(form))
@@ -296,7 +297,12 @@ class AdminView(BaseView):
                 schema=UserSchema,
                 variable_decode=True)
         if form.validate():
-            form.bind(user)
+            if bool(self.request.POST.get('delete', '')):
+                DBSession.delete(user)
+                self.request.session.flash('Deleted user %s' % user.id)
+            else:
+                form.bind(user)
+                self.request.session.flash('Updated user %s' % user.id)
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(form=FormRendererFoundation(form))
 
@@ -312,6 +318,7 @@ class AdminView(BaseView):
         if form.validate():
             comic = form.bind(Comic())
             DBSession.add(comic)
+            self.request.session.flash('Created comic %s' % comic.id)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
@@ -331,7 +338,13 @@ class AdminView(BaseView):
                 schema=ComicSchema,
                 variable_decode=True)
         if form.validate():
-            form.bind(comic)
+            if bool(self.request.POST.get('delete', '')):
+                DBSession.delete(comic)
+                self.request.session.flash('Deleted comic %s' % comic.id)
+            else:
+                form.bind(comic)
+                self.request.session.flash('Updated comic %s' % comic.id)
+            DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
                 form=FormRendererFoundation(form),

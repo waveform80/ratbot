@@ -51,7 +51,7 @@ class ValidPositiveInt(validators.Int):
 class ValidUser(validators.OneOf):
     def __init__(self):
         super(ValidUser, self).__init__(
-            DBSession.query(User.id), not_empty=True)
+            [s for (s,) in DBSession.query(User.id)], not_empty=True)
 
 
 class ValidUserId(validators.Email):

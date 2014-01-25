@@ -5,6 +5,16 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
+  <section tal:define="flashes request.session.pop_flash()">
+    <div class="row" tal:condition="flashes">
+      <div class="small-12 columns">
+        <div data-alert class="alert-box info radius" tal:repeat="flash flashes">
+          ${flash}<a href="" class="close">&times;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section>
     <div class="row">
       <div class="small-12 columns">

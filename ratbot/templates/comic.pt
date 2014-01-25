@@ -17,13 +17,13 @@
     <div class="row">
       <div class="medium-6 columns">
         ${form.label('id', 'Comic ID')}
-        ${form.email('id', placeholder='my-comic')}
+        ${form.text('id', placeholder='my-comic')}
         ${form.error_small('id')}
       </div>
 
       <div class="medium-6 columns">
         ${form.label('title', 'Title')}
-        ${form.email('title', placeholder='My Comic')}
+        ${form.text('title', placeholder='My Comic')}
         ${form.error_small('name')}
       </div>
     </div>
