@@ -96,6 +96,7 @@ __requires__ = [
     'markdown<3.0dev',
     'docutils<1.0dev',
     'velruse<2.0dev',
+    'formencode<2.0dev',
     ]
 
 __extra_requires__ = {
