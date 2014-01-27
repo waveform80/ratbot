@@ -96,18 +96,24 @@ class ComicsView(BaseView):
             route_name='index',
             renderer='templates/index.pt')
     def index(self):
-        first_page = aliased(Page)
-        all_pages = aliased(Page)
-        latest_issues = DBSession.query(Issue).join(all_pages).join(first_page).filter(
-                (first_page.published != None) &
-                (first_page.published <= utcnow()) &
-                (first_page.number == 1) &
-                (all_pages.published != None) &
-                (all_pages.published <= utcnow())
-                ).order_by(all_pages.published.desc()).from_self(Issue).distinct()[:6]
+        sub = DBSession.query(
+                Page.comic_id,
+                Page.issue_number,
+                func.max(Page.published).label('published'),
+            ).filter(
+                (Page.published != None) &
+                (Page.published <= utcnow())
+            ).group_by(
+                Page.comic_id,
+                Page.issue_number,
+            ).subquery()
+        latest_query = DBSession.query(
+                sub.c.comic_id,
+                sub.c.issue_number,
+            ).order_by(sub.c.published.desc())
         return {
                 'Permission': Permission,
-                'latest_issues': latest_issues,
+                'latest': latest_query,
                 'login_url': login_url,
                 }
 
@@ -150,8 +156,16 @@ class ComicsView(BaseView):
             route_name='comics',
             renderer='templates/comics.pt')
     def comics(self):
+        comics_query = DBSession.query(
+                Comic,
+                func.max(Issue.number).label('issue_number'),
+            ).join(Issue).join(Page).filter(
+                (Page.published != None) &
+                (Page.published <= utcnow()) &
+                (Page.comic_id != 'blog')
+            ).group_by(Comic).order_by(Comic.title)
         return {
-                'comics': DBSession.query(Comic).filter(Comic.id != 'blog'),
+                'comics': comics_query,
                 }
 
     @view_config(
@@ -263,9 +277,20 @@ class AdminView(BaseView):
             permission=Permission.view_admin,
             renderer='templates/admin.pt')
     def index(self):
+        comics_query = DBSession.query(
+                Comic,
+                User.name,
+                func.count(Issue.number),
+            ).outerjoin(Issue).join(User).group_by(
+                Comic,
+                User.name
+            ).order_by(
+                Comic.title
+            )
+        users_query = DBSession.query(User).order_by(User.name)
         return {
-                'comics': DBSession.query(Comic, User.name, func.count(Issue.number)).outerjoin(Issue).join(User).group_by(Comic, User.name).order_by(Comic.id),
-                'users': DBSession.query(User).order_by(User.id),
+                'comics': comics_query,
+                'users': users_query,
                 }
 
     @view_config(

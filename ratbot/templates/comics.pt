@@ -5,16 +5,16 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
-  <section tal:repeat="(index, comic) enumerate(comics)" id="comics">
+  <section tal:repeat="(index, data) enumerate(comics)" id="comics">
     <div class="row" tal:condition="index != 0">
       <div class="small-12 columns">
         <hr />
       </div>
     </div>
-    <div class="row">
-      <div class="small-3 large-3 columns" tal:define="issue comic.latest_issue">
+    <div class="row" tal:define="comic data[0]; issue data[1]">
+      <div class="small-3 large-3 columns">
         <a href="${request.route_url('issues', comic=comic.id)}">
-          <img src="${request.route_url('issue_thumb', comic=issue.comic_id, issue=issue.number)}" />
+          <img src="${request.route_url('issue_thumb', comic=comic.id, issue=issue)}" />
         </a>
       </div>
       <div class="small-9 large-6 columns">

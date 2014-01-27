@@ -105,18 +105,18 @@ class RootContextFactory(object):
 class ComicContextFactory(RootContextFactory):
     def __init__(self, request):
         super(ComicContextFactory, self).__init__(request)
-        self.comic = DBSession.query(Comic).filter(
-                (Comic.id == request.matchdict['comic'])
-                ).one()
+        self.comic = DBSession.query(Comic).get(request.matchdict['comic'])
+        assert self.comic
 
 
 class IssueContextFactory(RootContextFactory):
     def __init__(self, request):
         super(IssueContextFactory, self).__init__(request)
-        self.issue = DBSession.query(Issue).filter(
-                (Issue.comic_id == request.matchdict['comic']) &
-                (Issue.number == request.matchdict['issue'])
-                ).one()
+        self.issue = DBSession.query(Issue).get((
+                request.matchdict['comic'],
+                request.matchdict['issue'],
+                ))
+        assert self.issue
 
     @reify
     def comic(self):
@@ -126,11 +126,12 @@ class IssueContextFactory(RootContextFactory):
 class PageContextFactory(RootContextFactory):
     def __init__(self, request):
         super(PageContextFactory, self).__init__(request)
-        self.page = DBSession.query(Page).filter(
-                (Page.comic_id == request.matchdict['comic']) &
-                (Page.issue_number == request.matchdict['issue']) &
-                (Page.number == request.matchdict['page'])
-                ).one()
+        self.page = DBSession.query(Page).get((
+                request.matchdict['comic'],
+                request.matchdict['issue'],
+                request.matchdict['page'],
+                ))
+        assert self.page
 
     @reify
     def issue(self):
