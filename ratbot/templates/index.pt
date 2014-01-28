@@ -31,9 +31,9 @@
     <div class="row">
       <div class="small-12 columns">
         <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-6">
-          <li tal:repeat="(comic, issue) latest[:6]">
+          <li tal:repeat="(comic, issue, page) latest[:6]">
             <a class="th radius" href="${request.route_url('blog_issue', comic='blog', issue=issue) if comic == 'blog' else request.route_url('issue', comic=comic, issue=issue)}">
-              <img src="${request.route_url('issue_thumb', comic=comic, issue=issue)}" width="100" />
+              <img src="${request.route_url('page_thumb', comic=comic, issue=issue, page=page)}" width="100" />
             </a>
           </li>
         </ul>
@@ -64,7 +64,7 @@
       </div>
       <div class="small-12 columns" tal:condition="request.user">
         <h2>Logged in as: ${request.user.name}</h2>
-        <a href="${request.route_url('admin_index')}" tal:condition="view.has_permission(Permission.view_admin)">
+        <a href="${request.route_url('admin_index')}" tal:condition="has_permission(Permission.view_admin)">
           <img src="${request.static_url('ratbot:static/Administration.opt.svg')}"
             width="48" alt="Administration" title="Administration" />
         </a>

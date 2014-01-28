@@ -41,6 +41,16 @@
 
 /* End of LigatureSymbols include */
 
+/* XXX Fix for foundation tabs content width */
+.tabs-content > .content {
+  float: none;
+}
+
+/* XXX Fix small in foundation form labels */
+label small {
+  text-transform: none;
+}
+
 body {
     font-family: 'Open Sans', 'Helvetica Neue', 'Helvetica', Arial, sansi-serif;
     font-size: 10pt;

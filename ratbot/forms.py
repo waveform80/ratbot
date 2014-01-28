@@ -173,6 +173,17 @@ class Form(object):
             self.came_from = self.request.referer
         if defaults:
             self.data.update(defaults)
+            if self.schema:
+                for f in self.schema.fields.keys():
+                    if f in defaults:
+                        self.data[f] = self.schema.fields[f].from_python(defaults[f])
+            if self.validators:
+                fields = set(self.validators.keys())
+                if self.schema:
+                    fields -= set(self.schema.fields.keys())
+                for f in fields:
+                    if f in defaults:
+                        self.data[f] = self.validators[f].from_python(defaults[f])
         if obj:
             if not self.schema:
                 raise ValueError(
@@ -505,6 +516,20 @@ class FormRenderer(object):
         attrs.setdefault('type', 'email')
         return self.input(name, value, id, **attrs)
 
+    def date(self, name, value=None, id=None, **attrs):
+        """
+        Outputs date input.
+        """
+        attrs.setdefault('type', 'date')
+        return self.input(name, value, id, **attrs)
+
+    def datetime(self, name, value=None, id=None, **attrs):
+        """
+        Outputs datetime input.
+        """
+        attrs.setdefault('type', 'datetime')
+        return self.input(name, value, id, **attrs)
+
     def number(self, name, value=None, id=None, **attrs):
         """
         Outputs a number-spinbox input.
@@ -721,6 +746,20 @@ class FormRendererFoundation(FormRenderer):
 
     def email(self, name, value=None, id=None, cols=None, errors=True, **attrs):
         result = super(FormRendererFoundation, self).email(
+                name, value, id, **attrs)
+        return self.column(
+                name, result, self.input_columns if cols is None else cols,
+                errors)
+
+    def date(self, name, value=None, id=None, cols=None, errors=True, **attrs):
+        result = super(FormRendererFoundation, self).date(
+                name, value, id, **attrs)
+        return self.column(
+                name, result, self.input_columns if cols is None else cols,
+                errors)
+
+    def datetime(self, name, value=None, id=None, cols=None, errors=True, **attrs):
+        result = super(FormRendererFoundation, self).datetime(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,

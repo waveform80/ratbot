@@ -1,0 +1,90 @@
+<foo metal:use-macro="view.layout" tal:define="title '%s - %s' % (context.comic.title, 'Create Issue' if create else 'Edit Issue')">
+<div tal:omit-tag="True" metal:fill-slot="title">${title}</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header class="spaced">
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <section>
+    <div class="row">
+      <div class="small-12 columns">
+        <h2>${title}</h2>
+      </div>
+    </div>
+
+    ${form.begin(id='issue', inline=False)}
+    ${form.hidden('comic_id')}
+
+    <div class="row">
+      <div class="small-12 columns">
+        ${form.error_flashes()}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-3 columns">
+        ${form.label('number', 'Issue Number')}
+        ${form.text('number', placeholder='Issue #')}
+        ${form.error_small('number')}
+      </div>
+      <div class="medium-3 columns">
+        ${form.label('created', 'Created')}
+        ${form.datetime('created')}
+        ${form.error_small('created')}
+      </div>
+      <div class="medium-6 columns">
+        ${form.label('title', 'Title')}
+        ${form.text('title', placeholder='My Issue')}
+        ${form.error_small('title')}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-3 columns">
+        ${form.label('markup', 'Language')}
+        ${form.select('markup', options=sorted(view.markup_languages.items()), selected_value='md')}
+        ${form.error_small('markup')}
+      </div>
+      <div class="medium-9 columns">
+        ${form.label('description', 'Description')}
+        ${form.textarea('description', class_='mono', rows=6, cols=20)}
+      </div>
+    </div>
+
+    <div class="row" tal:condition="not create">
+      <div class="small-12 columns">
+        <hr />
+        <h2>Pages</h2>
+        <ul class="small-block-grid-3 medium-block-grid-6 large-block-grid-8">
+          <li class="comic" tal:repeat="page context.issue.pages">
+            <a href="${request.route_url('admin_page', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
+              <img class="th" src="${request.route_url('page_thumb', comic=page.comic_id, issue=page.issue_number, page=page.number)}" />
+            </a>
+            Page ${page.number}
+          </li>
+        </ul>
+        <a class="small button radius" href="${request.route_url('admin_page_new', comic=context.issue.comic_id, issue=context.issue.number)}">New Page</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="small-12 columns">
+        <hr />
+        <span tal:condition="not create" tal:omit-tag="True">
+          ${form.checkbox('delete', label=' Delete Issue', value=1)}
+        </span>
+        ${form.submit('submit', class_='small')}
+      </div>
+    </div>
+
+    ${form.end()}
+  </section>
+
+  <br />
+</div>
+</foo>
+
+
+
+
+

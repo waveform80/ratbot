@@ -496,7 +496,7 @@ class Issue(Base):
     def next(self):
         return DBSession.query(Issue).join(Page).filter(
             (Issue.comic_id == self.comic_id) &
-            (Issue.number < self.number) &
+            (Issue.number > self.number) &
             (Page.published != None) &
             (Page.published <= utcnow())
             ).order_by(Issue.number).first()

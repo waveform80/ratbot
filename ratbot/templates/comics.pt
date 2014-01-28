@@ -11,15 +11,18 @@
         <hr />
       </div>
     </div>
-    <div class="row" tal:define="comic data[0]; issue data[1]">
+    <div class="row"
+        tal:define="comic data[0]; issue data[1]; page data[2]"
+        tal:condition="issue or has_permission(Permission.view_unpublished) or comic.author is request.user">
       <div class="small-3 large-3 columns">
         <a href="${request.route_url('issues', comic=comic.id)}">
-          <img src="${request.route_url('issue_thumb', comic=comic.id, issue=issue)}" />
+          <img tal:condition="issue" src="${request.route_url('page_thumb', comic=comic.id, issue=issue, page=page)}" />
+          <img tal:condition="not issue" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
         </a>
       </div>
       <div class="small-9 large-6 columns">
         <a href="${request.route_url('issues', comic=comic.id)}"><h2>${comic.title}</h2></a>
-        ${view.render_markup(comic.markup, comic.description)}
+        ${render_markup(comic.markup, comic.description)}
       </div>
       <div class="large-3 columns"></div>
     </div>

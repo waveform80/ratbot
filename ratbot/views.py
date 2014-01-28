@@ -37,6 +37,7 @@ from pyramid.response import Response, FileResponse
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.security import remember, forget, has_permission
+from pyramid.events import subscriber, BeforeRender
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
@@ -62,7 +63,22 @@ from ratbot.forms import (
 from ratbot.schemas import (
     UserSchema,
     ComicSchema,
+    IssueSchema,
     )
+
+
+@subscriber(BeforeRender)
+def renderer_globals(event):
+    # Add some useful renderer globals
+    event['render_markup'] = render
+    event['has_permission'] = lambda perm: has_permission(perm, event['context'], event['request'])
+    event['Permission'] = Permission
+    event['Principal'] = Principal
+    if event['view']:
+        # Debug toolbar (and presumably some other rendering tweens) doesn't
+        # have a view
+        event['utcnow'] = event['view'].utcnow
+        event['utcize'] = lambda ts: pytz.utc.localize(ts)
 
 
 class BaseView(object):
@@ -84,11 +100,9 @@ class BaseView(object):
     def site_title(self):
         return self.request.registry.settings['site.title']
 
-    def render_markup(self, language, source):
-        return render(language, source)
-
-    def has_permission(self, permission):
-        return has_permission(permission, self.context, self.request)
+    @reify
+    def utcnow(self):
+        return utcnow()
 
 
 class ComicsView(BaseView):
@@ -102,7 +116,7 @@ class ComicsView(BaseView):
                 func.max(Page.published).label('published'),
             ).filter(
                 (Page.published != None) &
-                (Page.published <= utcnow())
+                (Page.published <= self.utcnow)
             ).group_by(
                 Page.comic_id,
                 Page.issue_number,
@@ -110,9 +124,16 @@ class ComicsView(BaseView):
         latest_query = DBSession.query(
                 sub.c.comic_id,
                 sub.c.issue_number,
+                func.min(Page.number).label('number'),
+            ).join(
+                Page,
+                (Page.comic_id == sub.c.comic_id) &
+                (Page.issue_number == sub.c.issue_number)
+            ).group_by(
+                sub.c.comic_id,
+                sub.c.issue_number,
             ).order_by(sub.c.published.desc())
         return {
-                'Permission': Permission,
                 'latest': latest_query,
                 'login_url': login_url,
                 }
@@ -156,14 +177,41 @@ class ComicsView(BaseView):
             route_name='comics',
             renderer='templates/comics.pt')
     def comics(self):
+        latest_page = DBSession.query(
+                Page.comic_id,
+                func.max(Page.published).label('published'),
+            ).filter(
+                (Page.published != None) &
+                (Page.published <= self.utcnow)
+            ).group_by(
+                Page.comic_id,
+            ).subquery()
+        latest_issue = DBSession.query(
+                Page.comic_id,
+                func.max(Page.issue_number).label('number'),
+            ).join(
+                latest_page,
+                (Page.comic_id == latest_page.c.comic_id) &
+                (Page.published == latest_page.c.published)
+            ).group_by(
+                Page.comic_id,
+            ).subquery()
         comics_query = DBSession.query(
                 Comic,
-                func.max(Issue.number).label('issue_number'),
-            ).join(Issue).join(Page).filter(
+                latest_issue.c.number.label('issue_number'),
+                func.min(Page.number).label('number'),
+            ).outerjoin(
+                latest_issue,
+                (Comic.id == latest_issue.c.comic_id)
+            ).outerjoin(
+                Page,
+                (Page.comic_id == latest_issue.c.comic_id) &
+                (Page.issue_number == latest_issue.c.number) &
                 (Page.published != None) &
-                (Page.published <= utcnow()) &
-                (Page.comic_id != 'blog')
-            ).group_by(Comic).order_by(Comic.title)
+                (Page.published <= self.utcnow)
+            ).filter(
+                (Comic.id != 'blog')
+            ).group_by(Comic, latest_issue.c.number).order_by(Comic.title)
         return {
                 'comics': comics_query,
                 }
@@ -172,9 +220,15 @@ class ComicsView(BaseView):
             route_name='issues',
             renderer='templates/issues.pt')
     def issues(self):
-        issues = self.context.comic.published_issues.order_by(Issue.number.desc())
+        issues_query = DBSession.query(
+                Issue,
+                func.min(Page.number),
+                func.max(Page.published),
+            ).outerjoin(Page).filter(
+                (Issue.comic_id == self.context.comic.id)
+            ).group_by(Issue).order_by(Issue.number.desc())
         return {
-                'issues': issues,
+                'issues': issues_query,
                 }
 
     @view_config(
@@ -185,12 +239,6 @@ class ComicsView(BaseView):
         return {
                 'page_count': self.context.issue.published_pages.count(),
                 }
-
-    @view_config(route_name='issue_thumb')
-    def issue_thumb(self):
-        page = self.context.issue.first_page
-        page.create_thumbnail()
-        return FileResponse(page.thumbnail_filename)
 
     @view_config(route_name='issue_archive')
     def issue_archive(self):
@@ -308,7 +356,10 @@ class AdminView(BaseView):
             self.request.session.flash('Created user %s' % user.id)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
-        return dict(form=FormRendererFoundation(form))
+        return dict(
+                create=True,
+                form=FormRendererFoundation(form),
+                )
 
     @view_config(
             route_name='admin_user',
@@ -329,7 +380,10 @@ class AdminView(BaseView):
                 form.bind(user)
                 self.request.session.flash('Updated user %s' % user.id)
             return HTTPFound(location=self.request.route_url('admin_index'))
-        return dict(form=FormRendererFoundation(form))
+        return dict(
+                create=False,
+                form=FormRendererFoundation(form),
+                )
 
     @view_config(
             route_name='admin_comic_new',
@@ -347,6 +401,7 @@ class AdminView(BaseView):
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
+                create=True,
                 form=FormRendererFoundation(form),
                 authors=DBSession.query(User.id, User.name).order_by(User.name),
                 )
@@ -356,7 +411,7 @@ class AdminView(BaseView):
             permission=Permission.edit_comic,
             renderer='templates/comic.pt')
     def comic_edit(self):
-        comic = DBSession.query(Comic).get(self.request.matchdict['comic'])
+        comic = self.context.comic
         form = Form(
                 self.request,
                 obj=comic,
@@ -365,14 +420,75 @@ class AdminView(BaseView):
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(comic)
-                self.request.session.flash('Deleted comic %s' % comic.id)
+                self.request.session.flash('Deleted comic "%s"' % comic.title)
             else:
                 form.bind(comic)
-                self.request.session.flash('Updated comic %s' % comic.id)
+                self.request.session.flash('Updated comic "%s"' % comic.title)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
+                create=False,
                 form=FormRendererFoundation(form),
                 authors=DBSession.query(User.id, User.name).order_by(User.name),
+                )
+
+    @view_config(
+            route_name='admin_issue_new',
+            permission=Permission.edit_comic,
+            renderer='templates/issue.pt')
+    def issue_new(self):
+        new_number = DBSession.query(
+                func.coalesce(func.max(Issue.number), 0) + 1
+            ).filter(
+                (Issue.comic_id==self.context.comic.id)
+            ).scalar()
+        form = Form(
+                self.request,
+                defaults={
+                    'comic_id': self.context.comic.id,
+                    'number': new_number,
+                    'created': self.utcnow,
+                    },
+                schema=IssueSchema,
+                variable_decode=True)
+        if form.validate():
+            issue = form.bind(Issue())
+            DBSession.add(issue)
+            self.request.session.flash('Created issue %d' % issue.number)
+            DBSession.flush()
+            return HTTPFound(
+                    location=self.request.route_url('issues',
+                        comic=self.context.comic.id))
+        return dict(
+                create=True,
+                form=FormRendererFoundation(form),
+                )
+
+    @view_config(
+            route_name='admin_issue',
+            permission=Permission.edit_comic,
+            renderer='templates/issue.pt')
+    def issue_edit(self):
+        issue = self.context.issue
+        form = Form(
+                self.request,
+                obj=issue,
+                schema=IssueSchema,
+                variable_decode=True)
+        if form.validate():
+            if bool(self.request.POST.get('delete', '')):
+                DBSession.delete(issue)
+                self.request.session.flash('Deleted "%s" issue #%d' % (issue.comic.title, issue.number))
+            else:
+                form.bind(issue)
+                self.request.session.flash('Updated "%s" issue #%d' % (issue.comic.title, issue.number))
+            # Grab a copy of the comic ID before the object becomes invalid
+            comic_id = issue.comic_id
+            DBSession.flush()
+            return HTTPFound(
+                    location=self.request.route_url('issues', comic=comic_id))
+        return dict(
+                create=False,
+                form=FormRendererFoundation(form),
                 )
 

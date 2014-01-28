@@ -27,6 +27,8 @@ from __future__ import (
 str = type('')
 
 
+import datetime as dt
+
 from formencode import (
     ForEach,
     Invalid,
@@ -45,7 +47,18 @@ from ratbot.models import (
 
 class ValidPositiveInt(validators.Int):
     def __init__(self):
-        super(ValidPositiveInt, self).__init__(not_empty=True, min=0)
+        super(ValidPositiveInt, self).__init__(not_empty=True, min=1)
+
+
+class ValidTimestamp(validators.DateValidator):
+    def __init__(self):
+        super(ValidTimestamp, self).__init__(not_empty=True)
+
+    def _to_python(self, value, state):
+        return dt.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+
+    def _from_python(self, value, state):
+        return value.strftime('%Y-%m-%d %H:%M:%S')
 
 
 class ValidUser(validators.OneOf):
@@ -91,4 +104,9 @@ class ValidComicTitle(validators.UnicodeString):
         super(ValidComicTitle, self).__init__(
             not_empty=True, max=Comic.__table__.c.title.type.length)
 
+
+class ValidIssueTitle(validators.UnicodeString):
+    def __init__(self):
+        super(ValidIssueTitle, self).__init__(
+            not_empty=True, max=Issue.__table__.c.title.type.length)
 

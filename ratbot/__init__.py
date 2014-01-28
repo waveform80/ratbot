@@ -52,7 +52,7 @@ from ratbot.security import (
 ROUTES = {
     'index':           r'/',
     'bio':             r'/bio.html',
-    'blog_index':      r'/{comic:blog}/',
+    'blog_index':      r'/{comic:blog}/index.html',
     'blog_issue':      r'/{comic:blog}/{issue:\d+}.html',
     'links':           r'/links.html',
     'comics':          r'/comics.html',
@@ -70,6 +70,12 @@ ROUTES = {
     'admin_user_new':  r'/admin/users/create.do',
     'admin_comic':     r'/admin/comics/{comic}.html',
     'admin_comic_new': r'/admin/comics/create.do',
+    'admin_issues':    r'/admin/issues/{comic}/index.html',
+    'admin_issue':     r'/admin/issues/{comic}/{issue:\d+}.html',
+    'admin_issue_new': r'/admin/issues/{comic}/create.do',
+    'admin_pages':     r'/admin/pages/{comic}/{issue:\d+}/index.html',
+    'admin_page':      r'/admin/pages/{comic}/{issue:\d+}/{page:\d+}.html',
+    'admin_page_new':  r'/admin/pages/{comic}/{issue:\d+}/create.do',
     'logout':          r'/logout.do',
     }
 

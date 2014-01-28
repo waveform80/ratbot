@@ -1,49 +1,44 @@
-<foo metal:use-macro="view.layout" tal:define="title 'Edit Comic' if form.data else 'Create Comic'">
+<foo metal:use-macro="view.layout" tal:define="title 'Create Comic' if create else 'Edit Comic'">
 <div tal:omit-tag="True" metal:fill-slot="title">${title}</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
   <header class="spaced">
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
-  <div class="row">
-    <div class="small-12 columns">
-      <h2>${title}</h2>
-    </div>
-  </div>
-
   <section>
+    <div class="row">
+      <div class="small-12 columns">
+        <h2>${title}</h2>
+      </div>
+    </div>
+
     ${form.begin(id='comic', inline=False)}
 
     <div class="row">
-      <div class="medium-6 columns">
+      <div class="medium-3 columns">
         ${form.label('id', 'Comic ID')}
         ${form.text('id', placeholder='my-comic')}
         ${form.error_small('id')}
       </div>
-
-      <div class="medium-6 columns">
+      <div class="medium-4 columns">
+        ${form.label('author_id', 'Author')}
+        ${form.select('author_id', options=authors)}
+        ${form.error_small('author_id')}
+      </div>
+      <div class="medium-5 columns">
         ${form.label('title', 'Title')}
         ${form.text('title', placeholder='My Comic')}
-        ${form.error_small('name')}
+        ${form.error_small('title')}
       </div>
     </div>
 
     <div class="row">
-      <div class="medium-6 medium-push-6 columns">
-        ${form.label('author_id', 'Author')}
-        ${form.select('author_id', options=authors)}
-        ${form.error_small('id')}
-      </div>
-
-      <div class="medium-6 medium-pull-6 columns">
+      <div class="medium-3 columns">
         ${form.label('markup', 'Language')}
         ${form.select('markup', options=sorted(view.markup_languages.items()), selected_value='md')}
         ${form.error_small('markup')}
       </div>
-    </div>
-
-    <div class="row">
-      <div class="small-12 columns">
+      <div class="medium-9 columns">
         ${form.label('description', 'Description')}
         ${form.textarea('description', class_='mono', rows=6, cols=20)}
       </div>
@@ -52,7 +47,7 @@
     <div class="row">
       <div class="small-12 columns">
         <hr />
-        <span tal:condition="form.data" tal:omit-tag="True">
+        <span tal:condition="not create" tal:omit-tag="True">
           ${form.checkbox('delete', label=' Delete Comic', value=1)}
         </span>
         ${form.submit('submit', class_='small')}

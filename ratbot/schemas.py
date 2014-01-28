@@ -40,8 +40,11 @@ from ratbot.validators import (
     ValidUserAdmin,
     ValidMarkupLanguage,
     ValidDescription,
+    ValidPositiveInt,
+    ValidTimestamp,
     ValidComicId,
     ValidComicTitle,
+    ValidIssueTitle,
     )
 
 
@@ -69,3 +72,11 @@ class ComicSchema(FormSchema):
     markup = ValidMarkupLanguage()
     description = ValidDescription()
 
+
+class IssueSchema(FormSchema):
+    comic_id = ValidComicId()
+    number = ValidPositiveInt()
+    title = ValidIssueTitle()
+    created = ValidTimestamp()
+    markup = ValidMarkupLanguage()
+    description = ValidDescription()
