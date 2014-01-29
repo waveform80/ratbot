@@ -36,14 +36,13 @@ from pyramid.renderers import get_renderer
 from pyramid.response import Response, FileResponse
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
-from pyramid.security import remember, forget, has_permission
-from pyramid.events import subscriber, BeforeRender
+from pyramid.security import remember, forget
 from sqlalchemy import func
-from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
-from velruse.api import login_url
 
-from ratbot.markup import MARKUP_LANGUAGES, render
+from ratbot.forms import Form, FormRendererFoundation
+from ratbot.markup import MARKUP_LANGUAGES
+from ratbot.views import BaseView
 from ratbot.models import (
     DBSession,
     Page,
@@ -56,227 +55,18 @@ from ratbot.security import (
     Permission,
     Principal,
     )
-from ratbot.forms import (
-    Form,
-    FormRendererFoundation,
-    )
 from ratbot.schemas import (
     UserSchema,
     ComicSchema,
     IssueSchema,
+    PageSchema,
     )
-
-
-@subscriber(BeforeRender)
-def renderer_globals(event):
-    # Add some useful renderer globals
-    event['render_markup'] = render
-    event['has_permission'] = lambda perm: has_permission(perm, event['context'], event['request'])
-    event['Permission'] = Permission
-    event['Principal'] = Principal
-    if event['view']:
-        # Debug toolbar (and presumably some other rendering tweens) doesn't
-        # have a view
-        event['utcnow'] = event['view'].utcnow
-        event['utcize'] = lambda ts: pytz.utc.localize(ts)
-
-
-class BaseView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    @reify
-    def layout(self):
-        renderer = get_renderer('templates/layout.pt')
-        return renderer.implementation().macros['layout']
-
-    @reify
-    def nav_bar(self):
-        renderer = get_renderer('templates/nav_bar.pt')
-        return renderer.implementation().macros['nav-bar']
-
-    @reify
-    def site_title(self):
-        return self.request.registry.settings['site.title']
-
-    @reify
-    def utcnow(self):
-        return utcnow()
-
-
-class ComicsView(BaseView):
-    @view_config(
-            route_name='index',
-            renderer='templates/index.pt')
-    def index(self):
-        sub = DBSession.query(
-                Page.comic_id,
-                Page.issue_number,
-                func.max(Page.published).label('published'),
-            ).filter(
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).group_by(
-                Page.comic_id,
-                Page.issue_number,
-            ).subquery()
-        latest_query = DBSession.query(
-                sub.c.comic_id,
-                sub.c.issue_number,
-                func.min(Page.number).label('number'),
-            ).join(
-                Page,
-                (Page.comic_id == sub.c.comic_id) &
-                (Page.issue_number == sub.c.issue_number)
-            ).group_by(
-                sub.c.comic_id,
-                sub.c.issue_number,
-            ).order_by(sub.c.published.desc())
-        return {
-                'latest': latest_query,
-                'login_url': login_url,
-                }
-
-    @view_config(route_name='blog_index')
-    def blog_index(self):
-        return HTTPFound(
-            location=self.request.route_url(
-                'blog_issue',
-                comic=self.request.matchdict['comic'],
-                issue=DBSession.query(func.max(Issue.number)).\
-                    filter(Issue.comic_id == self.request.matchdict['comic']).scalar()
-                    ))
-
-    @view_config(
-            route_name='blog_issue',
-            renderer='templates/blog.pt')
-    def blog_issue(self):
-        pages = self.context.issue.published_pages.order_by(Page.number.desc())
-        issues = self.context.issue.comic.published_issues.order_by(Issue.number.desc())
-        return {
-                'pages':  pages,
-                'issues': issues,
-                }
-
-    @view_config(
-            route_name='bio',
-            renderer='templates/bio.pt')
-    def bio(self):
-        return {
-                'authors': DBSession.query(User).join(Comic).distinct().order_by(User.name),
-                }
-
-    @view_config(
-            route_name='links',
-            renderer='templates/links.pt')
-    def links(self):
-        return {}
-
-    @view_config(
-            route_name='comics',
-            renderer='templates/comics.pt')
-    def comics(self):
-        latest_page = DBSession.query(
-                Page.comic_id,
-                func.max(Page.published).label('published'),
-            ).filter(
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).group_by(
-                Page.comic_id,
-            ).subquery()
-        latest_issue = DBSession.query(
-                Page.comic_id,
-                func.max(Page.issue_number).label('number'),
-            ).join(
-                latest_page,
-                (Page.comic_id == latest_page.c.comic_id) &
-                (Page.published == latest_page.c.published)
-            ).group_by(
-                Page.comic_id,
-            ).subquery()
-        comics_query = DBSession.query(
-                Comic,
-                latest_issue.c.number.label('issue_number'),
-                func.min(Page.number).label('number'),
-            ).outerjoin(
-                latest_issue,
-                (Comic.id == latest_issue.c.comic_id)
-            ).outerjoin(
-                Page,
-                (Page.comic_id == latest_issue.c.comic_id) &
-                (Page.issue_number == latest_issue.c.number) &
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).filter(
-                (Comic.id != 'blog')
-            ).group_by(Comic, latest_issue.c.number).order_by(Comic.title)
-        return {
-                'comics': comics_query,
-                }
-
-    @view_config(
-            route_name='issues',
-            renderer='templates/issues.pt')
-    def issues(self):
-        issues_query = DBSession.query(
-                Issue,
-                func.min(Page.number),
-                func.max(Page.published),
-            ).outerjoin(Page).filter(
-                (Issue.comic_id == self.context.comic.id)
-            ).group_by(Issue).order_by(Issue.number.desc())
-        return {
-                'issues': issues_query,
-                }
-
-    @view_config(
-            route_name='issue',
-            renderer='templates/page.pt')
-    def issue(self):
-        self.context.page = self.context.issue.first_page
-        return {
-                'page_count': self.context.issue.published_pages.count(),
-                }
-
-    @view_config(route_name='issue_archive')
-    def issue_archive(self):
-        self.context.issue.create_archive()
-        return FileResponse(self.context.issue.archive_filename)
-
-    @view_config(route_name='issue_pdf')
-    def issue_pdf(self):
-        self.context.issue.create_pdf()
-        return FileResponse(self.context.issue.pdf_filename)
-
-    @view_config(
-            route_name='page',
-            renderer='templates/page.pt')
-    def page(self):
-        return {
-                'page_count': self.context.issue.published_pages.count(),
-                }
-
-    @view_config(route_name='page_thumb')
-    def page_thumb(self):
-        self.context.page.create_thumbnail()
-        return FileResponse(self.context.page.thumbnail_filename)
-
-    @view_config(route_name='page_bitmap')
-    def page_bitmap(self):
-        self.context.page.create_bitmap()
-        return FileResponse(self.context.page.bitmap_filename)
-
-    @view_config(route_name='page_vector')
-    def page_vector(self):
-        return FileResponse(self.context.page.vector_filename)
 
 
 class LoginView(BaseView):
     @view_config(
             context='velruse.AuthenticationComplete',
-            renderer='templates/login.pt')
+            renderer='../templates/admin/login.pt')
     def login_complete(self):
         try:
             email = self.context.profile['verifiedEmail']
@@ -323,7 +113,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_index',
             permission=Permission.view_admin,
-            renderer='templates/admin.pt')
+            renderer='../templates/admin/index.pt')
     def index(self):
         comics_query = DBSession.query(
                 Comic,
@@ -344,7 +134,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_user_new',
             permission=Permission.create_user,
-            renderer='templates/user.pt')
+            renderer='../templates/admin/user.pt')
     def user_new(self):
         form = Form(
                 self.request,
@@ -364,7 +154,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_user',
             permission=Permission.edit_user,
-            renderer='templates/user.pt')
+            renderer='../templates/admin/user.pt')
     def user_edit(self):
         user = DBSession.query(User).get(self.request.matchdict['user'])
         form = Form(
@@ -388,7 +178,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_comic_new',
             permission=Permission.create_comic,
-            renderer='templates/comic.pt')
+            renderer='../templates/admin/comic.pt')
     def comic_new(self):
         form = Form(
                 self.request,
@@ -409,7 +199,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_comic',
             permission=Permission.edit_comic,
-            renderer='templates/comic.pt')
+            renderer='../templates/admin/comic.pt')
     def comic_edit(self):
         comic = self.context.comic
         form = Form(
@@ -435,7 +225,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_issue_new',
             permission=Permission.edit_comic,
-            renderer='templates/issue.pt')
+            renderer='../templates/admin/issue.pt')
     def issue_new(self):
         new_number = DBSession.query(
                 func.coalesce(func.max(Issue.number), 0) + 1
@@ -467,7 +257,7 @@ class AdminView(BaseView):
     @view_config(
             route_name='admin_issue',
             permission=Permission.edit_comic,
-            renderer='templates/issue.pt')
+            renderer='../templates/admin/issue.pt')
     def issue_edit(self):
         issue = self.context.issue
         form = Form(
@@ -491,4 +281,21 @@ class AdminView(BaseView):
                 create=False,
                 form=FormRendererFoundation(form),
                 )
+
+
+def routes():
+    return (
+            ('admin_index',     r'/admin/index.html'),
+            ('admin_user',      r'/admin/users/{user}.html'),
+            ('admin_user_new',  r'/admin/users/create.do'),
+            ('admin_comic',     r'/admin/comics/{comic}.html'),
+            ('admin_comic_new', r'/admin/comics/create.do'),
+            ('admin_issues',    r'/admin/issues/{comic}/index.html'),
+            ('admin_issue',     r'/admin/issues/{comic}/{issue:\d+}.html'),
+            ('admin_issue_new', r'/admin/issues/{comic}/create.do'),
+            ('admin_pages',     r'/admin/pages/{comic}/{issue:\d+}/index.html'),
+            ('admin_page',      r'/admin/pages/{comic}/{issue:\d+}/{page:\d+}.html'),
+            ('admin_page_new',  r'/admin/pages/{comic}/{issue:\d+}/create.do'),
+            ('logout',          r'/logout.do')
+            )
 

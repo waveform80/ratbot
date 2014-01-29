@@ -21,9 +21,9 @@
         ${form.error_small('id')}
       </div>
       <div class="medium-4 columns">
-        ${form.label('author_id', 'Author')}
-        ${form.select('author_id', options=authors)}
-        ${form.error_small('author_id')}
+        ${form.label('author', 'Author')}
+        ${form.select('author', options=authors)}
+        ${form.error_small('author')}
       </div>
       <div class="medium-5 columns">
         ${form.label('title', 'Title')}

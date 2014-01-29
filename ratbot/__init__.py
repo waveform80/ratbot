@@ -39,6 +39,8 @@ from pyramid_mailer import mailer_factory_from_settings
 from sqlalchemy import engine_from_config
 
 from ratbot.models import DBSession
+from ratbot.views.comics import routes as comic_routes
+from ratbot.views.admin import routes as admin_routes
 from ratbot.security import (
     RequestWithUser,
     RootContextFactory,
@@ -47,37 +49,6 @@ from ratbot.security import (
     PageContextFactory,
     group_finder,
     )
-
-
-ROUTES = {
-    'index':           r'/',
-    'bio':             r'/bio.html',
-    'blog_index':      r'/{comic:blog}/index.html',
-    'blog_issue':      r'/{comic:blog}/{issue:\d+}.html',
-    'links':           r'/links.html',
-    'comics':          r'/comics.html',
-    'issues':          r'/comics/{comic}.html',
-    'issue':           r'/comics/{comic}/{issue:\d+}.html',
-    'issue_thumb':     r'/comics/{comic}-{issue:\d+}.png',
-    'issue_archive':   r'/comics/{comic}-{issue:\d+}.zip',
-    'issue_pdf':       r'/comics/{comic}-{issue:\d+}.pdf',
-    'page':            r'/comics/{comic}/{issue:\d+}/{page:\d+}.html',
-    'page_bitmap':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png',
-    'page_vector':     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg',
-    'page_thumb':      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png',
-    'admin_index':     r'/admin/index.html',
-    'admin_user':      r'/admin/users/{user}.html',
-    'admin_user_new':  r'/admin/users/create.do',
-    'admin_comic':     r'/admin/comics/{comic}.html',
-    'admin_comic_new': r'/admin/comics/create.do',
-    'admin_issues':    r'/admin/issues/{comic}/index.html',
-    'admin_issue':     r'/admin/issues/{comic}/{issue:\d+}.html',
-    'admin_issue_new': r'/admin/issues/{comic}/create.do',
-    'admin_pages':     r'/admin/pages/{comic}/{issue:\d+}/index.html',
-    'admin_page':      r'/admin/pages/{comic}/{issue:\d+}/{page:\d+}.html',
-    'admin_page_new':  r'/admin/pages/{comic}/{issue:\d+}/create.do',
-    'logout':          r'/logout.do',
-    }
 
 
 def main(global_config, **settings):
@@ -142,16 +113,16 @@ def main(global_config, **settings):
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
     config.add_static_view('static', 'static', cache_max_age=3600)
-    for name, url in ROUTES.items():
-        if '{page' in url:
+    for name, pattern in comic_routes() + admin_routes():
+        if '{page' in pattern:
             factory = PageContextFactory
-        elif '{issue' in url:
+        elif '{issue' in pattern:
             factory = IssueContextFactory
-        elif '{comic' in url:
+        elif '{comic' in pattern:
             factory = ComicContextFactory
         else:
             factory = RootContextFactory
-        config.add_route(name, url, factory=factory)
+        config.add_route(name, pattern, factory=factory)
     config.scan()
     return config.make_wsgi_app()
 

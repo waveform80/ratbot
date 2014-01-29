@@ -61,10 +61,19 @@ class ValidTimestamp(validators.DateValidator):
         return value.strftime('%Y-%m-%d %H:%M:%S')
 
 
-class ValidUser(validators.OneOf):
+class ValidAuthor(validators.OneOf):
     def __init__(self):
-        super(ValidUser, self).__init__(
-            [s for (s,) in DBSession.query(User.id)], not_empty=True)
+        super(ValidAuthor, self).__init__(list=[], hideList=True, not_empty=True)
+
+    def validate_python(self, value, state):
+        self.list = [s for (s,) in DBSession.query(User.id)]
+        super(ValidAuthor, self).validate_python(value.id, state)
+
+    def _to_python(self, value, state):
+        return DBSession.query(User).get(value)
+
+    def _from_python(self, value, state):
+        return value.id
 
 
 class ValidUserId(validators.Email):
