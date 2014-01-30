@@ -1,0 +1,122 @@
+<foo metal:use-macro="view.layout" tal:define="title '%s #%d - %s' % (context.issue.comic.title, context.issue.number, 'Add Page' if create else 'Edit Page')">
+<div tal:omit-tag="True" metal:fill-slot="title">${title}</div>
+<div tal:omit-tag="True" metal:fill-slot="content">
+  <header class="spaced">
+    <div metal:use-macro="view.nav_bar"></div>
+  </header>
+
+  <section id="metadata">
+    <div class="row">
+      <div class="small-12 columns">
+        <h2>${title}</h2>
+      </div>
+    </div>
+
+    ${form.begin(id='issue', inline=False, multipart=True)}
+    ${form.hidden('comic_id')}
+    ${form.hidden('issue_number')}
+
+    <div class="row">
+      <div class="medium-4 columns">
+        ${form.label('number', 'Page Number')}
+        ${form.text('number', placeholder='Issue #')}
+      </div>
+      <div class="medium-4 columns">
+        ${form.label('created', 'Created')}
+        ${form.datetime('created')}
+      </div>
+      <div class="medium-4 columns">
+        ${form.label('published', 'Published')}
+        ${form.datetime('published')}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-3 columns">
+        ${form.label('markup', 'Language')}
+        ${form.select('markup', options=sorted(view.markup_languages.items()), selected_value='md')}
+      </div>
+      <div class="medium-9 columns">
+        ${form.label('description', 'Description')}
+        ${form.textarea('description', class_='mono', rows=6, cols=20)}
+      </div>
+    </div>
+  </section>
+
+  <section id="files">
+    <div class="row">
+      <div class="small-12 columns">
+        <hr />
+        <h2>Files</h2>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-3 columns hide-for-small" tal:condition="create">
+        <img class="th" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
+      </div>
+      <div class="medium-3 columns" tal:condition="not create">
+        <img class="th" src="${request.route_url('page_thumb', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
+      </div>
+      <div class="medium-9 columns">
+        ${form.label('vector', 'Vector (SVG) image')}
+        ${html.tag.p('%s (last modified %s ago)' % (
+            webhelpers.number.format_byte_size(vector_stat.st_size),
+            webhelpers.date.time_ago_in_words(
+              datetime.datetime.fromtimestamp(vector_stat.st_mtime),
+              granularity='day'),
+              ) if not create and vector_stat else
+          html.tag.em('Missing!') if not create else
+          '')}
+        ${form.file('vector')}
+        ${form.label('bitmap', 'Bitmap (PNG) image')}
+        ${html.tag.p('%s (last modified %s ago)' % (
+            webhelpers.number.format_byte_size(bitmap_stat.st_size),
+            webhelpers.date.time_ago_in_words(
+              datetime.datetime.fromtimestamp(bitmap_stat.st_mtime),
+              granularity='day'),
+              ) if not create and bitmap_stat else
+          html.tag.em('None') if not create else
+          '')}
+        ${form.checkbox('delete_bitmap', label=' Delete Bitmap') if not create and bitmap_stat else form.hidden('delete_bitmap', '0')}
+        ${form.file('bitmap')}
+        ${form.label('thumbnail', 'Thumbnail (PNG)')}
+        ${html.tag.p('%s (last modified %s ago)' % (
+            webhelpers.number.format_byte_size(thumbnail_stat.st_size),
+            webhelpers.date.time_ago_in_words(
+              datetime.datetime.fromtimestamp(thumbnail_stat.st_mtime),
+              granularity='day'),
+              ) if not create and thumbnail_stat else
+          html.tag.em('None') if not create else
+          '')}
+        ${form.checkbox('delete_thumbnail', label=' Delete Thumbnail') if not create and thumbnail_stat else form.hidden('delete_thumbnail', '0')}
+        ${form.file('thumbnail')}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="small-12 columns">
+        <p class="panel radius">All pages require at least a vector (<acronym
+          title="Scalable Vector Graphics">SVG</acronym>) image. If a bitmap
+        (<acronym title="Portable Network Graphics">PNG</acronym>) file is not
+        specified (or is later deleted), it will be generated automatically
+        from the vector. If a is not specified (or is later deleted), it will
+        be generated automatically from the bitmap file.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="small-12 columns">
+        <hr />
+        <span tal:condition="not create" tal:omit-tag="True">
+          ${form.checkbox('delete', label=' Delete Page', value=1)}
+        </span>
+        ${form.submit('submit', class_='small')}
+      </div>
+    </div>
+
+    ${form.end()}
+  </section>
+</div>
+</foo>
+

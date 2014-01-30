@@ -26,7 +26,10 @@ from __future__ import (
     )
 str = type('')
 
-import json
+import os
+import cgi
+import shutil
+import tempfile
 import logging
 log = logging.getLogger(__name__)
 
@@ -61,6 +64,22 @@ from ratbot.schemas import (
     IssueSchema,
     PageSchema,
     )
+
+
+def is_upload(request, name):
+    return isinstance(request.POST.get(name), cgi.FieldStorage)
+
+def file_upload(data, destination):
+    # Read data into a temporary file in the same directory as the destination
+    with tempfile.NamedTemporaryFile(
+            dir=os.path.split(destination)[0],
+            delete=False) as f:
+        shutil.copyfileobj(data, f)
+        f.close()
+        # Rename the temporary file to the final filename. As the temporary
+        # file was created in the same directory as the destination this is
+        # guaranteed to be an atomic operation
+        os.rename(f.name, destination)
 
 
 class LoginView(BaseView):
@@ -244,7 +263,11 @@ class AdminView(BaseView):
         if form.validate():
             issue = form.bind(Issue())
             DBSession.add(issue)
-            self.request.session.flash('Created issue %d' % issue.number)
+            self.request.session.flash(
+                    'Created %s #%d' % (
+                        issue.comic.title,
+                        issue.number,
+                        ))
             DBSession.flush()
             return HTTPFound(
                     location=self.request.route_url('issues',
@@ -264,6 +287,7 @@ class AdminView(BaseView):
                 self.request,
                 obj=issue,
                 schema=IssueSchema,
+                came_from=self.request.route_url('issues', comic=self.context.issue.comic_id),
                 variable_decode=True)
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
@@ -280,6 +304,103 @@ class AdminView(BaseView):
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
+                )
+
+    @view_config(
+            route_name='admin_page_new',
+            permission=Permission.edit_comic,
+            renderer='../templates/admin/page.pt')
+    def page_new(self):
+        new_number = DBSession.query(
+                func.coalesce(func.max(Page.number), 0) + 1
+            ).filter(
+                (Page.comic_id==self.context.issue.comic_id) &
+                (Page.issue_number==self.context.issue.number)
+            ).scalar()
+        form = Form(
+                self.request,
+                defaults={
+                    'comic_id': self.context.issue.comic_id,
+                    'issue_number': self.context.issue.number,
+                    'number': new_number,
+                    'created': self.utcnow,
+                    'published': self.utcnow,
+                    },
+                schema=PageSchema,
+                variable_decode=True)
+        if self.request.method == 'POST' and not is_upload(self.request, 'vector'):
+            form.errors['vector'] = 'Vector image is required'
+        if form.validate():
+            print(self.request.POST)
+            page = form.bind(Page())
+            file_upload(self.request.POST['vector'].file, page.vector_filename)
+            if is_upload(self.request, 'bitmap'):
+                file_upload(self.request.POST['bitmap'].file, page.bitmap_filename)
+            if is_upload(self.request, 'thumbnail'):
+                file_upload(self.request.POST['thumbnail'].file, page.thumbnail_filename)
+            DBSession.add(page)
+            self.request.session.flash(
+                    'Added page %d of %s #%d' % (
+                        page.number,
+                        self.context.issue.comic.title,
+                        self.context.issue.number,
+                        ))
+            DBSession.flush()
+            return HTTPFound(
+                    location=self.request.route_url('issues',
+                        comic=self.context.issue.comic_id))
+        return dict(
+                create=True,
+                form=FormRendererFoundation(form),
+                )
+
+    @view_config(
+            route_name='admin_page',
+            permission=Permission.edit_comic,
+            renderer='../templates/admin/page.pt')
+    def page_edit(self):
+        page = self.context.page
+        form = Form(
+                self.request,
+                obj=page,
+                schema=PageSchema,
+                variable_decode=True)
+        if form.validate():
+            if bool(self.request.POST.get('delete', '')):
+                DBSession.delete(page)
+                self.request.session.flash('Deleted "%s" issue #%d, page %d' % (page.issue.comic.title, page.issue_number, page.number))
+                for p in DBSession.query(Page).filter(
+                        (Page.comic_id == page.comic_id) &
+                        (Page.issue_number == page.issue_number) &
+                        (Page.number > page.number)
+                        ).order_by(Page.number):
+                    p.number = p.number - 1
+            else:
+                if bool(self.request.POST.get('delete_bitmap', '')):
+                    print('Deleting bitmap')
+                    os.unlink(page.bitmap_filename)
+                if bool(self.request.POST.get('delete_thumbnail', '')):
+                    print('Deleting thumbnail')
+                    os.unlink(page.thumbnail_filename)
+                if is_upload(self.request, 'vector'):
+                    file_upload(self.request.POST['vector'].file, page.vector_filename)
+                if is_upload(self.request, 'bitmap'):
+                    file_upload(self.request.POST['bitmap'].file, page.bitmap_filename)
+                if is_upload(self.request, 'thumbnail'):
+                    file_upload(self.request.POST['thumbnail'].file, page.thumbnail_filename)
+                form.bind(page)
+                self.request.session.flash('Altered "%s" issue #%d, page %d' % (page.issue.comic.title, page.issue_number, page.number))
+            # Grab a copy of the comic ID before the object becomes invalid
+            comic_id = page.comic_id
+            DBSession.flush()
+            return HTTPFound(
+                    location=self.request.route_url('issues', comic=comic_id))
+        return dict(
+                create=False,
+                form=FormRendererFoundation(form),
+                vector_stat=os.stat(page.vector_filename) if os.path.exists(page.vector_filename) else None,
+                bitmap_stat=os.stat(page.bitmap_filename) if os.path.exists(page.bitmap_filename) else None,
+                thumbnail_stat=os.stat(page.thumbnail_filename) if os.path.exists(page.thumbnail_filename) else None,
                 )
 
 
