@@ -737,6 +737,11 @@ class FormRendererFoundation(FormRenderer):
                 name, result, self.label_columns if cols is None else cols,
                 errors)
 
+    def input(self, name, value=None, id=None, **attrs):
+        if self.is_error(name):
+            attrs = css_add_class(attrs, 'error')
+        return super(FormRendererFoundation, self).input(name, value, id, **attrs)
+
     def text(self, name, value=None, id=None, cols=None, errors=True, **attrs):
         result = super(FormRendererFoundation, self).text(
                 name, value, id, **attrs)
