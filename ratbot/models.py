@@ -137,30 +137,18 @@ def tz_property(attr):
     return property(getter, setter)
 
 
-def file_property(filename_attr, create_method=None):
-    "Makes a file-object property based on the filename_attr attribute"
+def filename_property(attr):
+    "Makes a filename property which checks the directory in its setter"
     def getter(self):
-        if create_method:
-            getattr(self, create_method)()
-        fname = getattr(self, filename_attr)
-        if os.path.exists(fname):
-            return io.open(fname, 'rb')
+        return getattr(self, attr)
     def setter(self, value):
-        fname = getattr(self, filename_attr)
         if value:
-            fd, path = tempfile.mkstemp(dir=os.path.split(fname)[0])
-            try:
-                with io.open(fd, 'wb') as temp:
-                    shutil.copyfileobj(value, temp)
-            except:
-                os.unlink(path)
-                raise
-            os.rename(path, fname)
-        else:
-            try:
-                os.unlink(fname)
-            except OSError:
-                pass
+            files_dir = get_current_registry().settings['site.files']
+            value_dir, filename = os.path.split(value)
+            if os.path.normpath(files_dir) != os.path.normpath(value_dir):
+                raise ValueError(
+                    'Invalid directory: %s is not under %s' % (value, files_dir))
+        setattr(self, attr, value)
     return property(getter, setter)
 
 
@@ -180,7 +168,12 @@ class Page(Base):
 
     __tablename__ = 'pages'
     __table_args__ = (
-        ForeignKeyConstraint(['comic_id', 'issue_number'], ['issues.comic_id', 'issues.number']),
+        ForeignKeyConstraint(
+            ['comic_id', 'issue_number'],
+            ['issues.comic_id', 'issues.number'],
+            onupdate='CASCADE',
+            ondelete='CASCADE',
+            ),
         {},
         )
 
@@ -194,13 +187,15 @@ class Page(Base):
             'published', DateTime, default=datetime.utcnow, nullable=True)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
+    _thumbnail = Column('thumbnail', Unicode(200))
+    _bitmap = Column('bitmap', Unicode(200))
+    _vector = Column('vector', Unicode(200))
 
+    thumbnail_filename = synonym('_thumbnail', descriptor=filename_property('_thumbnail'))
+    bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
+    vector_filename = synonym('_vector', descriptor=filename_property('_vector'))
     created = synonym('_created', descriptor=tz_property('_created'))
     published = synonym('_published', descriptor=tz_property('_published'))
-
-    thumbnail = file_property('thumbnail_filename', 'create_thumbnail')
-    bitmap = file_property('bitmap_filename', 'create_bitmap')
-    vector = file_property('vector_filename')
 
     thumbnail_updated = updated_property('thumbnail_filename')
     bitmap_updated = updated_property('bitmap_filename')
@@ -213,30 +208,6 @@ class Page(Base):
     def __unicode__(self):
         return '%s, issue #%d, "%s", page #%d' % (
             self.issue.comic.title, self.issue.number, self.issue.title, self.number)
-
-    @reify
-    def thumbnail_filename(self):
-        return os.path.join(
-            get_current_registry().settings['site.files'],
-            'thumbs',
-            '%s_%d_%d.png' % (self.comic_id, self.issue_number, self.number)
-            )
-
-    @reify
-    def bitmap_filename(self):
-        return os.path.join(
-            get_current_registry().settings['site.files'],
-            'bitmaps',
-            '%s_%d_%d.png' % (self.comic_id, self.issue_number, self.number)
-            )
-
-    @reify
-    def vector_filename(self):
-        return os.path.join(
-            get_current_registry().settings['site.files'],
-            'vectors',
-            '%s_%d_%d.svg' % (self.comic_id, self.issue_number, self.number)
-            )
 
     def create_thumbnail(self):
         # Ensure a bitmap exists to create the thumbnail from
@@ -342,7 +313,10 @@ class Issue(Base):
 
     __tablename__= 'issues'
 
-    comic_id = Column(Unicode(20), ForeignKey('comics.id'), primary_key=True)
+    comic_id = Column(
+            Unicode(20),
+            ForeignKey('comics.id', onupdate='CASCADE', ondelete='CASCADE'),
+            primary_key=True)
     number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
     title = Column(Unicode(500), nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
@@ -525,7 +499,9 @@ class Comic(Base):
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(200), nullable=False, unique=True)
     author_id = Column(
-            Unicode(200), ForeignKey('users.id'), nullable=False)
+            Unicode(200),
+            ForeignKey('users.id', onupdate='CASCADE', ondelete='RESTRICT'),
+            nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
     _created = Column(
