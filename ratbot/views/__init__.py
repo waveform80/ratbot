@@ -26,16 +26,26 @@ from __future__ import (
     )
 str = type('')
 
+import os
+import datetime
 import logging
 log = logging.getLogger(__name__)
 
 import pytz
+import webhelpers
+import webhelpers.number
+import webhelpers.date
+import webhelpers.text
+import webhelpers.misc
+import webhelpers.util
+import webhelpers.constants
+import webhelpers.containers
 from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
 from pyramid.security import has_permission
 from pyramid.events import subscriber, BeforeRender
 
-from ratbot.markup import render
+from ratbot import html, markup
 from ratbot.models import utcnow
 from ratbot.security import Permission, Principal
 
@@ -43,7 +53,10 @@ from ratbot.security import Permission, Principal
 @subscriber(BeforeRender)
 def renderer_globals(event):
     # Add some useful renderer globals
-    event['render_markup'] = render
+    event['html'] = html
+    event['markup'] = markup
+    event['datetime'] = datetime
+    event['webhelpers'] = webhelpers
     event['has_permission'] = lambda perm: has_permission(perm, event['context'], event['request'])
     event['Permission'] = Permission
     event['Principal'] = Principal

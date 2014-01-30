@@ -22,7 +22,7 @@
       </div>
       <div class="small-9 large-6 columns">
         <a href="${request.route_url('issues', comic=comic.id)}"><h2>${comic.title}</h2></a>
-        ${render_markup(comic.markup, comic.description)}
+        ${markup.render(comic.markup, comic.description)}
       </div>
       <div class="large-3 columns"></div>
     </div>

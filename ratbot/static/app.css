@@ -164,7 +164,8 @@ section#page {
     text-align: center;
 }
 
-section#page img {
+section#page img,
+section#files img {
     margin-bottom: 1em;
 }
 

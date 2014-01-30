@@ -12,7 +12,7 @@
 
         <div tal:repeat="page pages" id="${page.number}">
           <div class="lsf-icon" title="calendar">${page.published.strftime('%d %b %Y')}</div>
-          ${render_markup(page.markup, page.description)}
+          ${markup.render(page.markup, page.description)}
           <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
         </div>
       </section>

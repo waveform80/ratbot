@@ -16,12 +16,6 @@
     ${form.hidden('comic_id')}
 
     <div class="row">
-      <div class="small-12 columns">
-        ${form.error_flashes()}
-      </div>
-    </div>
-
-    <div class="row">
       <div class="medium-3 columns">
         ${form.label('number', 'Issue Number')}
         ${form.text('number', placeholder='Issue #')}
@@ -80,11 +74,6 @@
     ${form.end()}
   </section>
 
-  <br />
 </div>
 </foo>
-
-
-
-
 

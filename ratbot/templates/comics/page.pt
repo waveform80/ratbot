@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="row" tal:condition="context.page.description">
-      ${view.render_markup(context.page.markup, context.page.description)}
+      ${markup.render(context.page.markup, context.page.description)}
     </div>
     <div class="row">
       <div class="medium-6 columns">

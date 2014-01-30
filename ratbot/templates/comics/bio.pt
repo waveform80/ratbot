@@ -15,7 +15,7 @@
     <div class="small-12 columns">
       <hr />
       <h2>${author.name}</h2>
-      ${render_markup(author.markup, author.description)}
+      ${markup.render(author.markup, author.description)}
     </div>
   </div>
 </div>
