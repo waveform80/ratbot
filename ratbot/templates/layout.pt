@@ -26,8 +26,8 @@
       </div>
     </footer>
 
-    <script src="${request.static_url('ratbot:static/foundation5/js/jquery.js"></script>
-    <script src="${request.static_url('ratbot:static/foundation5/js/foundation.min.js"></script>
+    <script src="${request.static_url('ratbot:static/foundation5/js/jquery.js')}"></script>
+    <script src="${request.static_url('ratbot:static/foundation5/js/foundation.min.js')}"></script>
     <script>
       $(document).foundation();
     </script>
