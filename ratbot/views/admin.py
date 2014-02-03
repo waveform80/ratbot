@@ -69,18 +69,6 @@ from ratbot.schemas import (
 def is_upload(request, name):
     return isinstance(request.POST.get(name), cgi.FieldStorage)
 
-def file_upload(data, destination):
-    # Read data into a temporary file in the same directory as the destination
-    with tempfile.NamedTemporaryFile(
-            dir=os.path.split(destination)[0],
-            delete=False) as f:
-        shutil.copyfileobj(data, f)
-        f.close()
-        # Rename the temporary file to the final filename. As the temporary
-        # file was created in the same directory as the destination this is
-        # guaranteed to be an atomic operation
-        os.rename(f.name, destination)
-
 
 class LoginView(BaseView):
     @view_config(
@@ -293,6 +281,11 @@ class AdminView(BaseView):
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(issue)
                 self.request.session.flash('Deleted "%s" issue #%d' % (issue.comic.title, issue.number))
+                for i in DBSession.query(Issue).filter(
+                        (Issue.comic_id == issue.comic_id) &
+                        (Issue.number > issue.number)
+                        ).order_by(Issue.number):
+                    i.number = i.number - 1
             else:
                 form.bind(issue)
                 self.request.session.flash('Updated "%s" issue #%d' % (issue.comic.title, issue.number))
@@ -331,14 +324,14 @@ class AdminView(BaseView):
         if self.request.method == 'POST' and not is_upload(self.request, 'vector'):
             form.errors['vector'] = 'Vector image is required'
         if form.validate():
-            print(self.request.POST)
             page = form.bind(Page())
-            file_upload(self.request.POST['vector'].file, page.vector_filename)
+            page.vector = self.request.POST['vector'].file
             if is_upload(self.request, 'bitmap'):
-                file_upload(self.request.POST['bitmap'].file, page.bitmap_filename)
+                page.bitmap = self.request.POST['bitmap'].file
             if is_upload(self.request, 'thumbnail'):
-                file_upload(self.request.POST['thumbnail'].file, page.thumbnail_filename)
+                page.thumbnail = self.request.POST['thumbnail'].file
             DBSession.add(page)
+            self.context.issue.invalidate()
             self.request.session.flash(
                     'Added page %d of %s #%d' % (
                         page.number,
@@ -377,19 +370,18 @@ class AdminView(BaseView):
                     p.number = p.number - 1
             else:
                 if bool(self.request.POST.get('delete_bitmap', '')):
-                    print('Deleting bitmap')
-                    os.unlink(page.bitmap_filename)
+                    page.bitmap = None
                 if bool(self.request.POST.get('delete_thumbnail', '')):
-                    print('Deleting thumbnail')
-                    os.unlink(page.thumbnail_filename)
+                    page.thumbnail = None
                 if is_upload(self.request, 'vector'):
-                    file_upload(self.request.POST['vector'].file, page.vector_filename)
+                    page.vector = self.request.POST['vector'].file
                 if is_upload(self.request, 'bitmap'):
-                    file_upload(self.request.POST['bitmap'].file, page.bitmap_filename)
+                    page.bitmap = self.request.POST['bitmap'].file
                 if is_upload(self.request, 'thumbnail'):
-                    file_upload(self.request.POST['thumbnail'].file, page.thumbnail_filename)
+                    page.thumbnail = self.request.POST['thumbnail'].file
                 form.bind(page)
                 self.request.session.flash('Altered "%s" issue #%d, page %d' % (page.issue.comic.title, page.issue_number, page.number))
+            page.issue.invalidate()
             # Grab a copy of the comic ID before the object becomes invalid
             comic_id = page.comic_id
             DBSession.flush()
@@ -398,9 +390,9 @@ class AdminView(BaseView):
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
-                vector_stat=os.stat(page.vector_filename) if os.path.exists(page.vector_filename) else None,
-                bitmap_stat=os.stat(page.bitmap_filename) if os.path.exists(page.bitmap_filename) else None,
-                thumbnail_stat=os.stat(page.thumbnail_filename) if os.path.exists(page.thumbnail_filename) else None,
+                vector_stat=os.stat(page.vector_filename) if page.vector_filename else None,
+                bitmap_stat=os.stat(page.bitmap_filename) if page.bitmap_filename else None,
+                thumbnail_stat=os.stat(page.thumbnail_filename) if page.thumbnail_filename else None,
                 )
 
 

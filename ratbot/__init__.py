@@ -65,31 +65,23 @@ def main(global_config, **settings):
         if settings.get(key) == 'CHANGEME':
             raise ValueError('You must specify a new value for %s' % key)
 
-    # Ensure paths are configured appropriately
-    files_dir = settings['site.files']
-    for d in (
-            files_dir,
-            os.path.join(files_dir, 'thumbs'),
-            os.path.join(files_dir, 'bitmaps'),
-            os.path.join(files_dir, 'vectors'),
-            os.path.join(files_dir, 'archives'),
-            os.path.join(files_dir, 'pdfs'),
-            ):
-        log.debug('Testing existence of %s', d)
-        if not os.path.exists(d):
-            os.mkdir(d)
-        if not os.path.isdir(d):
-            raise ValueError('%s is not a directory' % d)
-        log.debug('Testing write access to %s', d)
+    # Ensure path is configured appropriately
+    files_dir = os.path.normpath(os.path.expanduser(settings['site.files']))
+    log.debug('Testing existence of %s', files_dir)
+    if not os.path.exists(files_dir):
+        os.mkdir(files_dir)
+    if not os.path.isdir(files_dir):
+        raise ValueError('%s is not a directory' % files_dir)
+    log.debug('Testing write access to %s', files_dir)
+    try:
+        io.open(os.path.join(files_dir, 'foo'), 'wb').close()
+    except:
+        raise ValueError('No write access to %s' % files_dir)
+    finally:
         try:
-            io.open(os.path.join(d, 'foo'), 'wb').close()
-        except:
-            raise ValueError('No write access to %s' % d)
-        finally:
-            try:
-                os.unlink(os.path.join(d, 'foo'))
-            except OSError:
-                pass
+            os.unlink(os.path.join(files_dir, 'foo'))
+        except OSError:
+            pass
 
     session_factory = session_factory_from_settings(settings)
     mailer_factory = mailer_factory_from_settings(settings)
@@ -98,7 +90,7 @@ def main(global_config, **settings):
         'secret', hashalg='sha512', callback=group_finder)
     authz_policy = ACLAuthorizationPolicy()
     engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
+    DBSession.configure(bind=engine, info={'site.files': files_dir})
 
     config = Configurator(
             settings=settings,

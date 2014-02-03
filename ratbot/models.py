@@ -31,15 +31,19 @@ import io
 import os
 import os.path
 import sys
-import logging
 import tempfile
 import shutil
+import threading
+import atexit
+import logging
 from datetime import datetime
 from contextlib import closing
+log = logging.getLogger(__name__)
 
 import pytz
 import rsvg
 import cairo
+import transaction
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.generic import NameObject, createStringObject
@@ -71,18 +75,15 @@ from sqlalchemy.orm.exc import (
     )
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from zope.sqlalchemy import ZopeTransactionExtension
+from zope.sqlalchemy import register
 from pyramid.decorator import reify
-from pyramid.threadlocal import get_current_registry
 
-from ratbot.util import ZipFile, ZIP_STORED
-
-
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-Base = declarative_base()
+from ratbot.zip import ZipFile, ZIP_STORED
+from ratbot.locking import SELock
 
 
 __all__ = [
+    'FilesThread',
     'DBSession',
     'Base',
     'Comic',
@@ -92,6 +93,13 @@ __all__ = [
     'utcnow',
     ]
 
+
+# Global database session factory
+DBSession = scoped_session(sessionmaker())
+register(DBSession)
+
+# SQLAlchemy mapper base class
+Base = declarative_base()
 
 # Maximum size of a page thumbnail
 THUMB_RESOLUTION = (200, 300)
@@ -107,12 +115,82 @@ PDF_DPI = 72.0
 SPOOL_LIMIT = 1024*1024
 
 
-# Ensure SQLite uses foreign keys properly
-@event.listens_for(Engine, 'connect')
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute('PRAGMA foreign_keys=ON')
-    cursor.close()
+class FilesThread(threading.Thread):
+    """
+    The singleton files thread is periodically woken up to check which files
+    exist in the site.files dir, and remove any that don't have a corresponding
+    entry in the database. It is woken up after any COMMIT or ROLLBACK
+    operation that follows changes to any filename attribute.
+    """
+    def __init__(self):
+        super(FilesThread, self).__init__()
+        self.lock = SELock()
+        self._event = threading.Event()
+        self._changed = False
+        self._change_lock = threading.Lock()
+        self._terminated = False
+        atexit.register(self.stop)
+        self.start()
+
+    def after_txn(self, session):
+        self.clean()
+
+    def clean(self):
+        with self._change_lock:
+            if self._changed:
+                self._changed = False
+                self._event.set()
+
+    def changed(self):
+        with self._change_lock:
+            self._changed = True
+
+    def run(self):
+        try:
+            while not self._terminated:
+                if self._event.wait(1):
+                    self._event.clear()
+                    with self.lock.exclusive, transaction.manager:
+                        files_dir = DBSession.info['site.files']
+                        log.info('FileThread sweeping %s' % files_dir)
+                        to_delete = set(
+                                os.path.join(files_dir, f)
+                                for f in os.listdir(files_dir)
+                                if f.endswith(('.svg', '.png', '.pdf', '.zip'))
+                                )
+                        for page in DBSession.query(Page):
+                            for filename in (
+                                    page.vector_filename,
+                                    page.bitmap_filename,
+                                    page.thumbnail_filename,
+                                    ):
+                                if filename:
+                                    to_delete.remove(filename)
+                        for issue in DBSession.query(Issue):
+                            for filename in (
+                                    issue.archive_filename,
+                                    issue.pdf_filename,
+                                    ):
+                                if filename:
+                                    to_delete.remove(filename)
+                        log.info('FileThread found %d files to remove' % len(to_delete))
+                        for filename in to_delete:
+                            try:
+                                log.info('FileThread removing %s' % filename)
+                                os.unlink(filename)
+                            except IOError as e:
+                                log.error('Failed to remove %s' % filename)
+                                log.error(str(e))
+        finally:
+            # Need to close the session we've been using here as some DBAPI
+            # implementations won't close our session back in the main thread
+            DBSession.remove()
+
+    def stop(self):
+        self._terminated = True
+        self.join()
+
+FilesThread = FilesThread()
 
 
 def utcnow():
@@ -142,13 +220,38 @@ def filename_property(attr):
     def getter(self):
         return getattr(self, attr)
     def setter(self, value):
-        if value:
-            files_dir = get_current_registry().settings['site.files']
-            value_dir, filename = os.path.split(value)
-            if os.path.normpath(files_dir) != os.path.normpath(value_dir):
-                raise ValueError(
-                    'Invalid directory: %s is not under %s' % (value, files_dir))
-        setattr(self, attr, value)
+        if value != getattr(self, attr):
+            if value:
+                files_dir = DBSession.info['site.files']
+                value_dir, filename = os.path.split(value)
+                if os.path.normpath(files_dir) != os.path.normpath(value_dir):
+                    raise ValueError(
+                        'Invalid directory: %s is not under %s' % (value, files_dir))
+            setattr(self, attr, value)
+            FilesThread.changed()
+    return property(getter, setter)
+
+
+def file_property(filename_attr, prefix='tmp', suffix='.tmp', create_method=None):
+    "Makes a file-object property based on a filename_attr attribute"
+    def getter(self):
+        if create_method:
+            getattr(self, create_method)()
+        fname = getattr(self, filename_attr)
+        if fname:
+            return io.open(fname, 'rb')
+    def setter(self, value):
+        if value is None:
+            setattr(self, filename_attr, None)
+        else:
+            with FilesThread.lock.shared:
+                with tempfile.NamedTemporaryFile(
+                        dir=DBSession.info['site.files'],
+                        prefix=prefix,
+                        suffix=suffix,
+                        delete=False) as f:
+                    shutil.copyfileobj(value, f)
+                    setattr(self, filename_attr, f.name)
     return property(getter, setter)
 
 
@@ -191,11 +294,20 @@ class Page(Base):
     _bitmap = Column('bitmap', Unicode(200))
     _vector = Column('vector', Unicode(200))
 
+    created = synonym('_created', descriptor=tz_property('_created'))
+    published = synonym('_published', descriptor=tz_property('_published'))
     thumbnail_filename = synonym('_thumbnail', descriptor=filename_property('_thumbnail'))
     bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
     vector_filename = synonym('_vector', descriptor=filename_property('_vector'))
-    created = synonym('_created', descriptor=tz_property('_created'))
-    published = synonym('_published', descriptor=tz_property('_published'))
+
+    thumbnail = file_property(
+            'thumbnail_filename', prefix='thumb_', suffix='.png',
+            create_method='create_thumbnail')
+    bitmap = file_property(
+            'bitmap_filename', prefix='page_', suffix='.png',
+            create_method='create_bitmap')
+    vector = file_property(
+            'vector_filename', prefix='page_', suffix='.svg')
 
     thumbnail_updated = updated_property('thumbnail_filename')
     bitmap_updated = updated_property('bitmap_filename')
@@ -213,8 +325,8 @@ class Page(Base):
         # Ensure a bitmap exists to create the thumbnail from
         self.create_bitmap()
         if (
-                os.path.exists(self.bitmap_filename) and
-                (not os.path.exists(self.thumbnail_filename) or
+                self.bitmap_filename and
+                (not self.thumbnail_filename or
                     self.thumbnail_updated < self.bitmap_updated)
                 ):
             with closing(self.bitmap) as source:
@@ -237,8 +349,8 @@ class Page(Base):
 
     def create_bitmap(self):
         if (
-                os.path.exists(self.vector_filename) and
-                (not os.path.exists(self.bitmap_filename) or
+                self.vector_filename and
+                (not self.bitmap_filename or
                     self.bitmap_updated < self.vector_updated)
                 ):
             # Load the SVG file with librsvg (using copyfileobj is a bit of a
@@ -323,12 +435,20 @@ class Issue(Base):
     description = Column(Unicode, default='', nullable=False)
     _created = Column(
             'created', DateTime, default=datetime.utcnow, nullable=False)
+    _archive = Column('archive', Unicode(200))
+    _pdf = Column('pdf', Unicode(200))
     pages = relationship(Page, backref='issue', order_by=[Page.number])
 
     created = synonym('_created', descriptor=tz_property('_created'))
+    archive_filename = synonym('_archive', descriptor=filename_property('_archive'))
+    pdf_filename = synonym('_pdf', descriptor=filename_property('_pdf'))
 
-    archive = file_property('archive_filename', 'create_archive')
-    pdf = file_property('pdf_filename', 'create_pdf')
+    archive = file_property(
+            'archive_filename', prefix='issue_', suffix='.zip',
+            create_method='create_archive')
+    pdf = file_property(
+            'pdf_filename', prefix='issue_', suffix='.pdf',
+            create_method='create_pdf')
 
     archive_updated = updated_property('archive_filename')
     pdf_updated = updated_property('pdf_filename')
@@ -347,27 +467,10 @@ class Issue(Base):
         self.archive = None
         self.pdf = None
 
-    @reify
-    def archive_filename(self):
-        return os.path.join(
-            get_current_registry().settings['site.files'],
-            'archives',
-            '%s_%d.zip' % (self.comic_id, self.number)
-            )
-
-    @reify
-    def pdf_filename(self):
-        return os.path.join(
-            get_current_registry().settings['site.files'],
-            'pdfs',
-            '%s_%d.pdf' % (self.comic_id, self.number)
-            )
-
     def create_archive(self):
         if not self.published_pages.count():
             self.archive = None
-        elif (not os.path.exists(self.archive_filename) or
-                self.archive_updated < self.published):
+        elif (not self.archive_filename or self.archive_updated < self.published):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
                 # We don't bother with compression here as PNGs are already
                 # compressed (and zip usually can't do any better)
@@ -387,8 +490,7 @@ class Issue(Base):
     def create_pdf(self):
         if not self.published_pages.count():
             self.pdf = None
-        elif (not os.path.exists(self.pdf_filename) or
-                    self.pdf_updated < self.published):
+        elif (not self.pdf_filename or self.pdf_updated < self.published):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
                 # Use cairo to generate a PDF for each page's SVG.
                 # XXX To create the PDF surface we need the SVG's DPI and size.
@@ -558,4 +660,25 @@ class User(Base):
         return DBSession.query(Issue).join(Page).join(User).filter(
             (User.id == self.id)
             ).distinct()
+
+
+# Notify the FilesThread about various occurrences
+@event.listens_for(DBSession, 'after_rollback')
+@event.listens_for(DBSession, 'after_commit')
+def clean_after_txn(session):
+    FilesThread.clean()
+
+@event.listens_for(Page, 'after_insert')
+@event.listens_for(Page, 'after_delete')
+@event.listens_for(Issue, 'after_insert')
+@event.listens_for(Issue, 'after_delete')
+def changed_after_insdel(mapper, connection, target):
+    FilesThread.changed()
+
+# Ensure SQLite uses foreign keys properly
+@event.listens_for(Engine, 'connect')
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute('PRAGMA foreign_keys=ON')
+    cursor.close()
 

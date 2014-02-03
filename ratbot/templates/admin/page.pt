@@ -100,8 +100,8 @@
           title="Scalable Vector Graphics">SVG</acronym>) image. If a bitmap
         (<acronym title="Portable Network Graphics">PNG</acronym>) file is not
         specified (or is later deleted), it will be generated automatically
-        from the vector. If a is not specified (or is later deleted), it will
-        be generated automatically from the bitmap file.</p>
+        from the vector. If a thumbnail is not specified (or is later deleted),
+        it will be generated automatically from the bitmap file.</p>
       </div>
     </div>
 
