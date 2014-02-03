@@ -26,10 +26,12 @@ from __future__ import (
     )
 str = type('')
 
+import os
+import hashlib
 import logging
 log = logging.getLogger(__name__)
 
-from pyramid.response import Response, FileResponse
+from pyramid.response import FileResponse
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from sqlalchemy import func
@@ -45,6 +47,22 @@ from ratbot.models import (
     User,
     utcnow,
     )
+
+
+class FileResponseEtag(FileResponse):
+    """
+    A derivative of FileResponse which also provides E-tag based caching.
+    """
+    def __init__(self, path, request=None, cache_max_age=None,
+            content_type=None, content_encoding=None):
+        super(FileResponseEtag, self).__init__(path, request, cache_max_age,
+                content_type, content_encoding)
+        s = os.stat(path)
+        h = hashlib.md5()
+        h.update(path)
+        h.update(str(s.st_size))
+        h.update(str(s.st_mtime))
+        self.etag = h.hexdigest()
 
 
 class ComicsView(BaseView):
@@ -179,12 +197,12 @@ class ComicsView(BaseView):
     @view_config(route_name='issue_archive')
     def issue_archive(self):
         self.context.issue.create_archive()
-        return FileResponse(self.context.issue.archive_filename)
+        return FileResponseEtag(self.context.issue.archive_filename, request=self.request)
 
     @view_config(route_name='issue_pdf')
     def issue_pdf(self):
         self.context.issue.create_pdf()
-        return FileResponse(self.context.issue.pdf_filename)
+        return FileResponseEtag(self.context.issue.pdf_filename, request=self.request)
 
     @view_config(
             route_name='page',
@@ -197,16 +215,16 @@ class ComicsView(BaseView):
     @view_config(route_name='page_thumb')
     def page_thumb(self):
         self.context.page.create_thumbnail()
-        return FileResponse(self.context.page.thumbnail_filename)
+        return FileResponseEtag(self.context.page.thumbnail_filename, request=self.request)
 
     @view_config(route_name='page_bitmap')
     def page_bitmap(self):
         self.context.page.create_bitmap()
-        return FileResponse(self.context.page.bitmap_filename)
+        return FileResponseEtag(self.context.page.bitmap_filename, request=self.request)
 
     @view_config(route_name='page_vector')
     def page_vector(self):
-        return FileResponse(self.context.page.vector_filename)
+        return FileResponseEtag(self.context.page.vector_filename, request=self.request)
 
 
 def routes():
