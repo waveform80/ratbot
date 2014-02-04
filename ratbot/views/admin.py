@@ -34,6 +34,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import pytz
+import json
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
@@ -76,8 +77,18 @@ class LoginView(BaseView):
         try:
             email = self.context.profile['verifiedEmail']
         except KeyError:
-            # No verified e-mail in profile
-            return HTTPForbidden()
+            try:
+                # Neither Twitter nor GitHub currently provide verified e-mails
+                # in their OAuth response
+                if self.context.provider_name == 'github':
+                    email = self.context.profile['emails'][0]['value']
+                elif self.context.provider_name == 'twitter':
+                    email = self.context.profile['accounts'][0]['username'] + '@twitter.com'
+                else:
+                    return HTTPForbidden()
+            except (KeyError, IndexError) as e:
+                # No verified e-mail in profile
+                return HTTPForbidden()
         try:
             user = DBSession.query(User).filter(User.id == email).one()
         except NoResultFound:
