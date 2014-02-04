@@ -92,6 +92,7 @@ class ComicsView(BaseView):
             ).group_by(
                 sub.c.comic_id,
                 sub.c.issue_number,
+                sub.c.published,
             ).order_by(sub.c.published.desc())
         return {
                 'latest': latest_query,
