@@ -83,6 +83,11 @@ class BaseView(object):
         return renderer.implementation().macros['nav-bar']
 
     @reify
+    def flashes(self):
+        renderer = get_renderer('../templates/flashes.pt')
+        return renderer.implementation().macros['flashes']
+
+    @reify
     def site_title(self):
         return self.request.registry.settings['site.title']
 

@@ -5,6 +5,8 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
+  <div metal:use-macro="view.flashes"></div>
+
   <section tal:repeat="(index, data) enumerate(comics)" id="comics">
     <div class="row" tal:condition="index != 0">
       <div class="small-12 columns">

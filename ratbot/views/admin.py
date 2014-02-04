@@ -35,8 +35,6 @@ log = logging.getLogger(__name__)
 
 import pytz
 from pyramid.decorator import reify
-from pyramid.renderers import get_renderer
-from pyramid.response import Response, FileResponse
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.security import remember, forget
@@ -252,14 +250,16 @@ class AdminView(BaseView):
             issue = form.bind(Issue())
             DBSession.add(issue)
             self.request.session.flash(
-                    'Created %s #%d' % (
-                        issue.comic.title,
+                    'Created issue #%d of %s' % (
                         issue.number,
+                        self.context.comic.title,
                         ))
             DBSession.flush()
-            return HTTPFound(
-                    location=self.request.route_url('issues',
-                        comic=self.context.comic.id))
+            return HTTPFound(location=
+                    self.request.route_url('issues', comic=self.context.comic.id)
+                    if comic_id != 'blog' else
+                    self.request.route_url('blog_index')
+                    )
         return dict(
                 create=True,
                 form=FormRendererFoundation(form),
@@ -275,12 +275,18 @@ class AdminView(BaseView):
                 self.request,
                 obj=issue,
                 schema=IssueSchema,
-                came_from=self.request.route_url('issues', comic=self.context.issue.comic_id),
+                came_from=
+                    self.request.route_url('issues', comic=self.context.issue.comic_id)
+                    if self.context.issue.comic_id != 'blog' else
+                    self.request.route_url('blog_index', comic='blog'),
                 variable_decode=True)
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(issue)
-                self.request.session.flash('Deleted "%s" issue #%d' % (issue.comic.title, issue.number))
+                self.request.session.flash('Deleted issue #%d of %s' % (
+                    issue.number,
+                    issue.comic.title,
+                    ))
                 for i in DBSession.query(Issue).filter(
                         (Issue.comic_id == issue.comic_id) &
                         (Issue.number > issue.number)
@@ -288,12 +294,18 @@ class AdminView(BaseView):
                     i.number = i.number - 1
             else:
                 form.bind(issue)
-                self.request.session.flash('Updated "%s" issue #%d' % (issue.comic.title, issue.number))
+                self.request.session.flash('Updated issue #%d of %s' % (
+                    issue.number,
+                    issue.comic.title,
+                    ))
             # Grab a copy of the comic ID before the object becomes invalid
             comic_id = issue.comic_id
             DBSession.flush()
-            return HTTPFound(
-                    location=self.request.route_url('issues', comic=comic_id))
+            return HTTPFound(location=
+                    self.request.route_url('issues', comic=comic_id)
+                    if comic_id != 'blog' else
+                    self.request.route_url('blog_index', comic='blog')
+                    )
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
@@ -361,7 +373,11 @@ class AdminView(BaseView):
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(page)
-                self.request.session.flash('Deleted "%s" issue #%d, page %d' % (page.issue.comic.title, page.issue_number, page.number))
+                self.request.session.flash('Deleted page %d of %s #%d' % (
+                    page.number,
+                    page.issue.comic.title,
+                    page.issue_number,
+                    ))
                 for p in DBSession.query(Page).filter(
                         (Page.comic_id == page.comic_id) &
                         (Page.issue_number == page.issue_number) &
@@ -380,7 +396,11 @@ class AdminView(BaseView):
                 if is_upload(self.request, 'thumbnail'):
                     page.thumbnail = self.request.POST['thumbnail'].file
                 form.bind(page)
-                self.request.session.flash('Altered "%s" issue #%d, page %d' % (page.issue.comic.title, page.issue_number, page.number))
+                self.request.session.flash('Altered page %d of %s #%d' % (
+                    page.issue.comic.title,
+                    page.issue_number,
+                    page.number,
+                    ))
             page.issue.invalidate()
             # Grab a copy of the comic ID before the object becomes invalid
             comic_id = page.comic_id

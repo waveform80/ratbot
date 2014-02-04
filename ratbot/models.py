@@ -437,7 +437,9 @@ class Issue(Base):
             'created', DateTime, default=datetime.utcnow, nullable=False)
     _archive = Column('archive', Unicode(200))
     _pdf = Column('pdf', Unicode(200))
-    pages = relationship(Page, backref='issue', order_by=[Page.number])
+    pages = relationship(
+            Page, backref='issue', order_by=[Page.number],
+            cascade='all, delete-orphan', passive_deletes=True)
 
     created = synonym('_created', descriptor=tz_property('_created'))
     archive_filename = synonym('_archive', descriptor=filename_property('_archive'))
@@ -608,7 +610,9 @@ class Comic(Base):
     description = Column(UnicodeText, default='', nullable=False)
     _created = Column(
             'created', DateTime, default=datetime.utcnow, nullable=False)
-    issues = relationship(Issue, backref='comic', order_by=[Issue.number])
+    issues = relationship(
+            Issue, backref='comic', order_by=[Issue.number],
+            cascade='all, delete-orphan', passive_deletes=True)
 
     def __repr__(self):
         return '<Comic: id=%s>' % self.id
@@ -670,8 +674,8 @@ def clean_after_txn(session):
 
 @event.listens_for(Page, 'after_insert')
 @event.listens_for(Page, 'after_delete')
-@event.listens_for(Issue, 'after_insert')
 @event.listens_for(Issue, 'after_delete')
+@event.listens_for(Comic, 'after_delete')
 def changed_after_insdel(mapper, connection, target):
     FilesThread.changed()
 

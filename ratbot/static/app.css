@@ -193,13 +193,14 @@ section#bloglist ul {
     border: 1px solid #d9d9d9;
     border-top: 0 none;
     padding: 1em;
+    margin-bottom: 1em;
 }
 
-section#bloglist a {
+section#bloglist ul a {
     color: #333;
 }
 
-section#bloglist a.active {
+section#bloglist ul a.active {
     font-weight: bold;
 }
 
