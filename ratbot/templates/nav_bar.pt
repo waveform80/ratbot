@@ -2,10 +2,11 @@
   <div class="row">
     <div class="small-12 columns">
       <ul class="small-block-grid-2 medium-block-grid-4">
-        <li><a href="${request.route_url('index')}"><img src="${request.static_url('ratbot:static/home.opt.svg')}" /> Home</a></li>
-        <li><a href="#"><img src="${request.static_url('ratbot:static/store.opt.svg')}" /> Store</a></li>
-        <li><a href="${request.route_url('blog_index', comic='blog')}"><img src="${request.static_url('ratbot:static/blog.opt.svg')}" /> Blog</a></li>
-        <li><a href="${request.route_url('bio')}"><img src="${request.static_url('ratbot:static/bio.opt.svg')}" /> Bio</a></li>
+        <li tal:condition="request.matched_route.name not in ('index', 'issues', 'issue', 'page')"><a href="${request.route_url('index')}"><img height="36" src="${request.static_url('ratbot:static/home.opt.svg')}" /> Home</a></li>
+        <li tal:condition="request.matched_route.name != 'comics'"><a href="${request.route_url('comics')}"><img height="36" src="${request.static_url('ratbot:static/comics.opt.svg')}" /> Comics</a></li>
+        <li tal:condition="request.matched_route.name != 'store'"><a href="#"><img height="36" src="${request.static_url('ratbot:static/store.opt.svg')}" /> Store</a></li>
+        <li tal:condition="request.matched_route.name != 'blog_issue'"><a href="${request.route_url('blog_index', comic='blog')}"><img height="36" src="${request.static_url('ratbot:static/blog.opt.svg')}" /> Blog</a></li>
+        <li tal:condition="request.matched_route.name != 'bio'"><a href="${request.route_url('bio')}"><img height="36" src="${request.static_url('ratbot:static/bio.opt.svg')}" /> Bio</a></li>
       </ul>
     </div>
   </div>

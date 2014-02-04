@@ -9,18 +9,7 @@
     </div>
   </header>
 
-  <nav>
-    <div class="row">
-      <div class="small-12 columns">
-        <ul class="small-block-grid-2 medium-block-grid-4">
-          <li><a href="${request.route_url('comics')}"><img src="${request.static_url('ratbot:static/comics.opt.svg')}" /> Comics</a></li>
-          <li><a href="#"><img src="${request.static_url('ratbot:static/store.opt.svg')}" /> Store</a></li>
-          <li><a href="${request.route_url('blog_index', comic='blog')}"><img src="${request.static_url('ratbot:static/blog.opt.svg')}" /> Blog</a></li>
-          <li><a href="${request.route_url('bio')}"><img src="${request.static_url('ratbot:static/bio.opt.svg')}" /> Bio</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <foo metal:use-macro="view.nav_bar"></foo>
 
   <section id="latest">
     <div class="row">
