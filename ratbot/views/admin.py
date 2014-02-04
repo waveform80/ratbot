@@ -269,7 +269,7 @@ class AdminView(BaseView):
             return HTTPFound(location=
                     self.request.route_url('issues', comic=self.context.comic.id)
                     if self.context.comic.id != 'blog' else
-                    self.request.route_url('blog_index')
+                    self.request.route_url('blog_index', comic='blog')
                     )
         return dict(
                 create=True,
