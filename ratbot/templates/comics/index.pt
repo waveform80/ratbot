@@ -57,10 +57,6 @@
           <img src="${request.static_url('ratbot:static/Twitter.opt.svg')}"
             width="48" alt="Login with Twitter" title="Login with Twitter" />
         </a>
-        <a href="#">
-          <img src="${request.static_url('ratbot:static/LinkedIn.opt.svg')}"
-            width="48" alt="Login with LinkedIn" title="Login with LinkedIn" />
-        </a>
       </div>
       <div class="small-12 columns" tal:condition="request.user">
         <h2>Logged in as: ${request.user.name}</h2>
