@@ -282,8 +282,7 @@ class Page(Base):
 
     comic_id = Column(Unicode(20), primary_key=True)
     issue_number = Column(Integer, primary_key=True, autoincrement=False)
-    number = Column(
-            Integer, CheckConstraint('number >= 1'), primary_key=True)
+    number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True, autoincrement=False)
 
     _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
     created = synonym('_created', descriptor=tz_property('_created'))
