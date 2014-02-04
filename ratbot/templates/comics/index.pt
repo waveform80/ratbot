@@ -45,17 +45,21 @@
     <div class="row">
       <div class="small-12 columns" tal:condition="not request.user">
         <h2>Login</h2>
-        <a href="${login_url(request, 'facebook')}">
+        <a href="${login_url(request, 'facebook')}" tal:condition="'facebook' in request.registry.velruse_providers">
           <img src="${request.static_url('ratbot:static/Facebook.opt.svg')}"
             width="48" alt="Login with Facebook" title="Login with Facebook" />
         </a>
-        <a href="${login_url(request, 'google')}">
+        <a href="${login_url(request, 'google')}" tal:condition="'google' in request.registry.velruse_providers">
           <img src="${request.static_url('ratbot:static/Google+.opt.svg')}"
             width="48" alt="Login with Google+" title="Login with Google+" />
         </a>
-        <a href="#">
+        <a href="${login_url(request, 'twitter')}" tal:condition="'twitter' in request.registry.velruse_providers">
           <img src="${request.static_url('ratbot:static/Twitter.opt.svg')}"
             width="48" alt="Login with Twitter" title="Login with Twitter" />
+        </a>
+        <a href="${login_url(request, 'github')}" tal:condition="'github' in request.registry.velruse_providers">
+          <img src="${request.static_url('ratbot:static/GitHub.opt.svg')}"
+            width="48" alt="Login with GitHub" title="Login with GitHub" />
         </a>
       </div>
       <div class="small-12 columns" tal:condition="request.user">

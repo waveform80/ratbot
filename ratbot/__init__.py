@@ -61,6 +61,10 @@ def main(global_config, **settings):
             'login.google.consumer_secret',
             'login.facebook.consumer_key',
             'login.facebook.consumer_secret',
+            'login.twitter.consumer_key',
+            'login.twitter.consumer_secret',
+            'login.github.consumer_key',
+            'login.github.consumer_secret',
             ):
         if settings.get(key) == 'CHANGEME':
             raise ValueError('You must specify a new value for %s' % key)
@@ -97,10 +101,18 @@ def main(global_config, **settings):
             session_factory=session_factory,
             request_factory=RequestWithUser,
             )
-    config.include('velruse.providers.google_oauth2')
-    config.include('velruse.providers.facebook')
-    config.add_google_oauth2_login_from_settings(prefix='login.google.')
-    config.add_facebook_login_from_settings(prefix='login.facebook.')
+    if settings.get('login.google.consumer_key'):
+        config.include('velruse.providers.google_oauth2')
+        config.add_google_oauth2_login_from_settings(prefix='login.google.')
+    if settings.get('login.facebook.consumer_key'):
+        config.include('velruse.providers.facebook')
+        config.add_facebook_login_from_settings(prefix='login.facebook.')
+    if settings.get('login.twitter.consumer_key'):
+        config.include('velruse.providers.twitter')
+        config.add_twitter_login_from_settings(prefix='login.twitter.')
+    if settings.get('login.github.consumer_key'):
+        config.include('velruse.providers.github')
+        config.add_github_login_from_settings(prefix='login.github.')
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
