@@ -32,7 +32,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from pyramid.response import FileResponse
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPMovedPermanently
 from pyramid.view import view_config
 from sqlalchemy import func
 from velruse.api import login_url
@@ -235,6 +235,63 @@ class ComicsView(BaseView):
     def page_vector(self):
         return FileResponseEtag(self.context.page.vector_filename, request=self.request)
 
+    # Compatibility views
+    @view_config(route_name='compat_index')
+    def compat_index(self):
+        return HTTPMovedPermanently(location=self.request.route_url('comics'))
+
+    @view_config(route_name='compat_view')
+    def compat_view(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'page',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            page=self.request.matchdict['page'],
+            ))
+
+    @view_config(route_name='compat_thumb')
+    def compat_thumb(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'page_thumb',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            page=self.request.matchdict['page'],
+            ))
+
+    @view_config(route_name='compat_png')
+    def compat_png(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'page_bitmap',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            page=self.request.matchdict['page'],
+            ))
+
+    @view_config(route_name='compat_svg')
+    def compat_svg(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'page_vector',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            page=self.request.matchdict['page'],
+            ))
+
+    @view_config(route_name='compat_pdf')
+    def compat_pdf(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'issue_pdf',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            ))
+
+    @view_config(route_name='compat_archive')
+    def compat_archive(self):
+        return HTTPMovedPermanently(location=self.request.route_url(
+            'issue_archive',
+            comic=self.request.matchdict['comic'],
+            issue=self.request.matchdict['issue'],
+            ))
+
 
 def routes():
     return (
@@ -252,4 +309,12 @@ def routes():
             ('page_bitmap',     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png'),
             ('page_vector',     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg'),
             ('page_thumb',      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png'),
+            # Compatibility routes
+            ('compat_index',    r'/comics'),
+            ('compat_view',     r'/comics/view/{comic}/{issue:\d+}/{page:\d+}'),
+            ('compat_thumb',    r'/comics/thumb/{comic}/{issue:\d+}/{page:\d}'),
+            ('compat_png',      r'/comics/png/{comic}/{issue:\d+}/{page:\d}'),
+            ('compat_svg',      r'/comics/svg/{comic}/{issue:\d+}/{page:\d}'),
+            ('compat_pdf',      r'/comics/pdf/{comic}/{issue:\d+}'),
+            ('compat_archive',  r'/comics/archive/{comic}/{issue:\d+}'),
             )
