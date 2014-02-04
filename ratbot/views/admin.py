@@ -268,7 +268,7 @@ class AdminView(BaseView):
             DBSession.flush()
             return HTTPFound(location=
                     self.request.route_url('issues', comic=self.context.comic.id)
-                    if comic_id != 'blog' else
+                    if self.context.comic.id != 'blog' else
                     self.request.route_url('blog_index')
                     )
         return dict(
