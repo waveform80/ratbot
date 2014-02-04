@@ -10,6 +10,7 @@ from pyramid.paster import (
     )
 
 from ratbot.models import (
+    FilesThread,
     DBSession,
     Base,
     )
@@ -23,6 +24,7 @@ def usage(argv):
 
 
 def main(argv=sys.argv):
+    FilesThread.stop()
     if len(argv) != 2:
         usage(argv)
     config_uri = argv[1]
