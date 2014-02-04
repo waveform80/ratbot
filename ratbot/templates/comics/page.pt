@@ -37,7 +37,7 @@
       </div>
       <div class="medium-6 columns" id="details">
         <p>
-        <strong>Published:</strong> ${context.page.published.strftime('%A, %d %B %Y, %H:%M')}
+        <strong>Published:</strong> ${context.page.published.strftime('%A, %d %B %Y')}
         </p>
       </div>
     </div>
