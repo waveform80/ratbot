@@ -362,9 +362,11 @@ class AdminView(BaseView):
                         self.context.issue.number,
                         ))
             DBSession.flush()
-            return HTTPFound(
-                    location=self.request.route_url('issues',
-                        comic=self.context.issue.comic_id))
+            return HTTPFound(location=
+                    self.request.route_url('issues',
+                        comic=self.context.issue.comic_id)
+                    if self.context.issue.comic_id != 'blog' else
+                    self.request.route_url('blog_index', comic='blog'))
         return dict(
                 create=True,
                 form=FormRendererFoundation(form),
@@ -416,8 +418,10 @@ class AdminView(BaseView):
             # Grab a copy of the comic ID before the object becomes invalid
             comic_id = page.comic_id
             DBSession.flush()
-            return HTTPFound(
-                    location=self.request.route_url('issues', comic=comic_id))
+            return HTTPFound(location=
+                    self.request.route_url('issues', comic=comic_id)
+                    if comic_id != 'blog' else
+                    self.request.route_url('blog_index', comic='blog'))
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
