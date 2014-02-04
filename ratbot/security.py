@@ -114,7 +114,7 @@ class IssueContextFactory(RootContextFactory):
         super(IssueContextFactory, self).__init__(request)
         self.issue = DBSession.query(Issue).get((
                 request.matchdict['comic'],
-                request.matchdict['issue'],
+                int(request.matchdict['issue']),
                 ))
         assert self.issue
 
@@ -128,8 +128,8 @@ class PageContextFactory(RootContextFactory):
         super(PageContextFactory, self).__init__(request)
         self.page = DBSession.query(Page).get((
                 request.matchdict['comic'],
-                request.matchdict['issue'],
-                request.matchdict['page'],
+                int(request.matchdict['issue']),
+                int(request.matchdict['page']),
                 ))
         assert self.page
 
