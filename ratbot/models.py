@@ -281,37 +281,35 @@ class Page(Base):
         )
 
     comic_id = Column(Unicode(20), primary_key=True)
-    issue_number = Column(Integer, primary_key=True)
+    issue_number = Column(Integer, primary_key=True, autoincrement=False)
     number = Column(
             Integer, CheckConstraint('number >= 1'), primary_key=True)
-    _created = Column(
-            'created', DateTime, default=datetime.utcnow, nullable=False)
-    _published = Column(
-            'published', DateTime, default=datetime.utcnow, nullable=True)
+
+    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    created = synonym('_created', descriptor=tz_property('_created'))
+
+    _published = Column('published', DateTime, default=datetime.utcnow, nullable=True)
+    published = synonym('_published', descriptor=tz_property('_published'))
+
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
+
     _thumbnail = Column('thumbnail', Unicode(200))
-    _bitmap = Column('bitmap', Unicode(200))
-    _vector = Column('vector', Unicode(200))
-
-    created = synonym('_created', descriptor=tz_property('_created'))
-    published = synonym('_published', descriptor=tz_property('_published'))
     thumbnail_filename = synonym('_thumbnail', descriptor=filename_property('_thumbnail'))
-    bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
-    vector_filename = synonym('_vector', descriptor=filename_property('_vector'))
-
-    thumbnail = file_property(
-            'thumbnail_filename', prefix='thumb_', suffix='.png',
-            create_method='create_thumbnail')
-    bitmap = file_property(
-            'bitmap_filename', prefix='page_', suffix='.png',
-            create_method='create_bitmap')
-    vector = file_property(
-            'vector_filename', prefix='page_', suffix='.svg')
-
     thumbnail_updated = updated_property('thumbnail_filename')
+    thumbnail = file_property('thumbnail_filename', prefix='thumb_', suffix='.png',
+            create_method='create_thumbnail')
+
+    _bitmap = Column('bitmap', Unicode(200))
+    bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
     bitmap_updated = updated_property('bitmap_filename')
+    bitmap = file_property('bitmap_filename', prefix='page_', suffix='.png',
+            create_method='create_bitmap')
+
+    _vector = Column('vector', Unicode(200))
+    vector_filename = synonym('_vector', descriptor=filename_property('_vector'))
     vector_updated = updated_property('vector_filename')
+    vector = file_property('vector_filename', prefix='page_', suffix='.svg')
 
     def __repr__(self):
         return '<Page: comic=%s, issue=%d, page=%d>' % (
@@ -425,35 +423,33 @@ class Issue(Base):
 
     __tablename__= 'issues'
 
-    comic_id = Column(
-            Unicode(20),
+    comic_id = Column(Unicode(20),
             ForeignKey('comics.id', onupdate='CASCADE', ondelete='CASCADE'),
             primary_key=True)
-    number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True)
+    number = Column(Integer, CheckConstraint('number >= 1'),
+            primary_key=True, autoincrement=False)
     title = Column(Unicode(500), nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(Unicode, default='', nullable=False)
-    _created = Column(
-            'created', DateTime, default=datetime.utcnow, nullable=False)
+
+    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    created = synonym('_created', descriptor=tz_property('_created'))
+
     _archive = Column('archive', Unicode(200))
+    archive_filename = synonym('_archive', descriptor=filename_property('_archive'))
+    archive_updated = updated_property('archive_filename')
+    archive = file_property('archive_filename', prefix='issue_', suffix='.zip',
+            create_method='create_archive')
+
     _pdf = Column('pdf', Unicode(200))
+    pdf_filename = synonym('_pdf', descriptor=filename_property('_pdf'))
+    pdf_updated = updated_property('pdf_filename')
+    pdf = file_property('pdf_filename', prefix='issue_', suffix='.pdf',
+            create_method='create_pdf')
+
     pages = relationship(
             Page, backref='issue', order_by=[Page.number],
             cascade='all, delete-orphan', passive_deletes=True)
-
-    created = synonym('_created', descriptor=tz_property('_created'))
-    archive_filename = synonym('_archive', descriptor=filename_property('_archive'))
-    pdf_filename = synonym('_pdf', descriptor=filename_property('_pdf'))
-
-    archive = file_property(
-            'archive_filename', prefix='issue_', suffix='.zip',
-            create_method='create_archive')
-    pdf = file_property(
-            'pdf_filename', prefix='issue_', suffix='.pdf',
-            create_method='create_pdf')
-
-    archive_updated = updated_property('archive_filename')
-    pdf_updated = updated_property('pdf_filename')
 
     def __repr__(self):
         return '<Issue: comic=%s, issue=%d>' % (
@@ -602,14 +598,15 @@ class Comic(Base):
 
     id = Column(Unicode(20), primary_key=True)
     title = Column(Unicode(200), nullable=False, unique=True)
-    author_id = Column(
-            Unicode(200),
+    author_id = Column(Unicode(200),
             ForeignKey('users.id', onupdate='CASCADE', ondelete='RESTRICT'),
             nullable=False)
     markup = Column(Unicode(8), default='html', nullable=False)
     description = Column(UnicodeText, default='', nullable=False)
-    _created = Column(
-            'created', DateTime, default=datetime.utcnow, nullable=False)
+
+    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    created = synonym('_created', descriptor=tz_property('_created'))
+
     issues = relationship(
             Issue, backref='comic', order_by=[Issue.number],
             cascade='all, delete-orphan', passive_deletes=True)
