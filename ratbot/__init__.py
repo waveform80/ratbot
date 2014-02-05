@@ -55,6 +55,7 @@ def main(global_config, **settings):
     """Returns the Pyramid WSGI application"""
     # Ensure we're not using production.ini verbatim
     for key in (
+            'site.store',
             'authn.secret',
             'session.secret',
             'login.google.consumer_key',

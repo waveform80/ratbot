@@ -218,6 +218,7 @@ class ComicsView(BaseView):
             renderer='../templates/comics/page.pt')
     def page(self):
         return {
+                'pages': self.context.issue.published_pages.order_by(Page.number),
                 'page_count': self.context.issue.published_pages.count(),
                 }
 

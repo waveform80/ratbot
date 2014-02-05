@@ -28,7 +28,7 @@
         <ul class="pagination" tal:condition="page_count &gt; 1">
           <li class="arrow" tal:condition="context.page.prior"><a href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.prior.number)}">&laquo; Prior</a></li>
           <li class="arrow unavailable" tal:condition="not context.page.prior"><a href="#">&laquo; Prior</a></li>
-          <li tal:repeat="page context.issue.published_pages" tal:attributes="class 'current' if page == context.page else None">
+          <li tal:repeat="page pages" tal:attributes="class 'current' if page == context.page else None">
           <a href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.number)}">${page.number}</a>
           </li>
           <li class="arrow" tal:condition="context.page.next"><a href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.next.number)}">Next &raquo;</a></li>

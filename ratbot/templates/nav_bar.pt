@@ -19,7 +19,7 @@
           'store', 'admin_index', 'admin_user_new', 'admin_user',
           'admin_comic_new', 'admin_comic', 'admin_issue_new', 'admin_issue',
           'admin_page_new', 'admin_page')">
-          <a href="#">
+          <a href="${view.site_store}">
             <img height="36" src="${request.static_url('ratbot:static/store.opt.svg')}" />
             Store
           </a>
