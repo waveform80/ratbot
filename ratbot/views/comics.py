@@ -113,16 +113,34 @@ class ComicsView(BaseView):
             route_name='blog_issue',
             renderer='../templates/comics/blog.pt')
     def blog_issue(self):
-        pages_query = DBSession.query(Page).filter(
+        pages_query = DBSession.query(
+                Page
+            ).filter(
                 (Page.comic_id == 'blog') &
                 (Page.issue_number == self.context.issue.number)
             ).order_by(Page.number.desc())
+        latest_page = DBSession.query(
+                Page.comic_id,
+                Page.issue_number,
+                func.max(Page.published).label('published'),
+            ).filter(
+                (Page.comic_id == 'blog') &
+                (Page.published != None) &
+                (Page.published <= self.utcnow)
+            ).group_by(
+                Page.comic_id,
+                Page.issue_number,
+            ).subquery()
         issues_query = DBSession.query(
                 Issue,
-                func.max(Page.published),
-            ).join(Page).filter(
+                latest_page.c.published,
+            ).outerjoin(
+                latest_page,
+                (Issue.comic_id == latest_page.c.comic_id) &
+                (Issue.number == latest_page.c.issue_number)
+            ).filter(
                 (Issue.comic_id == 'blog')
-            ).group_by(Issue).order_by(Issue.number.desc())
+            ).order_by(Issue.number.desc())
         return {
                 'pages':  pages_query,
                 'issues': issues_query,
