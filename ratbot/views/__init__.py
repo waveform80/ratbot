@@ -88,6 +88,10 @@ class BaseView(object):
         return renderer.implementation().macros['flashes']
 
     @reify
+    def site_store(self):
+        return self.request.registry.settings['site.store']
+
+    @reify
     def site_title(self):
         return self.request.registry.settings['site.title']
 
