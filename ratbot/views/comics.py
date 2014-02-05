@@ -200,6 +200,7 @@ class ComicsView(BaseView):
     def issue(self):
         self.context.page = self.context.issue.first_page
         return {
+                'pages': self.context.issue.published_pages.order_by(Page.number),
                 'page_count': self.context.issue.published_pages.count(),
                 }
 
