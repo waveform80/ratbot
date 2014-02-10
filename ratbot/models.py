@@ -528,7 +528,7 @@ class Issue(Base):
                         self.title,
                         )),
                     NameObject('/Author'): createStringObject(
-                        self.comic.author_user.display_name if self.comic.author_user else
+                        self.comic.author.name if self.comic.author else
                         'Anonymous'
                         ),
                     })
