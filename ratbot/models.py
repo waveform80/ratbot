@@ -534,7 +534,7 @@ class Issue(Base):
                     })
                 for page in range(pdf_in.getNumPages()):
                     pdf_out.addPage(pdf_in.getPage(page))
-            with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
+            with tempfile.TemporaryFile() as temp:
                 pdf_out.write(temp)
                 temp.seek(0)
                 self.pdf = temp
