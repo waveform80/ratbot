@@ -41,6 +41,8 @@ ga('send', 'pageview');
     <script>
       $(document).foundation();
     </script>
+    <script src="${request.static_url('ratbot:static/app.js')}"></script>
+    <div metal:define-slot="scripts"></div>
   </body>
 </html>
 </foo>

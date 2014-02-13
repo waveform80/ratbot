@@ -52,12 +52,15 @@
         <span tal:condition="not create" tal:omit-tag="True">
           ${form.checkbox('delete', label=' Delete Comic', value=1)}
         </span>
-        ${form.submit('submit', class_='small')}
+        ${form.submit('_submit', class_='small')}
       </div>
     </div>
 
     ${form.end()}
   </section>
+</div>
+<div tal:omit-tag="True" metal:fill-slot="scripts">
+  <script>$('form#comic').submit(ratbot.confirm_delete);</script>
 </div>
 </foo>
 
