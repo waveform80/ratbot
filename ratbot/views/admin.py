@@ -205,7 +205,7 @@ class AdminView(BaseView):
             DBSession.add(comic)
             self.request.session.flash('Created comic %s' % comic.id)
             DBSession.flush()
-            return HTTPFound(location=self.request.route_url('admin_index'))
+            return HTTPFound(location=self.request.route_url('comics'))
         return dict(
                 create=True,
                 form=FormRendererFoundation(form),
@@ -231,7 +231,7 @@ class AdminView(BaseView):
                 form.bind(comic)
                 self.request.session.flash('Updated comic "%s"' % comic.title)
             DBSession.flush()
-            return HTTPFound(location=self.request.route_url('admin_index'))
+            return HTTPFound(location=self.request.route_url('comics'))
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
