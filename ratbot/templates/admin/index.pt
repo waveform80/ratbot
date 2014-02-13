@@ -23,30 +23,6 @@
       </div>
     </div>
   </section>
-
-  <div class="row">
-    <div class="small-12 columns">
-      <hr />
-    </div>
-  </div>
-
-  <section>
-    <div class="row">
-      <div class="small-12 columns">
-        <h2>Comics</h2>
-        <ul class="medium-block-grid-2 large-block-grid-3">
-          <li tal:repeat="(comic, author, issues) comics">
-            <div class="panel radius">
-              <strong><a href="${request.route_url('admin_comic', comic=comic.id)}">${comic.title}</a></strong><br />
-              Author: <strong>${author}</strong><br />
-              Issues: <strong>${issues}</strong>
-            </div>
-          </li>
-        </ul>
-        <a class="small button radius" href="${request.route_url('admin_comic_new')}">New Comic</a>
-      </div>
-    </div>
-  </section>
 </div>
 </foo>
 
