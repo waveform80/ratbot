@@ -410,9 +410,9 @@ class AdminView(BaseView):
                     page.thumbnail = self.request.POST['thumbnail'].file
                 form.bind(page)
                 self.request.session.flash('Altered page %d of %s #%d' % (
+                    page.number,
                     page.issue.comic.title,
                     page.issue_number,
-                    page.number,
                     ))
             page.issue.invalidate()
             # Grab a copy of the comic ID before the object becomes invalid
