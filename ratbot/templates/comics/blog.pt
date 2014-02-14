@@ -16,9 +16,12 @@
           <a class="small button radius" href="${request.route_url('admin_issue_new', comic='blog')}">New Month</a>
         </span>
 
-        <div tal:repeat="page pages" id="${page.number}">
+        <div tal:repeat="page pages">
           <span tal:omit-tag="True" tal:condition="has_permission(Permission.view_unpublished) or (page.published is not None and page.published <= utcnow)">
-            <div class="lsf-icon" title="calendar">${page.published.strftime('%d %b %Y')}</div>
+            <div class="lsf-icon" title="calendar">
+              <a id="${'page%d' % page.number}" name="${'page%d' % page.number}"></a>
+              <span title="">${page.published.strftime('%d %b %Y')}</span>
+            </div>
             ${markup.render(page.markup, page.description)}
             <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
           </span>

@@ -20,8 +20,17 @@
     <div class="row">
       <div class="small-12 columns">
         <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-6">
-          <li tal:repeat="(comic, issue, page) latest[:6]">
-            <a class="th radius" href="${request.route_url('blog_issue', comic='blog', issue=issue) if comic == 'blog' else request.route_url('issue', comic=comic, issue=issue)}">
+          <li tal:repeat="(comic, issue, page, published) latest[:6]">
+            <a class="th radius"
+              tal:condition="comic == 'blog'"
+              title="${'Published %s' % published.strftime('%A, %d %B %Y')}"
+              href="${request.route_url('blog_issue', comic='blog', issue=issue)}">
+              <img src="${request.route_url('page_thumb', comic=comic, issue=issue, page=page)}" width="100" />
+            </a>
+            <a class="th radius"
+              tal:condition="comic != 'blog'"
+              title="${'Published %s' % published.strftime('%A, %d %B %Y')}"
+              href="${request.route_url('issue', comic=comic, issue=issue)}">
               <img src="${request.route_url('page_thumb', comic=comic, issue=issue, page=page)}" width="100" />
             </a>
           </li>

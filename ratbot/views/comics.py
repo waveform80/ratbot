@@ -29,6 +29,7 @@ str = type('')
 import os
 import hashlib
 import logging
+from sqlite3 import Connection as SQLite3Connection
 log = logging.getLogger(__name__)
 
 from pyramid.response import FileResponse
@@ -70,7 +71,7 @@ class ComicsView(BaseView):
             route_name='index',
             renderer='../templates/comics/index.pt')
     def index(self):
-        sub = DBSession.query(
+        latest_issues = DBSession.query(
                 Page.comic_id,
                 Page.issue_number,
                 func.max(Page.published).label('published'),
@@ -80,20 +81,61 @@ class ComicsView(BaseView):
             ).group_by(
                 Page.comic_id,
                 Page.issue_number,
-            ).subquery()
-        latest_query = DBSession.query(
-                sub.c.comic_id,
-                sub.c.issue_number,
-                func.min(Page.number).label('number'),
+            )
+        if DBSession.bind.dialect.name == 'sqlite':
+            # If we're using SQLite, resort to a sub-query
+            latest_issues = latest_issues.subquery()
+        else:
+            # Otherwise, use a CTE - much nicer SQL!
+            latest_issues = latest_issues.cte(name='latest_issues')
+        blog_pages = DBSession.query(
+                Page.comic_id,
+                Page.issue_number,
+                Page.number,
+                Page.published,
             ).join(
-                Page,
-                (Page.comic_id == sub.c.comic_id) &
-                (Page.issue_number == sub.c.issue_number)
+                latest_issues,
+                (Page.comic_id == latest_issues.c.comic_id) &
+                (Page.issue_number == latest_issues.c.issue_number) &
+                (Page.published == latest_issues.c.published)
+            ).filter(
+                (Page.comic_id == 'blog')
+            )
+        non_blog_pages = DBSession.query(
+                Page.comic_id,
+                Page.issue_number,
+                func.min(Page.number).label('number'),
+                latest_issues.c.published,
+            ).join(
+                latest_issues,
+                (Page.comic_id == latest_issues.c.comic_id) &
+                (Page.issue_number == latest_issues.c.issue_number) &
+                (Page.published <= latest_issues.c.published)
+            ).filter(
+                (Page.comic_id != 'blog')
             ).group_by(
-                sub.c.comic_id,
-                sub.c.issue_number,
-                sub.c.published,
-            ).order_by(sub.c.published.desc())
+                Page.comic_id,
+                Page.issue_number,
+                latest_issues.c.published
+            )
+        latest_query = non_blog_pages.union_all(blog_pages).order_by(latest_issues.c.published.desc())
+        #latest_query = DBSession.query(
+        #        sub.c.comic_id,
+        #        sub.c.issue_number,
+        #        case(
+        #            {'blog': func.max(Page.number)},
+        #            else_=func.min(Page.number),
+        #            value=sub.c.comic_id,
+        #        ).label('number'),
+        #    ).join(
+        #        Page,
+        #        (Page.comic_id == sub.c.comic_id) &
+        #        (Page.issue_number == sub.c.issue_number)
+        #    ).group_by(
+        #        sub.c.comic_id,
+        #        sub.c.issue_number,
+        #        sub.c.published,
+        #    ).order_by(sub.c.published.desc())
         return {
                 'latest': latest_query,
                 'login_url': login_url,
