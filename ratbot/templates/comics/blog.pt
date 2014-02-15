@@ -20,7 +20,7 @@
           <span tal:omit-tag="True" tal:condition="has_permission(Permission.view_unpublished) or (page.published is not None and page.published <= utcnow)">
             <div class="lsf-icon" title="calendar">
               <a id="${'page%d' % page.number}" name="${'page%d' % page.number}"></a>
-              <span title="">${page.published.strftime('%d %b %Y')}</span>
+              <span title="">${page.created.strftime('%d %b %Y')}</span>
             </div>
             ${markup.render(page.markup, page.description)}
             <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
