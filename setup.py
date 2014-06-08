@@ -89,7 +89,7 @@ __requires__ = [
     'webhelpers<2.0dev',
     'zope.sqlalchemy',
     'waitress',
-    'pillow<2.0dev',
+    'pillow<3.0dev',
     'pypdf2',
     'pytz',
     'bleach<2.0dev',
