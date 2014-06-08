@@ -119,23 +119,6 @@ class ComicsView(BaseView):
                 latest_issues.c.published
             )
         latest_query = non_blog_pages.union_all(blog_pages).order_by(latest_issues.c.published.desc())
-        #latest_query = DBSession.query(
-        #        sub.c.comic_id,
-        #        sub.c.issue_number,
-        #        case(
-        #            {'blog': func.max(Page.number)},
-        #            else_=func.min(Page.number),
-        #            value=sub.c.comic_id,
-        #        ).label('number'),
-        #    ).join(
-        #        Page,
-        #        (Page.comic_id == sub.c.comic_id) &
-        #        (Page.issue_number == sub.c.issue_number)
-        #    ).group_by(
-        #        sub.c.comic_id,
-        #        sub.c.issue_number,
-        #        sub.c.published,
-        #    ).order_by(sub.c.published.desc())
         return {
                 'latest': latest_query,
                 'login_url': login_url,

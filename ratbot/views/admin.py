@@ -71,8 +71,7 @@ def is_upload(request, name):
 
 class LoginView(BaseView):
     @view_config(
-            context='velruse.AuthenticationComplete',
-            renderer='../templates/admin/login.pt')
+            context='velruse.AuthenticationComplete')
     def login_complete(self):
         try:
             email = self.context.profile['verifiedEmail']
@@ -98,15 +97,6 @@ class LoginView(BaseView):
         return HTTPFound(
             location=self.request.route_url('index'),
             headers=remember(self.request, user.id))
-        #result = {
-        #    'provider_type': self.context.provider_type,
-        #    'provider_name': self.context.provider_name,
-        #    'profile': self.context.profile,
-        #    'credentials': self.context.credentials,
-        #    }
-        #return {
-        #    'result': json.dumps(result, indent=4),
-        #    }
 
     @view_config(
             context='velruse.AuthenticationDenied')
