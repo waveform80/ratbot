@@ -13,9 +13,9 @@ obtained from GitHub, which also hosts the `bug tracker`_. The `documentation`_
 (which includes installation, and usage examples) can be read on ReadTheDocs.
 
 
-.. GPL license: http://www.gnu.org/licenses/gpl-3.0.html
-.. homepage: http://pypi.python.org/pypi/ratbot
-.. source code: https://github.com/waveform80/ratbot
-.. bug tracker: https://github.com/waveform80/ratbot/issues
-.. documentation: https://ratbot.readthedocs.org/
+.. _GPL license: http://www.gnu.org/licenses/gpl-3.0.html
+.. _homepage: http://pypi.python.org/pypi/ratbot
+.. _source code: https://github.com/waveform80/ratbot
+.. _bug tracker: https://github.com/waveform80/ratbot/issues
+.. _documentation: https://ratbot.readthedocs.org/
 
