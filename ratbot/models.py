@@ -125,6 +125,7 @@ class FilesThread(threading.Thread):
     def __init__(self):
         super(FilesThread, self).__init__()
         self.lock = SELock()
+        self.daemon = True
         self._event = threading.Event()
         self._changed = False
         self._change_lock = threading.Lock()
