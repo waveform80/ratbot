@@ -102,7 +102,25 @@ register(DBSession)
 Base = declarative_base()
 
 # Maximum size of a page thumbnail
-THUMB_RESOLUTION = (200, 300)
+THUMB_SIZE = (200, 300)
+
+def create_mask():
+    """
+    Create a mask for fading out the bottom of extremely tall thumbnails which
+    are cropped. As the thumbnail limits are fixed, this can be pre-calculated.
+    """
+    mask = Image.new('L', THUMB_SIZE, color=255)
+    pa = mask.load()
+    y_from = int(THUMB_SIZE[1] * 0.8)
+    y_max = THUMB_SIZE[1]
+    for y in range(y_from, THUMB_SIZE[1]):
+        for x in range(THUMB_SIZE[0]):
+            pa[x, y] = 255 - int(255 * (y - y_from) / (y_max - y_from))
+    return mask
+
+# Mask for fading out the bottom of extremely tall thumbnails which are cropped
+THUMB_MASK = create_mask()
+del create_mask
 
 # Horizontal size to render bitmaps of a vector
 BITMAP_WIDTH = 900
@@ -328,22 +346,33 @@ class Page(Base):
                     self.thumbnail_updated < self.bitmap_updated)
                 ):
             with closing(self.bitmap) as source:
-                img = Image.open(source)
-                img.load()
-            (tw, th) = THUMB_RESOLUTION
-            (iw, ih) = img.size
-            if iw > tw or ih > th:
-                scale = min(tw / iw, th / ih)
-                iw = int(round(iw * scale))
-                ih = int(round(ih * scale))
-                img = img.convert('RGB').resize((iw, ih), Image.ANTIALIAS)
-                with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as stream:
-                    img.save(stream, 'PNG', optimize=1)
-                    stream.seek(0)
-                    self.thumbnail = stream
+                image = Image.open(source)
+                image.load()
+            scale = THUMB_SIZE[0] / image.size[0]
+            tsize = (THUMB_SIZE[0], int(image.size[1] * scale))
+            if image.size[0] <= THUMB_SIZE[0] and image.size[1] <= THUMB_SIZE[1]:
+                thumb = image
+            elif tsize[1] > (THUMB_SIZE[1] * 1.2):
+                # Image is way over the defined height limit (by more than 20%).
+                # Resize to the defined thumb width, crop to the thumb height,
+                # then use the pre-calculated mask to fade out the bottom of
+                # the image
+                thumb = image.resize(tsize, Image.ANTIALIAS).crop((0, 0) + THUMB_SIZE)
+                thumb.putalpha(THUMB_MASK)
+            elif (image.size[1] * scale) <= THUMB_SIZE[1]:
+                # Image fits nicely within defined thumbnail limits; resize
+                # normally
+                thumb = image.resize(tsize, Image.ANTIALIAS)
             else:
-                with closing(self.bitmap) as source:
-                    self.thumbnail = source
+                # Image is slightly over-height, but no more than 20%. In this
+                # case we allow the width to contract to preserve full height
+                # of the image in the preview
+                tsize = (int(image.size[0] * (THUMB_SIZE[1] / image.size[1])), THUMB_SIZE[1])
+                thumb = image.resize(tsize, Image.ANTIALIAS)
+            with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as stream:
+                thumb.save(stream, 'PNG', optimize=1)
+                stream.seek(0)
+                self.thumbnail = stream
 
     def create_bitmap(self):
         if (
