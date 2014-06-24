@@ -78,7 +78,7 @@ __keywords__ = [
     ]
 
 __requires__ = [
-    'pyramid<1.5dev',
+    'pyramid<1.6dev',
     'sqlalchemy<1.0dev',
     'transaction',
     'pyramid_tm',
@@ -86,6 +86,7 @@ __requires__ = [
     'pyramid_debugtoolbar',
     'pyramid_mailer',
     'pyramid_exclog',
+    'pyramid_chameleon',
     'webhelpers<2.0dev',
     'zope.sqlalchemy',
     'waitress',

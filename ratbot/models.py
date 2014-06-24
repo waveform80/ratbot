@@ -78,8 +78,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from zope.sqlalchemy import register
 from pyramid.decorator import reify
 
-from ratbot.zip import ZipFile, ZIP_STORED
-from ratbot.locking import SELock
+from .zip import ZipFile, ZIP_STORED
+from .locking import SELock
 
 
 __all__ = [

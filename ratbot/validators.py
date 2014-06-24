@@ -35,8 +35,8 @@ from formencode import (
     validators,
     )
 
-from ratbot.markup import MARKUP_LANGUAGES
-from ratbot.models import (
+from .markup import MARKUP_LANGUAGES
+from .models import (
     DBSession,
     Comic,
     Issue,

@@ -42,12 +42,11 @@ import webhelpers.constants
 import webhelpers.containers
 from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
-from pyramid.security import has_permission
 from pyramid.events import subscriber, BeforeRender
 
-from ratbot import html, markup
-from ratbot.models import utcnow
-from ratbot.security import Permission, Principal
+from . import html, markup
+from .models import utcnow
+from .security import Permission, Principal
 
 
 @subscriber(BeforeRender)
@@ -57,7 +56,7 @@ def renderer_globals(event):
     event['markup'] = markup
     event['datetime'] = datetime
     event['webhelpers'] = webhelpers
-    event['has_permission'] = lambda perm: has_permission(perm, event['context'], event['request'])
+    event['has_permission'] = lambda perm: event['request'].has_permission(perm, event['context'])
     event['Permission'] = Permission
     event['Principal'] = Principal
     if event['view']:

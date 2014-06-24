@@ -48,7 +48,7 @@ from formencode import (
 from pyramid.events import NewRequest, subscriber
 from pyramid.httpexceptions import HTTPForbidden
 
-from ratbot.html import tag, literal, html
+from .html import tag, literal, html
 
 
 def css_add_class(attrs, cls):

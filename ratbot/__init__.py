@@ -38,10 +38,10 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid_mailer import mailer_factory_from_settings
 from sqlalchemy import engine_from_config
 
-from ratbot.models import DBSession
-from ratbot.views.comics import routes as comic_routes
-from ratbot.views.admin import routes as admin_routes
-from ratbot.security import (
+from .models import DBSession
+from .views.comics import routes as comic_routes
+from .views.admin import routes as admin_routes
+from .security import (
     RequestWithUser,
     RootContextFactory,
     ComicContextFactory,
@@ -114,6 +114,7 @@ def main(global_config, **settings):
     if settings.get('login.github.consumer_key'):
         config.include('velruse.providers.github')
         config.add_github_login_from_settings(prefix='login.github.')
+    config.include('pyramid_chameleon')
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory

@@ -33,10 +33,9 @@ from pyramid.security import (
     Allow,
     Everyone,
     Authenticated,
-    unauthenticated_userid,
     )
 
-from ratbot.models import (
+from .models import (
     DBSession,
     Comic,
     Issue,
@@ -85,7 +84,7 @@ class RequestWithUser(Request):
 
     @reify
     def user(self):
-        user_id = unauthenticated_userid(self)
+        user_id = self.unauthenticated_userid
         if user_id:
             return DBSession.query(User).get(user_id)
 

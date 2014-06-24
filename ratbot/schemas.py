@@ -32,7 +32,7 @@ from formencode import (
     Schema,
     )
 
-from ratbot.validators import (
+from .validators import (
     ForEach,
     ValidAuthor,
     ValidUserId,
