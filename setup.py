@@ -112,25 +112,6 @@ __entry_points__ = {
             ],
     }
 
-# Add a py.test based "test" command
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = [
-            '--verbose',
-            '--cov', __project__,
-            '--cov-report', 'term-missing',
-            '--cov-report', 'html',
-            '--cov-config', 'coverage.cfg',
-            'tests',
-            ]
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
-
 
 def main():
     import io
@@ -158,8 +139,6 @@ def main():
             extras_require       = __extra_requires__,
             zip_safe             = False,
             entry_points         = __entry_points__,
-            tests_require        = ['pytest-cov', 'pytest', 'mock'],
-            cmdclass             = {'test': PyTest},
             )
 
 
