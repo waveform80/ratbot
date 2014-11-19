@@ -156,10 +156,10 @@ class TagFactory(object):
                 _tag,
                 ''.join(
                     ' %s="%s"' % (
-                        k.rstrip('_'),
-                        k.rstrip('_') if v is True else content(v).__html__()
+                        k, self._format(k if v is True else v)
                         )
-                    for (k, v) in kwargs.items()
+                    for (_k, v) in kwargs.items()
+                    for k in (_k.rstrip('_').replace('_', '-'),)
                     if v is not None
                     and v is not False)
                 )
