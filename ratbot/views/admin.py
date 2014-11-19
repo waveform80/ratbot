@@ -42,10 +42,10 @@ from pyramid.security import remember, forget
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 
-from .forms import Form, FormRendererFoundation
-from .markup import MARKUP_LANGUAGES
-from .views import BaseView
-from .models import (
+from . import BaseView
+from ..forms import Form, FormRendererFoundation
+from ..markup import MARKUP_LANGUAGES
+from ..models import (
     DBSession,
     Page,
     Issue,
@@ -53,11 +53,11 @@ from .models import (
     User,
     utcnow,
     )
-from .security import (
+from ..security import (
     Permission,
     Principal,
     )
-from .schemas import (
+from ..schemas import (
     UserSchema,
     ComicSchema,
     IssueSchema,

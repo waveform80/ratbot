@@ -38,9 +38,9 @@ from pyramid.view import view_config
 from sqlalchemy import func
 from velruse.api import login_url
 
-from .forms import Form, FormRendererFoundation
-from .views import BaseView
-from .models import (
+from . import BaseView
+from ..forms import Form, FormRendererFoundation
+from ..models import (
     DBSession,
     Page,
     Issue,

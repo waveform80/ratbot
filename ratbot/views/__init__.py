@@ -44,9 +44,9 @@ from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
 from pyramid.events import subscriber, BeforeRender
 
-from . import html, markup
-from .models import utcnow
-from .security import Permission, Principal
+from .. import html, markup
+from ..models import utcnow
+from ..security import Permission, Principal
 
 
 @subscriber(BeforeRender)
