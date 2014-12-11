@@ -502,12 +502,12 @@ class Issue(Base):
                 # We don't bother with compression here as PNGs are already
                 # compressed (and zip usually can't do any better)
                 with ZipFile(temp, 'w', ZIP_STORED) as archive:
-                    archive.comment = '%s - Issue #%d - %s\n\n%s' % (
+                    archive.comment = ('%s - Issue #%d - %s\n\n%s' % (
                             self.comic.title,
                             self.number,
                             self.title,
                             self.description,
-                            )
+                            )).encode('utf-8')
                     for page in self.published_pages:
                         page.create_bitmap()
                         archive.write(page.bitmap, '%02d.png' % page.number)
