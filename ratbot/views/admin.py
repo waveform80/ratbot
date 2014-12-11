@@ -334,11 +334,22 @@ class AdminView(BaseView):
                     },
                 schema=PageSchema,
                 variable_decode=True)
-        if self.request.method == 'POST' and not is_upload(self.request, 'vector'):
-            form.errors['vector'] = 'Vector image is required'
+        # Separate validation for file fields
+        if self.request.method == 'POST':
+            if not (is_upload(self.request, 'vector') or is_upload(self.request, 'bitmap')):
+                form.errors['vector'] = 'Vector or bitmap image is required'
+                form.errors['bitmap'] = 'Vector or bitmap image is required'
+            else:
+                if is_upload(self.request, 'bitmap'):
+                    if self.request.POST['bitmap'].type != 'image/png':
+                        form.errors['bitmap'] = 'Bitmap must be a PNG image'
+                if is_upload(self.request, 'thumbnail'):
+                    if self.request.POST['thumbnail'].type != 'image/png':
+                        form.errors['thumbnail'] = 'Bitmap must be a PNG image'
         if form.validate():
             page = form.bind(Page())
-            page.vector = self.request.POST['vector'].file
+            if is_upload(self.request, 'vector'):
+                page.vector = self.request.POST['vector'].file
             if is_upload(self.request, 'bitmap'):
                 page.bitmap = self.request.POST['bitmap'].file
             if is_upload(self.request, 'thumbnail'):
@@ -373,6 +384,13 @@ class AdminView(BaseView):
                 obj=page,
                 schema=PageSchema,
                 variable_decode=True)
+        if self.request.method == 'POST':
+            if is_upload(self.request, 'bitmap'):
+                if self.request.POST['bitmap'].type != 'image/png':
+                    form.errors['bitmap'] = 'Bitmap must be a PNG image'
+            if is_upload(self.request, 'thumbnail'):
+                if self.request.POST['thumbnail'].type != 'image/png':
+                    form.errors['thumbnail'] = 'Bitmap must be a PNG image'
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(page)

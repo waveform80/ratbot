@@ -125,9 +125,6 @@ del create_mask
 # Horizontal size to render bitmaps of a vector
 BITMAP_WIDTH = 900
 
-# The resolution to use when generating PDFs from vectors
-PDF_DPI = 72.0
-
 # The maximum size of temporary spools until they rollover onto the disk for
 # backing storage
 SPOOL_LIMIT = 1024*1024
@@ -450,7 +447,7 @@ class Issue(Base):
     Represents an issue of a comic (an issue has zero or more pages).
     """
 
-    __tablename__= 'issues'
+    __tablename__ = 'issues'
 
     comic_id = Column(Unicode(20),
             ForeignKey('comics.id', onupdate='CASCADE', ondelete='CASCADE'),
@@ -519,29 +516,39 @@ class Issue(Base):
             self.pdf = None
         elif (not self.pdf_filename or self.pdf_updated < self.published):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
-                # Use cairo to generate a PDF for each page's SVG.
-                # XXX To create the PDF surface we need the SVG's DPI and size.
-                # Here we simply assume that all SVGs have the same DPI and the
-                # size as the first in the issue
-                # XXX What if a page only has a bitmap?
+                # Create an output PDF surface with an arbitrary size (the
+                # size doesn't matter as we'll set it independently for each
+                # page below)
+                surface = cairo.PDFSurface(temp, 144.0, 144.0)
+                context = cairo.Context(surface)
                 for page in self.published_pages:
-                    svg = rsvg.Handle()
-                    shutil.copyfileobj(page.vector, svg)
-                    svg.close()
-                    surface = cairo.PDFSurface(temp,
-                            PDF_DPI / svg.props.dpi_x * svg.props.width,
-                            PDF_DPI / svg.props.dpi_y * svg.props.height)
-                    context = cairo.Context(surface)
-                    context.scale(
-                            PDF_DPI / svg.props.dpi_x,
-                            PDF_DPI / svg.props.dpi_y)
-                    break
-                for page in self.published_pages:
-                    svg = rsvg.Handle()
-                    shutil.copyfileobj(page.vector, svg)
-                    svg.close()
-                    svg.render_cairo(context)
-                    context.show_page()
+                    context.save()
+                    try:
+                        # Render the page's vector image if it has one
+                        if page.vector_filename:
+                            svg = rsvg.Handle()
+                            shutil.copyfileobj(page.vector, svg)
+                            svg.close()
+                            surface.set_size(
+                                svg.props.width / svg.props.dpi_x * 72.0,
+                                svg.props.height / svg.props.dpi_y * 72.0)
+                            context.scale(
+                                72.0 / svg.props.dpi_x,
+                                72.0 / svg.props.dpi_y)
+                            svg.render_cairo(context)
+                        # Otherwise, render the page's bitmap image (NOTE we
+                        # assume all bitmaps are 96dpi here)
+                        else:
+                            img = cairo.ImageSurface.create_from_png(page.bitmap)
+                            surface.set_size(
+                                img.get_width() / 96.0 * 72.0,
+                                img.get_height() / 96.0 * 72.0)
+                            context.scale(72.0 / 96.0, 72.0 / 96.0)
+                            context.set_source_surface(img)
+                            context.paint()
+                        context.show_page()
+                    finally:
+                        context.restore()
                 surface.finish()
                 # Use PyPdf to rewrite the metadata on the file (cairo provides
                 # no PDF metadata manipulation). This involves generating a new
