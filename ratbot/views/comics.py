@@ -242,10 +242,7 @@ class ComicsView(BaseView):
             renderer='../templates/comics/page.pt')
     def issue(self):
         self.context.page = self.context.issue.first_page
-        return {
-                'pages': self.context.issue.published_pages.order_by(Page.number),
-                'page_count': self.context.issue.published_pages.count(),
-                }
+        return self.page()
 
     @view_config(route_name='issue_archive')
     def issue_archive(self):
@@ -261,9 +258,16 @@ class ComicsView(BaseView):
             route_name='page',
             renderer='../templates/comics/page.pt')
     def page(self):
+        issues_query = DBSession.query(
+                Issue,
+                func.min(Page.number),
+            ).outerjoin(Page).filter(
+                (Issue.comic_id == self.context.comic.id)
+            ).group_by(Issue).order_by(Issue.number)
+        pages_query = self.context.issue.published_pages.order_by(Page.number)
         return {
-                'pages': self.context.issue.published_pages.order_by(Page.number),
-                'page_count': self.context.issue.published_pages.count(),
+                'issues': issues_query.all(),
+                'pages': pages_query.all(),
                 }
 
     @view_config(route_name='page_thumb')
