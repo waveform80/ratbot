@@ -521,7 +521,7 @@ class Issue(Base):
                 # page below)
                 surface = cairo.PDFSurface(temp, 144.0, 144.0)
                 context = cairo.Context(surface)
-                for page in self.published_pages:
+                for page in self.published_pages.order_by(Page.number):
                     context.save()
                     try:
                         # Render the page's vector image if it has one
