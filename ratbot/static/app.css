@@ -81,17 +81,6 @@ nav {
     padding: 20px 0 10px 0;
 }
 
-nav div a {
-    color: #6f6f6f;
-    font-family: 'Open Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
-    font-weight: 300;
-    font-size: 18pt;
-}
-
-nav div a img {
-    margin-right: 10px;
-}
-
 header.spaced {
     margin-bottom: 30px;
 }
@@ -101,6 +90,22 @@ header nav {
     box-shadow: 0 1px 6px rgba(34, 25, 25, 0.6);
     position: relative;
     z-index: 999;
+}
+
+nav .icon-bar {
+    background: white;
+    z-index: 999;
+}
+
+nav .icon-bar > * img {
+    width: auto;
+}
+
+nav .icon-bar > * label {
+    color: #6f6f6f;
+    font-family: 'Open Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+    font-weight: 300;
+    font-size: 18pt;
 }
 
 header h1,
@@ -170,9 +175,9 @@ section#files img {
 }
 
 section#page #details p {
-    text-align: right;
     color: #666;
     font-size: 10pt;
+    padding-left: 10px;
 }
 
 section#blog {
@@ -204,6 +209,12 @@ section#bloglist ul a.active {
     font-weight: bold;
 }
 
+section#page ul.pagination li:first-child a {
+    color: #666;
+    font-weight: bold;
+    font-size: 10pt;
+}
+
 textarea.mono {
     font-family: monospace;
 }
@@ -211,3 +222,4 @@ textarea.mono {
 textarea.mono {
     height: auto;
 }
+

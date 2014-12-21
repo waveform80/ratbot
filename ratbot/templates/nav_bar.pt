@@ -1,42 +1,54 @@
 <nav metal:define-macro="nav-bar">
   <div class="row">
-    <div class="small-12 columns">
-      <ul class="small-block-grid-2 medium-block-grid-4">
-        <li tal:condition="request.matched_route.name not in (
-          'index', 'issues', 'issue', 'page')">
-          <a href="${request.route_url('index')}">
-            <img height="36" src="${request.static_url('ratbot:static/home.opt.svg')}" />
-            Home
-          </a>
-        </li>
-        <li tal:condition="request.matched_route.name != 'comics'">
-          <a href="${request.route_url('comics')}">
-            <img height="36" src="${request.static_url('ratbot:static/comics.opt.svg')}" />
-            Comics
-          </a>
-        </li>
-        <li tal:condition="request.matched_route.name not in (
-          'store', 'admin_index', 'admin_user_new', 'admin_user',
-          'admin_comic_new', 'admin_comic', 'admin_issue_new', 'admin_issue',
-          'admin_page_new', 'admin_page')">
-          <a href="${view.site_store}">
-            <img height="36" src="${request.static_url('ratbot:static/store.opt.svg')}" />
-            Store
-          </a>
-        </li>
-        <li tal:condition="request.matched_route.name != 'blog_issue'">
-          <a href="${request.route_url('blog_index', comic='blog')}">
-            <img height="36" src="${request.static_url('ratbot:static/blog.opt.svg')}" />
-            Blog
-          </a>
-        </li>
-        <li tal:condition="request.matched_route.name != 'bio'">
-          <a href="${request.route_url('bio')}">
-            <img height="36" src="${request.static_url('ratbot:static/bio.opt.svg')}" />
-            Bio
-          </a>
-        </li>
-      </ul>
+    <div class="small-12 columns show-for-medium-up">
+      <div class="icon-bar radius ${('five-up', 'four-up')[request.matched_route.name == 'index']}">
+        <a class="item" href="${request.route_url('index')}" tal:condition="request.matched_route.name != 'index'">
+          <img src="${request.static_url('ratbot:static/home.opt.svg')}">
+          <label>Home</label>
+        </a>
+        <a class="item" href="${request.route_url('comics')}">
+          <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
+          <label>Comics</label>
+        </a>
+        <a class="item" href="${view.site_store}">
+          <img src="${request.static_url('ratbot:static/store.opt.svg')}">
+          <label>Store</label>
+        </a>
+        <a class="item" href="${request.route_url('blog_index', comic='blog')}">
+          <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
+          <label>Blog</label>
+        </a>
+        <a class="item" href="${request.route_url('bio')}">
+          <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
+          <label>Bio</label>
+        </a>
+      </div>
+    </div>
+    <div class="small-12 columns show-for-small-only">
+      <div class="icon-bar ${('three-up', 'two-up')[request.matched_route.name == 'index']}">
+        <a class="item" href="${request.route_url('index')}" tal:condition="request.matched_route.name != 'index'">
+          <img src="${request.static_url('ratbot:static/home.opt.svg')}">
+          <label>Home</label>
+        </a>
+        <a class="item" href="${request.route_url('comics')}">
+          <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
+          <label>Comics</label>
+        </a>
+        <a class="item" href="${view.site_store}">
+          <img src="${request.static_url('ratbot:static/store.opt.svg')}">
+          <label>Store</label>
+        </a>
+      </div>
+      <div class="icon-bar two-up">
+        <a class="item" href="${request.route_url('blog_index', comic='blog')}">
+          <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
+          <label>Blog</label>
+        </a>
+        <a class="item" href="${request.route_url('bio')}">
+          <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
+          <label>Bio</label>
+        </a>
+      </div>
     </div>
   </div>
 </nav>
