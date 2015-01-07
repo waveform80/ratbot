@@ -62,7 +62,7 @@ __classifiers__ = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Web Environment',
     'Intended Audience :: End Users/Desktop',
-    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+    'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
     'Operating System :: POSIX :: Linux',
     'Framework :: Pyramid',
     'Programming Language :: Python :: 2.7',
