@@ -6,7 +6,7 @@
     <title><div metal:define-slot="title"></div> - ${view.site_title}</title>
     <link rel="shortcut icon" type="image/png" href="${request.static_url('ratbot:static/favicon.png')}" />
     <link rel="stylesheet" href="${request.static_url('ratbot:static/foundation5/css/foundation.css')}" />
-    <link rel="stylesheet" href="${request.static_url('ratbot:static/foundation-icons/css/foundation-icons.css')}" />
+    <link rel="stylesheet" href="${request.static_url('ratbot:static/foundation-icons/foundation-icons.css')}" />
     <link rel="stylesheet" href="${request.static_url('ratbot:static/app.css')}" />
     <script src="${request.static_url('ratbot:static/foundation5/js/modernizr.js')}"></script>
     <script type="text/javascript">

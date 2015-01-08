@@ -82,6 +82,11 @@ class BaseView(object):
         return renderer.implementation().macros['nav-bar']
 
     @reify
+    def nav_page(self):
+        renderer = get_renderer('../templates/nav_page.pt')
+        return renderer.implementation().macros['nav-page']
+
+    @reify
     def flashes(self):
         renderer = get_renderer('../templates/flashes.pt')
         return renderer.implementation().macros['flashes']

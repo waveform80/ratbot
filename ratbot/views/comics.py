@@ -47,6 +47,7 @@ from ..models import (
     Comic,
     User,
     utcnow,
+    adjacent,
     )
 
 
@@ -258,16 +259,22 @@ class ComicsView(BaseView):
             route_name='page',
             renderer='../templates/comics/page.pt')
     def page(self):
-        issues_query = DBSession.query(
+        issues = DBSession.query(
                 Issue,
                 func.min(Page.number),
             ).outerjoin(Page).filter(
-                (Issue.comic_id == self.context.comic.id)
-            ).group_by(Issue).order_by(Issue.number)
-        pages_query = self.context.issue.published_pages.order_by(Page.number)
+                (Issue.comic_id == self.context.page.comic_id)
+            ).group_by(Issue).order_by(Issue.number).all()
+        pages = self.context.issue.published_pages.order_by(Page.number).all()
+        adjacent_issues = adjacent(issues, self.context.issue, key=lambda x: x[0] if x else None)
+        adjacent_pages = adjacent(pages, self.context.page)
         return {
-                'issues': issues_query.all(),
-                'pages': pages_query.all(),
+                'issues': issues,
+                'pages': pages,
+                'prior_page': adjacent_pages[0],
+                'next_page': adjacent_pages[2],
+                'prior_issue': adjacent_issues[0],
+                'next_issue': adjacent_issues[2],
                 }
 
     @view_config(route_name='page_thumb')

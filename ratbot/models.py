@@ -38,6 +38,7 @@ import atexit
 import logging
 from datetime import datetime
 from contextlib import closing
+from collections import deque
 log = logging.getLogger(__name__)
 
 import pytz
@@ -101,6 +102,13 @@ register(DBSession)
 # SQLAlchemy mapper base class
 Base = declarative_base()
 
+# Horizontal size to render bitmaps of a vector
+BITMAP_WIDTH = 900
+
+# The maximum size of temporary spools until they rollover onto the disk for
+# backing storage
+SPOOL_LIMIT = 1024*1024
+
 # Maximum size of a page thumbnail
 THUMB_SIZE = (200, 300)
 
@@ -122,12 +130,39 @@ def create_mask():
 THUMB_MASK = create_mask()
 del create_mask
 
-# Horizontal size to render bitmaps of a vector
-BITMAP_WIDTH = 900
 
-# The maximum size of temporary spools until they rollover onto the disk for
-# backing storage
-SPOOL_LIMIT = 1024*1024
+def adjacent(iterable, obj, key=None):
+    """
+    Given an *iterable*, and an object *obj*, return the subsequence from
+    *iterable* consisting of the object prior to *obj*, *obj* itself, and the
+    object following *obj*. In other words, return (prior, this, next). If
+    *obj* is the first object in the sequence, prior will be None. If *obj* is
+    the last object in the sequence, next will be None. If *obj* is not found
+    in the sequence, the function will raise :exc:`ValueError`.
+
+    If *key* is specified, it must be a callable which will return an object
+    to match with *obj*.
+    """
+    if key is None:
+        key = lambda x: x
+    values = deque(maxlen=3)
+    values.append(None)
+    i = iter(iterable)
+    try:
+        values.append(next(i))
+    except StopIteration:
+        raise ValueError("empty iterable")
+    try:
+        values.append(next(i))
+        while True:
+            if key(values[1]) is obj:
+                return values
+            values.append(next(i))
+    except StopIteration:
+        values.append(None)
+    if key(values[1]) is obj:
+        return values
+    raise ValueError("%r did not occur in iterable" % obj)
 
 
 class FilesThread(threading.Thread):

@@ -9,25 +9,11 @@
     <div class="row">
       <div class="small-12 columns">
         <h1>${context.issue.title}</h1>
-      </div>
-    </div>
-    <div class="row" tal:condition="len(pages) &gt; 1">
-      <div class="medium-4 columns text-right">
-        <a tal:condition="pages and pages[0].number &lt; context.page.number"
-          class="button small radius" href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.prior.number)}">&laquo; Prior</a>
-        <a tal:condition="not pages or pages[0].number &gt;= context.page.number"
-          class="button small disabled radius" href="#">&laquo; Prior</a>
-      </div>
-      <div class="medium-4 columns">
         <h4 class="subheader">Page ${context.page.number} of ${len(pages)}</h4>
       </div>
-      <div class="medium-4 columns text-left">
-        <a tal:condition="pages and pages[-1].number &gt; context.page.number"
-          class="button small radius" href="${request.route_url('page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.next.number)}">Next &raquo;</a>
-        <a tal:condition="not pages or pages[-1].number &lt;= context.page.number"
-          class="button small disabled radius" href="#">Next &raquo;</a>
-      </div>
     </div>
+
+    <div metal:use-macro="view.nav_page"></div>
   </header>
 
   <section id="page">
@@ -36,26 +22,17 @@
         <img src="${request.route_url('page_bitmap', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
       </div>
     </div>
+
+    <div metal:use-macro="view.nav_page"></div>
+
     <div class="row" tal:condition="context.page.description">
-      ${markup.render(context.page.markup, context.page.description)}
+      <div class="small-12 columns">
+        ${markup.render(context.page.markup, context.page.description)}
+      </div>
     </div>
     <div class="row">
-      <div class="medium-6 columns">
-        <ul class="pagination" tal:condition="len(issues) &gt; 1">
-          <li class="arrow unavailable"><a href="#">Issues </a></li>
-          <li tal:repeat="(issue, first_page) issues" tal:attributes="class 'current' if issue.number == context.page.issue_number else None">
-          <a href="${request.route_url('page', comic=issue.comic_id, issue=issue.number, page=first_page)}">${issue.number}</a>
-          </li>
-        </ul>
-        <ul class="pagination" tal:condition="len(pages) &gt; 1">
-          <li class="arrow unavailable"><a href="#">Pages </a></li>
-          <li tal:repeat="page pages" tal:attributes="class 'current' if page.number == context.page.number else None">
-          <a href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.number)}">${page.number}</a>
-          </li>
-        </ul>
-      </div>
-      <div class="medium-6 columns" id="details">
-        <p>
+      <div class="small-12 columns" id="details">
+        <p class="small-text-left medium-text-right">
         <strong>Published:</strong> ${context.page.published.strftime('%A, %d %B %Y')}
         </p>
       </div>
