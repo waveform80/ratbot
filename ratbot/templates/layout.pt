@@ -26,13 +26,13 @@ ga('send', 'pageview');
     <footer>
       <div class="row">
         <div class="small-12 columns">
-          <p>Site design and content, copyright &copy; 2011-2014, <a
-              href="mailto:drjones@ratbotcomics.com">Dr. Jones</a>, all rights
-            reserved. <a href="https://github.com/waveform80/ratbot">Source
-            code</a> copyright &copy; 2013-2015 <a
-              href="mailto:dave@waveform.org.uk">Dave Jones</a>, licensed
-            under the <a href="http://www.gnu.org/licenses/gpl-2.0.html">GNU
-              GPL v2</a> or above.</p>
+          <p>Site design and content, copyright &copy; 2011-2015, <a
+            href="mailto:drjones@ratbotcomics.com">Dr. Jones</a>. <a
+          href="https://github.com/waveform80/ratbot">Source code</a> copyright
+        &copy; 2013-2015 <a href="mailto:dave@waveform.org.uk">Dave Jones</a>,
+        licensed under the <a
+        href="http://www.gnu.org/licenses/gpl-2.0.html">GNU GPL v2</a> or
+      above.</p>
         </div>
       </div>
     </footer>
