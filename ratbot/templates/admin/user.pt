@@ -5,14 +5,16 @@
     <div metal:use-macro="view.nav_bar"></div>
   </header>
 
-  <section>
+  <div metal:use-macro="view.flashes"></div>
+
+  ${form.begin(id='user', inline=False, multipart=True)}
+
+  <section id="metadata">
     <div class="row">
       <div class="small-12 columns">
         <h2>${title}</h2>
       </div>
     </div>
-
-    ${form.begin(id='user', inline=False)}
 
     <div class="row">
       <div class="small-12 columns">
@@ -44,6 +46,37 @@
         ${form.textarea('description', class_='mono', rows=6, cols=20)}
       </div>
     </div>
+  </section>
+
+  <section id="files">
+    <div class="row">
+      <div class="small-12 columns">
+        <hr />
+        <h2>Files</h2>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-3 columns hide-for-small" tal:condition="create">
+        <img class="th" src="${request.static_url('ratbot:static/unpublished.opt.svg')}">
+      </div>
+      <div class="medium-3 columns" tal:condition="not create">
+        <img class="th" src="${request.route_url('user_bitmap', user=request.matchdict['user'])}">
+      </div>
+      <div class="medium-9 columns">
+        ${form.label('bitmap', 'User image (JPEG)')}
+        ${html.tag.p('%s (last modified %s ago)' % (
+            webhelpers.number.format_byte_size(bitmap_stat.st_size),
+            webhelpers.date.time_ago_in_words(
+              datetime.datetime.fromtimestamp(bitmap_stat.st_mtime),
+              granularity='day'),
+              ) if not create and bitmap_stat else
+          html.tag.em('None') if not create else
+          '')}
+        ${form.checkbox('delete_bitmap', label=' Delete Image') if not create and bitmap_stat else form.hidden('delete_bitmap', '0')}
+        ${form.file('bitmap')}
+      </div>
+    </div>
 
     <div class="row">
       <div class="small-12 columns">
@@ -54,9 +87,9 @@
         ${form.submit('_submit', class_='small')}
       </div>
     </div>
-
-    ${form.end()}
   </section>
+
+  ${form.end()}
 
 </div>
 <div tal:omit-tag="True" metal:fill-slot="scripts">

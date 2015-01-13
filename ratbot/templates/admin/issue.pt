@@ -7,6 +7,8 @@
 
   <div metal:use-macro="view.flashes"></div>
 
+  ${form.begin(id='issue', inline=False)}
+
   <section>
     <div class="row">
       <div class="small-12 columns">
@@ -14,7 +16,6 @@
       </div>
     </div>
 
-    ${form.begin(id='issue', inline=False)}
     ${form.hidden('comic_id')}
 
     <div class="row">
@@ -72,9 +73,9 @@
         ${form.submit('_submit', class_='small')}
       </div>
     </div>
-
-    ${form.end()}
   </section>
+
+  ${form.end()}
 
 </div>
 <div tal:omit-tag="True" metal:fill-slot="scripts">

@@ -7,6 +7,8 @@
 
   <div metal:use-macro="view.flashes"></div>
 
+  ${form.begin(id='issue', inline=False, multipart=True)}
+
   <section id="metadata">
     <div class="row">
       <div class="small-12 columns">
@@ -14,7 +16,6 @@
       </div>
     </div>
 
-    ${form.begin(id='issue', inline=False, multipart=True)}
     ${form.hidden('comic_id')}
     ${form.hidden('issue_number')}
 
@@ -118,9 +119,9 @@
         ${form.submit('_submit', class_='small')}
       </div>
     </div>
-
-    ${form.end()}
   </section>
+
+  ${form.end()}
 </div>
 <div tal:omit-tag="True" metal:fill-slot="scripts">
   <script>$('form#comic').submit(ratbot.confirm_delete);</script>

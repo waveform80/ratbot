@@ -145,8 +145,15 @@ class AdminView(BaseView):
                 self.request,
                 schema=UserSchema,
                 variable_decode=True)
+        # Separate validation for file fields
+        if self.request.method == 'POST':
+            if is_upload(self.request, 'bitmap'):
+                if self.request.POST['bitmap'].type != 'image/jpeg':
+                    form.errors['bitmap'] = 'Image must be a JPEG'
         if form.validate():
             user = form.bind(User())
+            if is_upload(self.request, 'bitmap'):
+                user.bitmap = self.request.POST['bitmap'].file
             DBSession.add(user)
             self.request.session.flash('Created user %s' % user.user_id)
             DBSession.flush()
@@ -167,17 +174,28 @@ class AdminView(BaseView):
                 obj=user,
                 schema=UserSchema,
                 variable_decode=True)
+        # Separate validation for file fields
+        if self.request.method == 'POST':
+            if is_upload(self.request, 'bitmap'):
+                if self.request.POST['bitmap'].type != 'image/jpeg':
+                    form.errors['bitmap'] = 'Image must be a JPEG'
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(user)
                 self.request.session.flash('Deleted user %s' % user.user_id)
             else:
+                if bool(self.request.POST.get('delete_bitmap', '')):
+                    user.bitmap = None
+                if is_upload(self.request, 'bitmap'):
+                    user.bitmap = self.request.POST['bitmap'].file
                 form.bind(user)
                 self.request.session.flash('Updated user %s' % user.user_id)
+            DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
+                bitmap_stat=os.stat(user.bitmap_filename) if user.bitmap_filename else None,
                 )
 
     @view_config(

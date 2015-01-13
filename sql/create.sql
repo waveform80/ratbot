@@ -13,7 +13,8 @@ CREATE TABLE users (
     name        varchar(200) NOT NULL,
     admin       boolean DEFAULT false NOT NULL,
     markup      varchar(8) DEFAULT 'html' NOT NULL,
-    description text DEFAULT '' NOT NULL
+    description text DEFAULT '' NOT NULL,
+    bitmap      varchar(200) DEFAULT NULL
 );
 
 ALTER TABLE users

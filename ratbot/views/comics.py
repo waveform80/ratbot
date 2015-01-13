@@ -151,6 +151,11 @@ class ComicsView(BaseView):
     def page(self):
         return {}
 
+    @view_config(route_name='user_bitmap')
+    def user_bitmap(self):
+        user = DBSession.query(User).get(self.request.matchdict['user'])
+        return FileResponseEtag(user.bitmap_filename, request=self.request)
+
     @view_config(route_name='page_thumb')
     def page_thumb(self):
         self.context.page.create_thumbnail()
@@ -239,6 +244,7 @@ def routes():
             ('page_bitmap',     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.png'),
             ('page_vector',     r'/comics/images/{comic}/{issue:\d+}/{page:\d+}.svg'),
             ('page_thumb',      r'/comics/thumbs/{comic}/{issue:\d+}/{page:\d+}.png'),
+            ('user_bitmap',     r'/users/{user}.jpg'),
             # Compatibility routes
             ('compat_index',    r'/comics'),
             ('compat_view',     r'/comics/view/{comic}/{issue:\d+}/{page:\d+}'),

@@ -19,6 +19,9 @@ ALTER TABLE issues
 ALTER TABLE pages
     RENAME TO pages_data;
 
+ALTER TABLE users
+    ADD COLUMN bitmap varchar(200) DEFAULT NULL;
+
 CREATE VIEW pages AS
 WITH page_ordering AS (
     SELECT

@@ -11,12 +11,22 @@
     </div>
   </div>
 
-  <div class="row" tal:repeat="author authors">
-    <div class="small-12 columns">
-      <hr />
-      <h2>${author.name}</h2>
-      ${markup.render(author.markup, author.description)}
+  <span tal:omit-tag="True" tal:repeat="author authors">
+    <div class="row">
+      <div class="small-12 columns">
+        <hr>
+      </div>
     </div>
-  </div>
+
+    <div class="row">
+      <div class="medium-3 columns" tal:condition="author.bitmap_filename">
+        <img class="th" src="${request.route_url('user_bitmap', user=author.user_id)}">
+      </div>
+      <div class="medium-9 columns" tal:attributes="class 'small-12 columns' if not author.bitmap_filename else default">
+        <h2>${author.name}</h2>
+        ${markup.render(author.markup, author.description)}
+      </div>
+    </div>
+  </span>
 </div>
 </foo>

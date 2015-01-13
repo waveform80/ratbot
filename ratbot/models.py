@@ -177,9 +177,6 @@ class FilesThread(threading.Thread):
         atexit.register(self.stop)
         self.start()
 
-    def after_txn(self, session):
-        self.clean()
-
     def clean(self):
         with self._change_lock:
             if self._changed:
@@ -201,8 +198,14 @@ class FilesThread(threading.Thread):
                         to_delete = set(
                                 os.path.join(files_dir, f)
                                 for f in os.listdir(files_dir)
-                                if f.endswith(('.svg', '.png', '.pdf', '.zip'))
+                                if f.endswith(('.svg', '.png', '.pdf', '.zip', '.jpg'))
                                 )
+                        for user in DBSession.query(User):
+                            for filename in (
+                                    user.bitmap_filename,
+                                    ):
+                                if filename:
+                                    to_delete.remove(filename)
                         for page in DBSession.query(Page):
                             for filename in (
                                     page.vector_filename,
@@ -663,6 +666,11 @@ class User(Base):
             extend_existing=True
             )
 
+    _bitmap = __table__.c.bitmap
+    bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
+    bitmap_updated = updated_property('bitmap_filename')
+    bitmap = file_property('bitmap_filename', prefix='user_', suffix='.jpg')
+
     comics = relationship(Comic, backref='author')
 
     def __repr__(self):
@@ -684,7 +692,11 @@ class User(Base):
 def clean_after_txn(session):
     FilesThread.clean()
 
+@event.listens_for(User, 'after_insert')
+@event.listens_for(User, 'after_update')
+@event.listens_for(User, 'after_delete')
 @event.listens_for(Page, 'after_insert')
+@event.listens_for(Page, 'after_update')
 @event.listens_for(Page, 'after_delete')
 @event.listens_for(Issue, 'after_delete')
 @event.listens_for(Comic, 'after_delete')
