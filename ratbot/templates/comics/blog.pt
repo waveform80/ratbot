@@ -12,18 +12,18 @@
       <section id="blog">
         <h2>${context.issue.title}</h2>
         <span tal:omit-tag="True" tal:condition="has_permission(Permission.edit_comic)">
-          <a class="small button radius" href="${request.route_url('admin_issue', comic='blog', issue=context.issue.number)}">Edit Month</a>
+          <a class="small button radius" href="${request.route_url('admin_issue', comic='blog', issue=context.issue.issue_number)}">Edit Month</a>
           <a class="small button radius" href="${request.route_url('admin_issue_new', comic='blog')}">New Month</a>
         </span>
 
-        <div tal:repeat="page pages">
-          <span tal:omit-tag="True" tal:condition="has_permission(Permission.view_unpublished) or (page.published is not None and page.published <= utcnow)">
+        <div tal:repeat="page reversed(context.issue.pages)">
+          <span tal:omit-tag="True" tal:condition="page.is_published or has_permission(Permission.view_unpublished)">
             <div class="lsf-icon" title="calendar">
-              <a id="${'page%d' % page.number}" name="${'page%d' % page.number}"></a>
-              <span title="">${page.created.strftime('%d %b %Y')}</span>
+              <a id="${'page%d' % page.page_number}" name="${'page%d' % page.page_number}"></a>
+              <span title="">${page.created.strftime('%A, %d %B %Y')}</span>
             </div>
             ${markup.render(page.markup, page.description)}
-            <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
+            <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
           </span>
         </div>
       </section>
@@ -34,11 +34,10 @@
         <h3>Other Posts</h3>
         <section id="bloglist">
           <ul class="side-nav">
-            <li tal:repeat="(issue, published) issues">
+            <li tal:repeat="issue reversed(context.comic.issues)">
             <a
-              tal:condition="has_permission(Permission.view_unpublished) or (published is not None and utcize(published) <= utcnow)"
               tal:attributes="class 'active' if context.issue == issue else None"
-              href="${request.route_url('blog_issue', comic=issue.comic_id, issue=issue.number)}">${issue.title}</a>
+              href="${request.route_url('blog_issue', comic=issue.comic_id, issue=issue.issue_number)}">${issue.title}</a>
             </li>
           </ul>
         </section>

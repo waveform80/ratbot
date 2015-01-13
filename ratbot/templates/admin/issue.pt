@@ -19,9 +19,9 @@
 
     <div class="row">
       <div class="medium-3 columns">
-        ${form.label('number', 'Issue Number')}
-        ${form.text('number', placeholder='Issue #')}
-        ${form.error_small('number')}
+        ${form.label('issue_number', 'Issue Number')}
+        ${form.text('issue_number', placeholder='Issue #')}
+        ${form.error_small('issue_number')}
       </div>
       <div class="medium-3 columns">
         ${form.label('created', 'Created')}
@@ -53,13 +53,13 @@
         <h2>Pages</h2>
         <ul class="small-block-grid-3 medium-block-grid-6 large-block-grid-8">
           <li class="comic" tal:repeat="page context.issue.pages">
-            <a href="${request.route_url('admin_page', comic=page.comic_id, issue=page.issue_number, page=page.number)}">
-              <img class="th" src="${request.route_url('page_thumb', comic=page.comic_id, issue=page.issue_number, page=page.number)}" />
+            <a href="${request.route_url('admin_page', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
+              <img class="th" src="${request.route_url('page_thumb', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}" />
             </a>
-            Page ${page.number}
+            Page ${page.page_number}
           </li>
         </ul>
-        <a class="small button radius" href="${request.route_url('admin_page_new', comic=context.issue.comic_id, issue=context.issue.number)}">New Page</a>
+        <a class="small button radius" href="${request.route_url('admin_page_new', comic=context.issue.comic_id, issue=context.issue.issue_number)}">New Page</a>
       </div>
     </div>
 

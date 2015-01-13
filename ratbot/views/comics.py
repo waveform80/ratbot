@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 from pyramid.response import FileResponse
 from pyramid.httpexceptions import HTTPFound, HTTPMovedPermanently
 from pyramid.view import view_config
-from sqlalchemy import func
+from sqlalchemy import func, text
 from velruse.api import login_url
 
 from . import BaseView
@@ -72,54 +72,13 @@ class ComicsView(BaseView):
             route_name='index',
             renderer='../templates/comics/index.pt')
     def index(self):
-        latest_issues = DBSession.query(
-                Page.comic_id,
-                Page.issue_number,
-                func.max(Page.published).label('published'),
-            ).filter(
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).group_by(
-                Page.comic_id,
-                Page.issue_number,
+        latest_query = DBSession.query('comic_id', 'issue_number', 'page_number', 'published').from_statement(
+            text(
+                "SELECT comic_id, issue_number, page_number, published "
+                "FROM front_pages "
+                "ORDER BY published DESC "
+                "LIMIT 6")
             )
-        if DBSession.bind.dialect.name == 'sqlite':
-            # If we're using SQLite, resort to a sub-query
-            latest_issues = latest_issues.subquery()
-        else:
-            # Otherwise, use a CTE - much nicer SQL!
-            latest_issues = latest_issues.cte(name='latest_issues')
-        blog_pages = DBSession.query(
-                Page.comic_id,
-                Page.issue_number,
-                Page.number,
-                Page.published,
-            ).join(
-                latest_issues,
-                (Page.comic_id == latest_issues.c.comic_id) &
-                (Page.issue_number == latest_issues.c.issue_number) &
-                (Page.published == latest_issues.c.published)
-            ).filter(
-                (Page.comic_id == 'blog')
-            )
-        non_blog_pages = DBSession.query(
-                Page.comic_id,
-                Page.issue_number,
-                func.min(Page.number).label('number'),
-                latest_issues.c.published,
-            ).join(
-                latest_issues,
-                (Page.comic_id == latest_issues.c.comic_id) &
-                (Page.issue_number == latest_issues.c.issue_number) &
-                (Page.published <= latest_issues.c.published)
-            ).filter(
-                (Page.comic_id != 'blog')
-            ).group_by(
-                Page.comic_id,
-                Page.issue_number,
-                latest_issues.c.published
-            )
-        latest_query = non_blog_pages.union_all(blog_pages).order_by(latest_issues.c.published.desc())
         return {
                 'latest': latest_query,
                 'login_url': login_url,
@@ -131,7 +90,7 @@ class ComicsView(BaseView):
             location=self.request.route_url(
                 'blog_issue',
                 comic=self.request.matchdict['comic'],
-                issue=DBSession.query(func.max(Issue.number)).\
+                issue=DBSession.query(func.max(Issue.issue_number)).\
                     filter(Issue.comic_id == self.request.matchdict['comic']).scalar()
                     ))
 
@@ -139,109 +98,40 @@ class ComicsView(BaseView):
             route_name='blog_issue',
             renderer='../templates/comics/blog.pt')
     def blog_issue(self):
-        pages_query = DBSession.query(
-                Page
-            ).filter(
-                (Page.comic_id == 'blog') &
-                (Page.issue_number == self.context.issue.number)
-            ).order_by(Page.number.desc())
-        latest_page = DBSession.query(
-                Page.comic_id,
-                Page.issue_number,
-                func.max(Page.published).label('published'),
-            ).filter(
-                (Page.comic_id == 'blog') &
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).group_by(
-                Page.comic_id,
-                Page.issue_number,
-            ).subquery()
-        issues_query = DBSession.query(
-                Issue,
-                latest_page.c.published,
-            ).outerjoin(
-                latest_page,
-                (Issue.comic_id == latest_page.c.comic_id) &
-                (Issue.number == latest_page.c.issue_number)
-            ).filter(
-                (Issue.comic_id == 'blog')
-            ).order_by(Issue.number.desc())
-        return {
-                'pages':  pages_query,
-                'issues': issues_query,
-                }
+        return {}
 
     @view_config(
             route_name='bio',
             renderer='../templates/comics/bio.pt')
     def bio(self):
         return {
-                'authors': DBSession.query(User).join(Comic).distinct().order_by(User.name),
-                }
+            'authors': DBSession.query(User).\
+                    join(Comic).\
+                    distinct().\
+                    order_by(User.name),
+            }
 
     @view_config(
             route_name='comics',
             renderer='../templates/comics/comics.pt')
     def comics(self):
-        latest_page = DBSession.query(
-                Page.comic_id,
-                func.max(Page.published).label('published'),
-            ).filter(
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).group_by(
-                Page.comic_id,
-            ).subquery()
-        latest_issue = DBSession.query(
-                Page.comic_id,
-                func.max(Page.issue_number).label('number'),
-            ).join(
-                latest_page,
-                (Page.comic_id == latest_page.c.comic_id) &
-                (Page.published == latest_page.c.published)
-            ).group_by(
-                Page.comic_id,
-            ).subquery()
-        comics_query = DBSession.query(
-                Comic,
-                latest_issue.c.number.label('issue_number'),
-                func.min(Page.number).label('number'),
-            ).outerjoin(
-                latest_issue,
-                (Comic.id == latest_issue.c.comic_id)
-            ).outerjoin(
-                Page,
-                (Page.comic_id == latest_issue.c.comic_id) &
-                (Page.issue_number == latest_issue.c.number) &
-                (Page.published != None) &
-                (Page.published <= self.utcnow)
-            ).filter(
-                (Comic.id != 'blog')
-            ).group_by(Comic, latest_issue.c.number).order_by(Comic.title)
         return {
-                'comics': comics_query,
-                }
+            'comics': DBSession.query(Comic).\
+                    filter(Comic.comic_id != 'blog').\
+                    order_by(Comic.title),
+            }
 
     @view_config(
             route_name='issues',
             renderer='../templates/comics/issues.pt')
     def issues(self):
-        issues_query = DBSession.query(
-                Issue,
-                func.min(Page.number),
-                func.max(Page.published),
-            ).outerjoin(Page).filter(
-                (Issue.comic_id == self.context.comic.id)
-            ).group_by(Issue).order_by(Issue.number.desc())
-        return {
-                'issues': issues_query,
-                }
+        return {}
 
     @view_config(
             route_name='issue',
             renderer='../templates/comics/page.pt')
     def issue(self):
+        # XXX Redirect to page
         self.context.page = self.context.issue.first_page
         return self.page()
 
@@ -259,23 +149,7 @@ class ComicsView(BaseView):
             route_name='page',
             renderer='../templates/comics/page.pt')
     def page(self):
-        issues = DBSession.query(
-                Issue,
-                func.min(Page.number),
-            ).outerjoin(Page).filter(
-                (Issue.comic_id == self.context.page.comic_id)
-            ).group_by(Issue).order_by(Issue.number).all()
-        pages = self.context.issue.published_pages.order_by(Page.number).all()
-        adjacent_issues = adjacent(issues, self.context.issue, key=lambda x: x[0] if x else None)
-        adjacent_pages = adjacent(pages, self.context.page)
-        return {
-                'issues': issues,
-                'pages': pages,
-                'prior_page': adjacent_pages[0],
-                'next_page': adjacent_pages[2],
-                'prior_issue': adjacent_issues[0],
-                'next_issue': adjacent_issues[2],
-                }
+        return {}
 
     @view_config(route_name='page_thumb')
     def page_thumb(self):

@@ -20,7 +20,7 @@
     <div class="row">
       <div class="small-12 columns">
         <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-6">
-          <li tal:repeat="(comic, issue, page, published) latest[:6]">
+          <li tal:repeat="(comic, issue, page, published) latest">
             <a class="th radius"
               tal:condition="comic == 'blog'"
               title="${'Published %s' % published.strftime('%A, %d %B %Y')}"

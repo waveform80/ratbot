@@ -1,5 +1,5 @@
 <foo metal:use-macro="view.layout">
-<div tal:omit-tag="True" metal:fill-slot="title">${context.issue.title}, page ${context.page.number}</div>
+<div tal:omit-tag="True" metal:fill-slot="title">${context.issue.title}, page ${context.page.page_number}</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
   <header class="spaced">
     <div metal:use-macro="view.nav_bar"></div>
@@ -9,7 +9,8 @@
     <div class="row">
       <div class="small-12 columns">
         <h1>${context.issue.title}</h1>
-        <h4 class="subheader">Page ${context.page.number} of ${len(pages)}</h4>
+        <h4 tal:condition="context.issue.page_count &gt; 1"
+          class="subheader">Page ${context.page.page_number} of ${context.issue.last_page_number}</h4>
       </div>
     </div>
 
@@ -19,7 +20,7 @@
   <section id="page">
     <div class="row">
       <div class="small-12 columns">
-        <img src="${request.route_url('page_bitmap', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
+        <img src="${request.route_url('page_bitmap', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.page_number)}" />
       </div>
     </div>
 

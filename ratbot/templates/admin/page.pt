@@ -1,4 +1,4 @@
-<foo metal:use-macro="view.layout" tal:define="title '%s #%d - %s' % (context.issue.comic.title, context.issue.number, 'Add Page' if create else 'Edit Page')">
+<foo metal:use-macro="view.layout" tal:define="title '%s #%d - %s' % (context.issue.comic.title, context.issue.issue_number, 'Add Page' if create else 'Edit Page')">
 <div tal:omit-tag="True" metal:fill-slot="title">${title}</div>
 <div tal:omit-tag="True" metal:fill-slot="content">
   <header class="spaced">
@@ -20,8 +20,8 @@
 
     <div class="row">
       <div class="medium-4 columns">
-        ${form.label('number', 'Page Number')}
-        ${form.text('number', placeholder='Issue #')}
+        ${form.label('page_number', 'Page Number')}
+        ${form.text('page_number', placeholder='Issue #')}
       </div>
       <div class="medium-4 columns">
         ${form.label('created', 'Created')}
@@ -58,7 +58,7 @@
         <img class="th" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
       </div>
       <div class="medium-3 columns" tal:condition="not create">
-        <img class="th" src="${request.route_url('page_thumb', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.number)}" />
+        <img class="th" src="${request.route_url('page_thumb', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.page_number)}" />
       </div>
       <div class="medium-9 columns">
         ${form.label('vector', 'Vector (SVG) image')}
@@ -68,8 +68,9 @@
               datetime.datetime.fromtimestamp(vector_stat.st_mtime),
               granularity='day'),
               ) if not create and vector_stat else
-          html.tag.em('Missing!') if not create else
+          html.tag.em('None') if not create else
           '')}
+        ${form.checkbox('delete_vector', label=' Delete Vector') if not create and vector_stat else form.hidden('delete_vector', '0')}
         ${form.file('vector')}
         ${form.label('bitmap', 'Bitmap (PNG) image')}
         ${html.tag.p('%s (last modified %s ago)' % (
@@ -98,12 +99,13 @@
 
     <div class="row">
       <div class="small-12 columns">
-        <p class="panel radius">All pages require at least a vector (<acronym
-          title="Scalable Vector Graphics">SVG</acronym>) image. If a bitmap
-        (<acronym title="Portable Network Graphics">PNG</acronym>) file is not
-        specified (or is later deleted), it will be generated automatically
-        from the vector. If a thumbnail is not specified (or is later deleted),
-        it will be generated automatically from the bitmap file.</p>
+        <p class="panel radius">All pages require either a vector (<acronym
+          title="Scalable Vector Graphics">SVG</acronym>) image or a bitmap
+        (<acronym title="Portable Network Graphics">PNG</acronym>) image. If
+        the vector is specified, but the bitmap file is not specified (or is
+        later deleted), it will be generated automatically from the vector. If
+        a thumbnail is not specified (or is later deleted), it will be
+        generated automatically from the bitmap file.</p>
       </div>
     </div>
 

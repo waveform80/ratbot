@@ -59,11 +59,6 @@ def renderer_globals(event):
     event['has_permission'] = lambda perm: event['request'].has_permission(perm, event['context'])
     event['Permission'] = Permission
     event['Principal'] = Principal
-    if event['view']:
-        # Debug toolbar (and presumably some other rendering tweens) doesn't
-        # have a view
-        event['utcnow'] = event['view'].utcnow
-        event['utcize'] = lambda ts: pytz.utc.localize(ts)
 
 
 class BaseView(object):

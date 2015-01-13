@@ -1,0 +1,94 @@
+<span metal:define-macro="nav-page" tal:omit-tag="True"
+  tal:define="
+    page context.page;
+    issue context.issue">
+  <div class="row show-for-medium-up">
+    <div class="small-12 columns text-center">
+      <a tal:condition="issue.prior_issue_number"
+        href="${request.route_url('issue', comic=issue.comic_id, issue=issue.prior_issue_number)}"
+        title="Prior issue" class="button small radius">
+        <i class="fi-rewind"></i> Prior Issue
+      </a>
+      <a tal:condition="not issue.prior_issue_number and issue.next_issue"
+        title="Prior issue" class="button small radius disabled">
+        <i class="fi-rewind"></i> Prior Issue
+      </a>
+      <a tal:condition="page.prior_page_number"
+        href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.prior_page_number)}"
+        title="Prior page" class="button small radius">
+        <i class="fi-arrow-left"></i> Prior Page
+      </a>
+      <a tal:condition="not page.prior_page_number and page.next_page_number"
+        title="Prior page" class="button small radius disabled">
+        <i class="fi-arrow-left"></i> Prior Page
+      </a>
+      <a href="${request.route_url('issues', comic=context.page.comic_id)}"
+        title="Issues" class="button small radius">
+        <i class="fi-arrow-up"></i> Issues
+      </a>
+      <a tal:condition="page.next_page_number"
+        href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.next_page_number)}"
+        title="Next page" class="button small radius">
+        <i class="fi-arrow-right"></i> Next Page
+      </a>
+      <a tal:condition="not page.next_page_number and page.prior_page_number"
+        title="Next page" class="button small radius disabled">
+        <i class="fi-arrow-right"></i> Next Page
+      </a>
+      <a tal:condition="issue.next_issue_number"
+        href="${request.route_url('issue', comic=issue.comic_id, issue=issue.next_issue_number)}"
+        title="Next issue" class="button small radius">
+        <i class="fi-fast-forward"></i> Next Issue
+      </a>
+      <a tal:condition="not issue.next_issue_number and issue.prior_issue_number"
+        title="Next issue" class="button small radius disabled">
+        <i class="fi-fast-forward"></i> Next Issue
+      </a>
+    </div>
+  </div>
+  <div class="row hide-for-medium-up">
+    <div class="small-12 columns text-center">
+      <a tal:condition="issue.prior_issue_number"
+        href="${request.route_url('issue', comic=issue.comic_id, issue=issue.prior_issue_number)}"
+        title="Prior issue" class="button small radius">
+        <i class="fi-rewind"></i>
+      </a>
+      <a tal:condition="not issue.prior_issue_number and issue.next_issue"
+        title="Prior issue" class="button small radius disabled">
+        <i class="fi-rewind"></i>
+      </a>
+      <a href="${request.route_url('issues', comic=context.page.comic_id)}"
+        title="Issues" class="button small radius">
+        <i class="fi-arrow-up"></i>
+      </a>
+      <a tal:condition="issue.next_issue_number"
+        href="${request.route_url('issue', comic=issue.comic_id, issue=issue.next_issue_number)}"
+        title="Next issue" class="button small radius">
+        <i class="fi-fast-forward"></i>
+      </a>
+      <a tal:condition="not issue.next_issue_number and issue.prior_issue_number"
+        title="Next issue" class="button small radius disabled">
+        <i class="fi-fast-forward"></i>
+      </a>
+      <br>
+      <a tal:condition="page.prior_page_number"
+        href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.prior_page_number)}"
+        title="Prior page" class="button small radius">
+        <i class="fi-arrow-left"></i>
+      </a>
+      <a tal:condition="not page.prior_page_number and page.next_page_number"
+        title="Prior page" class="button small radius disabled">
+        <i class="fi-arrow-left"></i>
+      </a>
+      <a tal:condition="page.next_page_number"
+        href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.next_page_number)}"
+        title="Next page" class="button small radius">
+        <i class="fi-arrow-right"></i>
+      </a>
+      <a tal:condition="not page.next_page_number and page.prior_page_number"
+        title="Next page" class="button small radius disabled">
+        <i class="fi-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</span>

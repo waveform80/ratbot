@@ -14,7 +14,7 @@
         <ul class="medium-block-grid-2 large-block-grid-3">
           <li tal:repeat="user users">
             <div class="panel radius">
-              <strong><a href="${request.route_url('admin_user', user=user.id)}">${user.id}</a></strong><br />
+              <strong><a href="${request.route_url('admin_user', user=user.user_id)}">${user.user_id}</a></strong><br />
               <strong>${user.name}</strong> ${'(Adminstrator)' if user.admin else ''}
             </div>
           </li>

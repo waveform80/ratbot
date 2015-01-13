@@ -22,9 +22,9 @@
 
     <div class="row">
       <div class="medium-6 columns">
-        ${form.label('id', 'User ID')}
-        ${form.email('id', placeholder='someone@somewhere.org')}
-        ${form.error_small('id')}
+        ${form.label('user_id', 'User ID')}
+        ${form.email('user_id', placeholder='someone@somewhere.org')}
+        ${form.error_small('user_id')}
       </div>
       <div class="medium-6 columns">
         ${form.label('name', 'Display Name')}

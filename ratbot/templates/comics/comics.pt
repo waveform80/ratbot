@@ -8,25 +8,24 @@
   <div metal:use-macro="view.flashes"></div>
 
   <section id="comics">
-    <span tal:omit-tag="True" tal:repeat="(index, data) enumerate(comics)">
+    <span tal:omit-tag="True" tal:repeat="(index, comic) enumerate(comics)">
       <div class="row" tal:condition="index != 0">
         <div class="small-12 columns">
           <hr />
         </div>
       </div>
       <div class="row"
-          tal:define="comic data[0]; issue data[1]; page data[2]"
-          tal:condition="issue or has_permission(Permission.view_unpublished) or comic.author is request.user">
+          tal:condition="comic.first_issue_number or has_permission(Permission.view_unpublished) or comic.author is request.user">
         <div class="small-3 large-3 columns">
-          <a href="${request.route_url('issues', comic=comic.id)}">
-            <img tal:condition="issue" src="${request.route_url('page_thumb', comic=comic.id, issue=issue, page=page)}" />
-            <img tal:condition="not issue" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
+          <a href="${request.route_url('issues', comic=comic.comic_id)}">
+            <img tal:condition="comic.first_issue_number" src="${request.route_url('page_thumb', comic=comic.comic_id, issue=comic.last_issue_number, page=comic.last_issue.first_page_number)}" />
+            <img tal:condition="not comic.first_issue_number" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
           </a>
         </div>
         <div class="small-9 large-6 columns">
-          <a href="${request.route_url('issues', comic=comic.id)}"><h2>${comic.title}</h2></a>
+          <a href="${request.route_url('issues', comic=comic.comic_id)}"><h2>${comic.title}</h2></a>
           ${markup.render(comic.markup, comic.description)}
-          <a class="tiny button radius" href="${request.route_url('admin_comic', comic=comic.id)}" tal:condition="has_permission(Permission.edit_comic)">Edit</a>
+          <a class="tiny button radius" href="${request.route_url('admin_comic', comic=comic.comic_id)}" tal:condition="has_permission(Permission.edit_comic)">Edit</a>
         </div>
         <div class="large-3 columns"></div>
       </div>

@@ -51,7 +51,6 @@ from ..models import (
     Issue,
     Comic,
     User,
-    utcnow,
     )
 from ..security import (
     Permission,
@@ -89,14 +88,14 @@ class LoginView(BaseView):
                 # No verified e-mail in profile
                 return HTTPForbidden()
         try:
-            user = DBSession.query(User).filter(User.id == email).one()
+            user = DBSession.query(User).filter(User.user_id == email).one()
         except NoResultFound:
-            user = User(id=email, name=self.context.profile.get('displayName', email))
+            user = User(user_id=email, name=self.context.profile.get('displayName', email))
             DBSession.add(user)
             DBSession.flush()
         return HTTPFound(
             location=self.request.route_url('index'),
-            headers=remember(self.request, user.id))
+            headers=remember(self.request, user.user_id))
 
     @view_config(
             context='velruse.AuthenticationDenied')
@@ -124,7 +123,7 @@ class AdminView(BaseView):
         comics_query = DBSession.query(
                 Comic,
                 User.name,
-                func.count(Issue.number),
+                func.count(Issue.issue_number),
             ).outerjoin(Issue).join(User).group_by(
                 Comic,
                 User.name
@@ -149,7 +148,7 @@ class AdminView(BaseView):
         if form.validate():
             user = form.bind(User())
             DBSession.add(user)
-            self.request.session.flash('Created user %s' % user.id)
+            self.request.session.flash('Created user %s' % user.user_id)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
@@ -171,10 +170,10 @@ class AdminView(BaseView):
         if form.validate():
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(user)
-                self.request.session.flash('Deleted user %s' % user.id)
+                self.request.session.flash('Deleted user %s' % user.user_id)
             else:
                 form.bind(user)
-                self.request.session.flash('Updated user %s' % user.id)
+                self.request.session.flash('Updated user %s' % user.user_id)
             return HTTPFound(location=self.request.route_url('admin_index'))
         return dict(
                 create=False,
@@ -193,13 +192,13 @@ class AdminView(BaseView):
         if form.validate():
             comic = form.bind(Comic())
             DBSession.add(comic)
-            self.request.session.flash('Created comic %s' % comic.id)
+            self.request.session.flash('Created comic %s' % comic.comic_id)
             DBSession.flush()
             return HTTPFound(location=self.request.route_url('comics'))
         return dict(
                 create=True,
                 form=FormRendererFoundation(form),
-                authors=DBSession.query(User.id, User.name).order_by(User.name),
+                authors=DBSession.query(User.user_id, User.name).order_by(User.name),
                 )
 
     @view_config(
@@ -225,7 +224,7 @@ class AdminView(BaseView):
         return dict(
                 create=False,
                 form=FormRendererFoundation(form),
-                authors=DBSession.query(User.id, User.name).order_by(User.name),
+                authors=DBSession.query(User.user_id, User.name).order_by(User.name),
                 )
 
     @view_config(
@@ -234,15 +233,15 @@ class AdminView(BaseView):
             renderer='../templates/admin/issue.pt')
     def issue_new(self):
         new_number = DBSession.query(
-                func.coalesce(func.max(Issue.number), 0) + 1
+                func.coalesce(func.max(Issue.issue_number), 0) + 1
             ).filter(
-                (Issue.comic_id==self.context.comic.id)
+                (Issue.comic_id==self.context.comic.comic_id)
             ).scalar()
         form = Form(
                 self.request,
                 defaults={
-                    'comic_id': self.context.comic.id,
-                    'number': new_number,
+                    'comic_id': self.context.comic.comic_id,
+                    'issue_number': new_number,
                     'created': self.utcnow,
                     },
                 schema=IssueSchema,
@@ -252,13 +251,13 @@ class AdminView(BaseView):
             DBSession.add(issue)
             self.request.session.flash(
                     'Created issue #%d of %s' % (
-                        issue.number,
+                        issue.issue_number,
                         self.context.comic.title,
                         ))
             DBSession.flush()
             return HTTPFound(location=
-                    self.request.route_url('issues', comic=self.context.comic.id)
-                    if self.context.comic.id != 'blog' else
+                    self.request.route_url('issues', comic=self.context.comic.comic_id)
+                    if self.context.comic.comic_id != 'blog' else
                     self.request.route_url('blog_index', comic='blog')
                     )
         return dict(
@@ -285,18 +284,18 @@ class AdminView(BaseView):
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(issue)
                 self.request.session.flash('Deleted issue #%d of %s' % (
-                    issue.number,
+                    issue.issue_number,
                     issue.comic.title,
                     ))
                 for i in DBSession.query(Issue).filter(
                         (Issue.comic_id == issue.comic_id) &
-                        (Issue.number > issue.number)
-                        ).order_by(Issue.number):
-                    i.number = i.number - 1
+                        (Issue.issue_number > issue.issue_number)
+                        ).order_by(Issue.issue_number):
+                    i.issue_number = i.issue_number - 1
             else:
                 form.bind(issue)
                 self.request.session.flash('Updated issue #%d of %s' % (
-                    issue.number,
+                    issue.issue_number,
                     issue.comic.title,
                     ))
             # Grab a copy of the comic ID before the object becomes invalid
@@ -318,17 +317,17 @@ class AdminView(BaseView):
             renderer='../templates/admin/page.pt')
     def page_new(self):
         new_number = DBSession.query(
-                func.coalesce(func.max(Page.number), 0) + 1
+                func.coalesce(func.max(Page.page_number), 0) + 1
             ).filter(
                 (Page.comic_id==self.context.issue.comic_id) &
-                (Page.issue_number==self.context.issue.number)
+                (Page.issue_number==self.context.issue.issue_number)
             ).scalar()
         form = Form(
                 self.request,
                 defaults={
                     'comic_id': self.context.issue.comic_id,
-                    'issue_number': self.context.issue.number,
-                    'number': new_number,
+                    'issue_number': self.context.issue.issue_number,
+                    'page_number': new_number,
                     'created': self.utcnow,
                     'published': self.utcnow,
                     },
@@ -358,9 +357,9 @@ class AdminView(BaseView):
             self.context.issue.invalidate()
             self.request.session.flash(
                     'Added page %d of %s #%d' % (
-                        page.number,
+                        page.page_number,
                         self.context.issue.comic.title,
-                        self.context.issue.number,
+                        self.context.issue.issue_number,
                         ))
             DBSession.flush()
             return HTTPFound(location=
@@ -395,17 +394,19 @@ class AdminView(BaseView):
             if bool(self.request.POST.get('delete', '')):
                 DBSession.delete(page)
                 self.request.session.flash('Deleted page %d of %s #%d' % (
-                    page.number,
+                    page.page_number,
                     page.issue.comic.title,
                     page.issue_number,
                     ))
                 for p in DBSession.query(Page).filter(
                         (Page.comic_id == page.comic_id) &
                         (Page.issue_number == page.issue_number) &
-                        (Page.number > page.number)
-                        ).order_by(Page.number):
-                    p.number = p.number - 1
+                        (Page.page_number > page.page_number)
+                        ).order_by(Page.page_number):
+                    p.page_number = p.page_number - 1
             else:
+                if bool(self.request.POST.get('delete_vector', '')):
+                    page.vector = None
                 if bool(self.request.POST.get('delete_bitmap', '')):
                     page.bitmap = None
                 if bool(self.request.POST.get('delete_thumbnail', '')):
@@ -418,7 +419,7 @@ class AdminView(BaseView):
                     page.thumbnail = self.request.POST['thumbnail'].file
                 form.bind(page)
                 self.request.session.flash('Altered page %d of %s #%d' % (
-                    page.number,
+                    page.page_number,
                     page.issue.comic.title,
                     page.issue_number,
                     ))
