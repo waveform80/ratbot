@@ -55,10 +55,13 @@ class ValidTimestamp(validators.DateValidator):
         super(ValidTimestamp, self).__init__(not_empty=True)
 
     def _to_python(self, value, state):
-        return dt.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        try:
+            return dt.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
+        except ValueError:
+            return dt.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
 
     def _from_python(self, value, state):
-        return value.strftime('%Y-%m-%d %H:%M:%S')
+        return value.strftime('%Y-%m-%dT%H:%M:%S')
 
 
 class ValidAuthor(validators.OneOf):

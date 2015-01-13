@@ -527,7 +527,7 @@ class FormRenderer(object):
         """
         Outputs datetime input.
         """
-        attrs.setdefault('type', 'datetime')
+        attrs.setdefault('type', 'datetime-local')
         return self.input(name, value, id, **attrs)
 
     def number(self, name, value=None, id=None, **attrs):
