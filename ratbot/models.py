@@ -49,24 +49,21 @@ from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.generic import NameObject, createStringObject
 from sqlalchemy import (
+    Table,
     ForeignKey,
     ForeignKeyConstraint,
+    PrimaryKeyConstraint,
     CheckConstraint,
     Column,
-    Index,
     func,
     event,
+    text,
     )
 from sqlalchemy.types import (
-    Boolean,
-    Unicode,
-    UnicodeText,
     Integer,
-    DateTime,
+    Unicode,
     )
 from sqlalchemy.orm import (
-    scoped_session,
-    sessionmaker,
     relationship,
     synonym,
     )
@@ -74,13 +71,13 @@ from sqlalchemy.orm.exc import (
     NoResultFound,
     MultipleResultsFound,
     )
-from sqlalchemy.engine import Engine
+from sqlalchemy.schema import FetchedValue
 from sqlalchemy.ext.declarative import declarative_base
-from zope.sqlalchemy import register
 from pyramid.decorator import reify
 
 from .zip import ZipFile, ZIP_STORED
 from .locking import SELock
+from .db_session import DBSession
 
 
 __all__ = [
@@ -95,12 +92,9 @@ __all__ = [
     ]
 
 
-# Global database session factory
-DBSession = scoped_session(sessionmaker())
-register(DBSession)
-
 # SQLAlchemy mapper base class
 Base = declarative_base()
+Base.metadata.reflect(DBSession.get_bind(), views=True)
 
 # Horizontal size to render bitmaps of a vector
 BITMAP_WIDTH = 900
@@ -320,54 +314,48 @@ class Page(Base):
     Represents one page of a comic issue. A Page belongs to exactly one Issue.
     """
 
-    __tablename__ = 'pages'
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['comic_id', 'issue_number'],
-            ['issues.comic_id', 'issues.number'],
-            onupdate='CASCADE',
-            ondelete='CASCADE',
-            ),
-        {},
-        )
+    __table__ = Table('pages', Base.metadata,
+            # ... all other columns reflected
+            Column('prior_page_number', server_onupdate=FetchedValue()),
+            Column('next_page_number', server_onupdate=FetchedValue()),
+            PrimaryKeyConstraint('comic_id', 'issue_number', 'page_number'),
+            ForeignKeyConstraint(
+                ['comic_id', 'issue_number'],
+                ['issues.comic_id', 'issues.issue_number'],
+                onupdate='CASCADE', ondelete='CASCADE'),
+            extend_existing=True
+            )
 
-    comic_id = Column(Unicode(20), primary_key=True)
-    issue_number = Column(Integer, primary_key=True, autoincrement=False)
-    number = Column(Integer, CheckConstraint('number >= 1'), primary_key=True, autoincrement=False)
-
-    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    _created = __table__.c.created
     created = synonym('_created', descriptor=tz_property('_created'))
 
-    _published = Column('published', DateTime, default=datetime.utcnow, nullable=True)
+    _published = __table__.c.published
     published = synonym('_published', descriptor=tz_property('_published'))
 
-    markup = Column(Unicode(8), default='html', nullable=False)
-    description = Column(UnicodeText, default='', nullable=False)
-
-    _thumbnail = Column('thumbnail', Unicode(200))
+    _thumbnail = __table__.c.thumbnail
     thumbnail_filename = synonym('_thumbnail', descriptor=filename_property('_thumbnail'))
     thumbnail_updated = updated_property('thumbnail_filename')
     thumbnail = file_property('thumbnail_filename', prefix='thumb_', suffix='.png',
             create_method='create_thumbnail')
 
-    _bitmap = Column('bitmap', Unicode(200))
+    _bitmap = __table__.c.bitmap
     bitmap_filename = synonym('_bitmap', descriptor=filename_property('_bitmap'))
     bitmap_updated = updated_property('bitmap_filename')
     bitmap = file_property('bitmap_filename', prefix='page_', suffix='.png',
             create_method='create_bitmap')
 
-    _vector = Column('vector', Unicode(200))
+    _vector = __table__.c.vector
     vector_filename = synonym('_vector', descriptor=filename_property('_vector'))
     vector_updated = updated_property('vector_filename')
     vector = file_property('vector_filename', prefix='page_', suffix='.svg')
 
     def __repr__(self):
         return '<Page: comic=%s, issue=%d, page=%d>' % (
-            self.comic_id, self.issue_number, self.number)
+            self.comic_id, self.issue_number, self.page_number)
 
     def __unicode__(self):
         return '%s, issue #%d, "%s", page #%d' % (
-            self.issue.comic.title, self.issue.number, self.issue.title, self.number)
+            self.issue.comic.title, self.issue.issue_number, self.issue.title, self.page_number)
 
     def create_thumbnail(self):
         # Ensure a bitmap exists to create the thumbnail from
@@ -439,42 +427,22 @@ class Page(Base):
                 self.bitmap = stream
 
     @reify
-    def first(self):
-        return DBSession.query(Page).filter(
-            (Page.comic_id == self.comic_id) &
-            (Page.issue_number == self.issue_number) &
-            (Page.published != None) &
-            (Page.published <= utcnow())
-            ).order_by(Page.number).first()
+    def prior_page(self):
+        if self.prior_page_number:
+            return DBSession.query(Page).get(
+                    (self.comic_id, self.issue_number, self.prior_page_number)
+                    )
 
     @reify
-    def last(self):
-        return DBSession.query(Page).filter(
-            (Page.comic_id == self.comic_id) &
-            (Page.issue_number == self.issue_number) &
-            (Page.published != None) &
-            (Page.published <= utcnow())
-            ).order_by(Page.number.desc()).first()
+    def next_page(self):
+        if self.next_page_number:
+            return DBSession.query(Page).get(
+                    (self.comic_id, self.issue_number, self.next_page_number)
+                    )
 
     @reify
-    def prior(self):
-        return DBSession.query(Page).filter(
-            (Page.comic_id == self.comic_id) &
-            (Page.issue_number == self.issue_number) &
-            (Page.published != None) &
-            (Page.published <= utcnow()) &
-            (Page.number < self.number)
-            ).order_by(Page.number.desc()).first()
-
-    @reify
-    def next(self):
-        return DBSession.query(Page).filter(
-            (Page.comic_id == self.issue.comic.id) &
-            (Page.issue_number == self.issue_number) &
-            (Page.published != None) &
-            (Page.published <= utcnow()) &
-            (Page.number > self.number)
-            ).order_by(Page.number).first()
+    def is_published(self):
+        return self.published is not None and self.published <= utcnow()
 
 
 class Issue(Base):
@@ -482,43 +450,47 @@ class Issue(Base):
     Represents an issue of a comic (an issue has zero or more pages).
     """
 
-    __tablename__ = 'issues'
+    __table__ = Table('issues', Base.metadata,
+            # ... all other columns reflected
+            Column('published', server_onupdate=FetchedValue()),
+            Column('prior_issue_number', server_onupdate=FetchedValue()),
+            Column('next_issue_number', server_onupdate=FetchedValue()),
+            Column('first_page_number', server_onupdate=FetchedValue()),
+            Column('last_page_number', server_onupdate=FetchedValue()),
+            Column('page_count', server_onupdate=FetchedValue()),
+            PrimaryKeyConstraint('comic_id', 'issue_number'),
+            ForeignKeyConstraint(
+                ['comic_id'], ['comics.comic_id'],
+                onupdate='CASCADE', ondelete='CASCADE'),
+            extend_existing=True
+            )
 
-    comic_id = Column(Unicode(20),
-            ForeignKey('comics.id', onupdate='CASCADE', ondelete='CASCADE'),
-            primary_key=True)
-    number = Column(Integer, CheckConstraint('number >= 1'),
-            primary_key=True, autoincrement=False)
-    title = Column(Unicode(500), nullable=False)
-    markup = Column(Unicode(8), default='html', nullable=False)
-    description = Column(Unicode, default='', nullable=False)
-
-    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    _created = __table__.c.created
     created = synonym('_created', descriptor=tz_property('_created'))
 
-    _archive = Column('archive', Unicode(200))
+    _archive = __table__.c.archive
     archive_filename = synonym('_archive', descriptor=filename_property('_archive'))
     archive_updated = updated_property('archive_filename')
     archive = file_property('archive_filename', prefix='issue_', suffix='.zip',
             create_method='create_archive')
 
-    _pdf = Column('pdf', Unicode(200))
+    _pdf = __table__.c.pdf
     pdf_filename = synonym('_pdf', descriptor=filename_property('_pdf'))
     pdf_updated = updated_property('pdf_filename')
     pdf = file_property('pdf_filename', prefix='issue_', suffix='.pdf',
             create_method='create_pdf')
 
     pages = relationship(
-            Page, backref='issue', order_by=[Page.number],
+            Page, backref='issue', order_by=[Page.page_number],
             cascade='all, delete-orphan', passive_deletes=True)
 
     def __repr__(self):
         return '<Issue: comic=%s, issue=%d>' % (
-            self.comic_id, self.number)
+            self.comic_id, self.issue_number)
 
     def __unicode__(self):
         return '%s, issue #%d, "%s"' % (
-            self.comic.title, self.number, self.title)
+            self.comic.title, self.issue_number, self.title)
 
     def invalidate(self):
         # Called whenever the pages change to expire the cached archive and
@@ -536,13 +508,13 @@ class Issue(Base):
                 with ZipFile(temp, 'w', ZIP_STORED) as archive:
                     archive.comment = ('%s - Issue #%d - %s\n\n%s' % (
                             self.comic.title,
-                            self.number,
+                            self.issue_number,
                             self.title,
                             self.description,
                             )).encode('utf-8')
                     for page in self.published_pages:
                         page.create_bitmap()
-                        archive.write(page.bitmap, '%02d.png' % page.number)
+                        archive.write(page.bitmap, '%02d.png' % page.page_number)
                 temp.seek(0)
                 self.archive = temp
 
@@ -556,7 +528,7 @@ class Issue(Base):
                 # page below)
                 surface = cairo.PDFSurface(temp, 144.0, 144.0)
                 context = cairo.Context(surface)
-                for page in self.published_pages.order_by(Page.number):
+                for page in self.published_pages.order_by(Page.page_number):
                     context.save()
                     try:
                         # Render the page's vector image if it has one
@@ -596,7 +568,7 @@ class Issue(Base):
                 pdf_info.update({
                     NameObject('/Title'): createStringObject('%s - Issue #%d - %s' % (
                         self.comic.title,
-                        self.number,
+                        self.issue_number,
                         self.title,
                         )),
                     NameObject('/Author'): createStringObject(
@@ -611,53 +583,33 @@ class Issue(Base):
                     temp.seek(0)
                     self.pdf = temp
 
-    @property
-    def published_pages(self):
-        return DBSession.query(Page).filter(
-            (Page.comic_id == self.comic_id) &
-            (Page.issue_number == self.number) &
-            (Page.published != None) &
-            (Page.published <= utcnow())
-            )
-
     @reify
     def first_page(self):
-        return self.published_pages.order_by(Page.number).first()
+        if self.first_page_number:
+            return DBSession.query(Page).get(
+                    (self.comic_id, self.issue_number, self.first_page_number)
+                    )
 
     @reify
     def last_page(self):
-        return self.published_pages.order_by(Page.number.desc()).first()
+        if self.last_page_number:
+            return DBSession.query(Page).get(
+                    (self.comic_id, self.issue_number, self.last_page_number)
+                    )
 
     @reify
-    def prior(self):
-        return DBSession.query(Issue).join(Page).filter(
-            (Issue.comic_id == self.comic_id) &
-            (Issue.number < self.number) &
-            (Page.published != None) &
-            (Page.published <= utcnow())
-            ).order_by(Issue.number.desc()).first()
+    def prior_issue(self):
+        if self.prior_issue_number:
+            return DBSession.query(Issue).get(
+                    (self.comic_id, self.prior_issue_number)
+                    )
 
     @reify
-    def next(self):
-        return DBSession.query(Issue).join(Page).filter(
-            (Issue.comic_id == self.comic_id) &
-            (Issue.number > self.number) &
-            (Page.published != None) &
-            (Page.published <= utcnow())
-            ).order_by(Issue.number).first()
-
-    @reify
-    def published(self):
-        # XXX Should be able to derive this from the published_pages query above
-        try:
-            return DBSession.query(func.max(Page.published)).filter(
-                (Page.comic_id == self.comic_id) &
-                (Page.issue_number == self.number) &
-                (Page.published != None) &
-                (Page.published <= utcnow())
-                ).scalar()
-        except NoResultFound:
-            return None
+    def next_issue(self):
+        if self.next_issue_number:
+            return DBSession.query(Issue).get(
+                    (self.comic_id, self.next_issue_number)
+                    )
 
 
 class Comic(Base):
@@ -665,44 +617,38 @@ class Comic(Base):
     Represents a comic series, encapsulating a set of issues.
     """
 
-    __tablename__ = 'comics'
+    __table__ = Table('comics', Base.metadata,
+            # ... all other columns reflected
+            Column('first_issue_number', server_onupdate=FetchedValue()),
+            Column('last_issue_number', server_onupdate=FetchedValue()),
+            Column('issue_count', server_onupdate=FetchedValue()),
+            PrimaryKeyConstraint('comic_id'),
+            ForeignKeyConstraint(
+                ['author_id'], ['users.user_id'],
+                onupdate='CASCADE', ondelete='RESTRICT'),
+            extend_existing=True
+            )
 
-    id = Column(Unicode(20), primary_key=True)
-    title = Column(Unicode(200), nullable=False, unique=True)
-    author_id = Column(Unicode(200),
-            ForeignKey('users.id', onupdate='CASCADE', ondelete='RESTRICT'),
-            nullable=False)
-    markup = Column(Unicode(8), default='html', nullable=False)
-    description = Column(UnicodeText, default='', nullable=False)
-
-    _created = Column('created', DateTime, default=datetime.utcnow, nullable=False)
+    _created = __table__.c.created
     created = synonym('_created', descriptor=tz_property('_created'))
 
     issues = relationship(
-            Issue, backref='comic', order_by=[Issue.number],
+            Issue, backref='comic', order_by=[Issue.issue_number],
             cascade='all, delete-orphan', passive_deletes=True)
 
     def __repr__(self):
-        return '<Comic: id=%s>' % self.id
+        return '<Comic: comic_id=%s>' % self.comic_id
 
     def __unicode__(self):
         return self.title
 
     @property
-    def published_issues(self):
-        return DBSession.query(Issue).join(Page).filter(
-                (Issue.comic_id == self.id) &
-                (Page.published != None) &
-                (Page.published <= utcnow())
-                )
-
-    @property
     def first_issue(self):
-        return self.published_issues.order_by(Issue.number).first()
+        return DBSession.query(Issue).get((self.comic_id, self.first_issue_number))
 
     @property
-    def latest_issue(self):
-        return self.published_issues.order_by(Issue.number.desc()).first()
+    def last_issue(self):
+        return DBSession.query(Issue).get((self.comic_id, self.last_issue_number))
 
 
 class User(Base):
@@ -712,17 +658,15 @@ class User(Base):
     authorizations.
     """
 
-    __tablename__ = 'users'
+    __table__ = Table('users', Base.metadata,
+            PrimaryKeyConstraint('user_id'),
+            extend_existing=True
+            )
 
-    id = Column(Unicode(200), primary_key=True)
-    name = Column(Unicode(200), nullable=False)
-    admin = Column(Boolean, default=False, nullable=False)
-    markup = Column(Unicode(8), default='html', nullable=False)
-    description = Column(UnicodeText, default='', nullable=False)
     comics = relationship(Comic, backref='author')
 
     def __repr__(self):
-        return '<User: id=%s>' % self.id
+        return '<User: user_id=%s>' % self.user_id
 
     def __unicode__(self):
         return self.name
@@ -730,7 +674,7 @@ class User(Base):
     @reify
     def issues(self):
         return DBSession.query(Issue).join(Page).join(User).filter(
-            (User.id == self.id)
+            (User.user_id == self.user_id)
             ).distinct()
 
 
@@ -746,14 +690,4 @@ def clean_after_txn(session):
 @event.listens_for(Comic, 'after_delete')
 def changed_after_insdel(mapper, connection, target):
     FilesThread.changed()
-
-from sqlite3 import Connection as SQLite3Connection
-
-# Ensure SQLite uses foreign keys properly
-@event.listens_for(Engine, 'connect')
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if isinstance(dbapi_connection, SQLite3Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute('PRAGMA foreign_keys=ON')
-        cursor.close()
 

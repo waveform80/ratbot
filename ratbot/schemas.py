@@ -58,7 +58,7 @@ class FormSchema(BaseSchema):
 
 
 class UserSchema(FormSchema):
-    id = ValidUserId()
+    user_id = ValidUserId()
     name = ValidUserName()
     admin = ValidUserAdmin()
     markup = ValidMarkupLanguage()
@@ -66,7 +66,7 @@ class UserSchema(FormSchema):
 
 
 class ComicSchema(FormSchema):
-    id = ValidComicId()
+    comic_id = ValidComicId()
     title = ValidComicTitle()
     author = ValidAuthor()
     markup = ValidMarkupLanguage()
@@ -75,7 +75,7 @@ class ComicSchema(FormSchema):
 
 class IssueSchema(FormSchema):
     comic_id = ValidComicId()
-    number = ValidPositiveInt()
+    issue_number = ValidPositiveInt()
     title = ValidIssueTitle()
     created = ValidTimestamp()
     markup = ValidMarkupLanguage()
@@ -85,7 +85,7 @@ class IssueSchema(FormSchema):
 class PageSchema(FormSchema):
     comic_id = ValidComicId()
     issue_number = ValidPositiveInt()
-    number = ValidPositiveInt()
+    page_number = ValidPositiveInt()
     created = ValidTimestamp()
     published = ValidTimestamp()
     markup = ValidMarkupLanguage()

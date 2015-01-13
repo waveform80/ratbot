@@ -69,14 +69,14 @@ class ValidAuthor(validators.OneOf):
         super(ValidAuthor, self).__init__(list=[], hideList=True, not_empty=True)
 
     def validate_python(self, value, state):
-        self.list = [s for (s,) in DBSession.query(User.id)]
-        super(ValidAuthor, self).validate_python(value.id, state)
+        self.list = [s for (s,) in DBSession.query(User.user_id)]
+        super(ValidAuthor, self).validate_python(value.user_id, state)
 
     def _to_python(self, value, state):
         return DBSession.query(User).get(value)
 
     def _from_python(self, value, state):
-        return value.id
+        return value.user_id
 
 
 class ValidUserId(validators.Email):

@@ -38,21 +38,11 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid_mailer import mailer_factory_from_settings
 from sqlalchemy import engine_from_config
 
-from .models import DBSession
-from .views.comics import routes as comic_routes
-from .views.admin import routes as admin_routes
-from .security import (
-    RequestWithUser,
-    RootContextFactory,
-    ComicContextFactory,
-    IssueContextFactory,
-    PageContextFactory,
-    group_finder,
-    )
 
 
 def main(global_config, **settings):
-    """Returns the Pyramid WSGI application"""
+    "Returns the Pyramid WSGI application"
+
     # Ensure we're not using production.ini verbatim
     for key in (
             'site.store',
@@ -90,13 +80,15 @@ def main(global_config, **settings):
 
     session_factory = session_factory_from_settings(settings)
     mailer_factory = mailer_factory_from_settings(settings)
-    # XXX Need some way of grabbing the authentication secret from config
-    authn_policy = AuthTktAuthenticationPolicy(
-        'secret', hashalg='sha512', callback=group_finder)
-    authz_policy = ACLAuthorizationPolicy()
     engine = engine_from_config(settings, 'sqlalchemy.')
+
+    # Configure the database session; the session is deliberately separated
+    # from the model to enable us to bind it to an engine before importing
+    # the model which will then use the bound engine to reflect the database
+    from .db_session import DBSession
     DBSession.configure(bind=engine, info={'site.files': files_dir})
 
+    from .security import RequestWithUser, group_finder
     config = Configurator(
             settings=settings,
             session_factory=session_factory,
@@ -115,10 +107,23 @@ def main(global_config, **settings):
         config.include('velruse.providers.github')
         config.add_github_login_from_settings(prefix='login.github.')
     config.include('pyramid_chameleon')
+    # XXX Need some way of grabbing the authentication secret from config
+    authn_policy = AuthTktAuthenticationPolicy(
+        'secret', hashalg='sha512', callback=group_finder)
+    authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
     config.add_static_view('static', 'static', cache_max_age=3600)
+
+    from .views.comics import routes as comic_routes
+    from .views.admin import routes as admin_routes
+    from .security import (
+        RootContextFactory,
+        ComicContextFactory,
+        IssueContextFactory,
+        PageContextFactory,
+        )
     for name, pattern in comic_routes() + admin_routes():
         if '{page' in pattern:
             factory = PageContextFactory
@@ -130,5 +135,6 @@ def main(global_config, **settings):
             factory = RootContextFactory
         config.add_route(name, pattern, factory=factory)
     config.scan()
+
     return config.make_wsgi_app()
 
