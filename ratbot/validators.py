@@ -56,9 +56,18 @@ class ValidTimestamp(validators.DateValidator):
 
     def _to_python(self, value, state):
         try:
-            return dt.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S')
-        except ValueError:
-            return dt.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+            formats = {
+                16: ('%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'),
+                19: ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S'),
+                }[len(value)]
+        except KeyError:
+            raise ValueError('Invalid length for datetime representation: %d' % len(value))
+        for f in formats:
+            try:
+                return dt.datetime.strptime(value, f)
+            except ValueError:
+                pass
+        raise ValueError('Invalid datetime value: %s' % value)
 
     def _from_python(self, value, state):
         return value.strftime('%Y-%m-%dT%H:%M:%S')
