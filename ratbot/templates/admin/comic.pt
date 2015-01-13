@@ -18,9 +18,9 @@
 
     <div class="row">
       <div class="medium-3 columns">
-        ${form.label('id', 'Comic ID')}
-        ${form.text('id', placeholder='my-comic')}
-        ${form.error_small('id')}
+        ${form.label('comic_id', 'Comic ID')}
+        ${form.text('comic_id', placeholder='my-comic')}
+        ${form.error_small('comic_id')}
       </div>
       <div class="medium-4 columns">
         ${form.label('author', 'Author')}

@@ -12,8 +12,8 @@
       <section id="blog">
         <h2>${context.issue.title}</h2>
         <span tal:omit-tag="True" tal:condition="has_permission(Permission.edit_comic)">
-          <a class="small button radius" href="${request.route_url('admin_issue', comic='blog', issue=context.issue.issue_number)}">Edit Month</a>
-          <a class="small button radius" href="${request.route_url('admin_issue_new', comic='blog')}">New Month</a>
+          <a class="small button radius" href="${request.route_url('admin_issue', comic='blog', issue=context.issue.issue_number)}"><i class="fi-page-edit"></i> Edit Month</a>
+          <a class="small button radius" href="${request.route_url('admin_issue_new', comic='blog')}"><i class="fi-page-add"></i> New Month</a>
         </span>
 
         <div tal:repeat="page reversed(context.issue.pages)">

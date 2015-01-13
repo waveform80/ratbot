@@ -26,6 +26,11 @@
         title="Issues" class="button small radius">
         <i class="fi-arrow-up"></i> Issues
       </a>
+      <a tal:condition="has_permission(Permission.edit_comic)"
+        href="${request.route_url('admin_page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.page_number)}"
+        title="Edit page" class="button small radius">
+        <i class="fi-page-edit"></i> Edit Page
+      </a>
       <a tal:condition="page.next_page_number"
         href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.next_page_number)}"
         title="Next page" class="button small radius">
@@ -79,6 +84,11 @@
       <a tal:condition="not page.prior_page_number and page.next_page_number"
         title="Prior page" class="button small radius disabled">
         <i class="fi-arrow-left"></i>
+      </a>
+      <a tal:condition="has_permission(Permission.edit_comic)"
+        href="${request.route_url('admin_page', comic=context.page.comic_id, issue=context.page.issue_number, page=context.page.page_number)}"
+        title="Edit page" class="button small radius">
+        <i class="fi-page-edit"></i>
       </a>
       <a tal:condition="page.next_page_number"
         href="${request.route_url('page', comic=page.comic_id, issue=page.issue_number, page=page.next_page_number)}"

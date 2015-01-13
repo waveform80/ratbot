@@ -59,7 +59,7 @@
             Page ${page.page_number}
           </li>
         </ul>
-        <a class="small button radius" href="${request.route_url('admin_page_new', comic=context.issue.comic_id, issue=context.issue.issue_number)}">New Page</a>
+        <a class="small button radius" href="${request.route_url('admin_page_new', comic=context.issue.comic_id, issue=context.issue.issue_number)}"><i class="fi-page-add"></i> New Page</a>
       </div>
     </div>
 
