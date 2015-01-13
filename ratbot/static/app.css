@@ -1,46 +1,6 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400);
 @import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 
-/* LigatureSymbols include from http://kudakurage.com/ligature_symbols/ */
-
-@font-face {
-    font-family: 'LigatureSymbols';
-    src: url('LigatureSymbols/LigatureSymbols-2.11.eot');
-    src: url('LigatureSymbols/LigatureSymbols-2.11.eot?#iefix') format('embedded-opentype'),
-         url('LigatureSymbols/LigatureSymbols-2.11.woff') format('woff'),
-         url('LigatureSymbols/LigatureSymbols-2.11.ttf') format('truetype'),
-         url('LigatureSymbols/LigatureSymbols-2.11.svg#LigatureSymbols') format('svg');
-    src: url('LigatureSymbols/LigatureSymbols-2.11.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-.lsf, .lsf-icon:before {
-  font-family: 'LigatureSymbols';
-  -webkit-text-rendering: optimizeLegibility;
-  -moz-text-rendering: optimizeLegibility;
-  -ms-text-rendering: optimizeLegibility;
-  -o-text-rendering: optimizeLegibility;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-font-smoothing: antialiased;
-  -ms-font-smoothing: antialiased;
-  -o-font-smoothing: antialiased;
-  font-smoothing: antialiased;
-}
-
-.lsf-icon:before {
-  content:attr(title);
-  margin-right:0.3em;
-  font-size:130%;
-}
-
-.lsf-icon.amazon:before {
-  content: '\E007';
-}
-
-/* End of LigatureSymbols include */
-
 /* XXX Fix for foundation tabs content width */
 .tabs-content > .content {
   float: none;
@@ -184,7 +144,7 @@ section#blog {
     margin-top: 30px;
 }
 
-section#blog div.lsf-icon {
+section#blog div.timestamp {
     color: #999;
     margin-top: 1.5em;
 }
@@ -223,3 +183,7 @@ textarea.mono {
     height: auto;
 }
 
+input[type=submit],
+a.button {
+  box-shadow: 0px -2px 0px rgba(0, 0, 0, 0.3) inset;
+}

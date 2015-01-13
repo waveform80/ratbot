@@ -18,9 +18,10 @@
 
         <div tal:repeat="page reversed(context.issue.pages)">
           <span tal:omit-tag="True" tal:condition="page.is_published or has_permission(Permission.view_unpublished)">
-            <div class="lsf-icon" title="calendar">
+            <div class="timestamp">
               <a id="${'page%d' % page.page_number}" name="${'page%d' % page.page_number}"></a>
-              <span title="">${page.created.strftime('%A, %d %B %Y')}</span>
+              <i class="fi-calendar"></i>
+              ${page.created.strftime('%A, %d %B %Y')}
             </div>
             ${markup.render(page.markup, page.description)}
             <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
