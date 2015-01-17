@@ -502,7 +502,7 @@ class Issue(Base):
         self.pdf = None
 
     def create_archive(self):
-        if not self.published_pages.count():
+        if not self.published:
             self.archive = None
         elif (not self.archive_filename or self.archive_updated < self.published):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
@@ -515,14 +515,16 @@ class Issue(Base):
                             self.title,
                             self.description,
                             )).encode('utf-8')
-                    for page in self.published_pages:
+                    page = self.first_page
+                    while page:
                         page.create_bitmap()
                         archive.write(page.bitmap, '%02d.png' % page.page_number)
+                        page = page.next_page
                 temp.seek(0)
                 self.archive = temp
 
     def create_pdf(self):
-        if not self.published_pages.count():
+        if not self.published:
             self.pdf = None
         elif (not self.pdf_filename or self.pdf_updated < self.published):
             with tempfile.SpooledTemporaryFile(SPOOL_LIMIT) as temp:
@@ -531,7 +533,8 @@ class Issue(Base):
                 # page below)
                 surface = cairo.PDFSurface(temp, 144.0, 144.0)
                 context = cairo.Context(surface)
-                for page in self.published_pages.order_by(Page.page_number):
+                page = self.first_page
+                while page:
                     context.save()
                     try:
                         # Render the page's vector image if it has one
@@ -559,6 +562,7 @@ class Issue(Base):
                         context.show_page()
                     finally:
                         context.restore()
+                    page = page.next_page
                 surface.finish()
                 # Use PyPdf to rewrite the metadata on the file (cairo provides
                 # no PDF metadata manipulation). This involves generating a new
