@@ -89,10 +89,9 @@ class ComicsView(BaseView):
         return HTTPFound(
             location=self.request.route_url(
                 'blog_issue',
-                comic=self.request.matchdict['comic'],
-                issue=DBSession.query(func.max(Issue.issue_number)).\
-                    filter(Issue.comic_id == self.request.matchdict['comic']).scalar()
-                    ))
+                comic=self.context.comic.comic_id,
+                issue=self.context.comic.last_issue_number
+                ))
 
     @view_config(
             route_name='blog_issue',
@@ -131,9 +130,13 @@ class ComicsView(BaseView):
             route_name='issue',
             renderer='../templates/comics/page.pt')
     def issue(self):
-        # XXX Redirect to page
-        self.context.page = self.context.issue.first_page
-        return self.page()
+        return HTTPFound(
+            location=self.request.route_url(
+                'page',
+                comic=self.context.issue.comic_id,
+                issue=self.context.issue.issue_number,
+                page=self.context.issue.first_page_number
+                ))
 
     @view_config(route_name='issue_archive')
     def issue_archive(self):
