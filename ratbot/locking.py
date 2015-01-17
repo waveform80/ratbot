@@ -32,6 +32,9 @@ from __future__ import (
 str = type('')
 
 
+import os
+import errno
+import time
 import threading
 
 
@@ -155,5 +158,37 @@ class _ExclusiveLock(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        self.release()
+
+
+class DirLock(object):
+    """Provides a cross-platform inter-process lock via dir creation"""
+
+    def __init__(self, path):
+        self._path = os.path.join(path, 'lock')
+
+    def acquire(self, blocking=True):
+        # Using mkdir() as it's atomic on both Unix and Windows
+        while True:
+            try:
+                os.mkdir(self._path)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+                elif blocking:
+                    time.sleep(0.1)
+                else:
+                    return False
+            else:
+                return True
+
+    def release(self):
+        os.rmdir(self._path)
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
         self.release()
 

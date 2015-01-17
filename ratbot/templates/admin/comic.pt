@@ -17,20 +17,28 @@
     ${form.begin(id='comic', inline=False)}
 
     <div class="row">
-      <div class="medium-3 columns">
+      <div class="medium-4 columns">
         ${form.label('comic_id', 'Comic ID')}
         ${form.text('comic_id', placeholder='my-comic')}
         ${form.error_small('comic_id')}
       </div>
+      <div class="medium-8 columns">
+        ${form.label('title', 'Title')}
+        ${form.text('title', placeholder='My Comic')}
+        ${form.error_small('title')}
+      </div>
+    </div>
+
+    <div class="row">
       <div class="medium-4 columns">
         ${form.label('author', 'Author')}
         ${form.select('author', options=authors)}
         ${form.error_small('author')}
       </div>
-      <div class="medium-5 columns">
-        ${form.label('title', 'Title')}
-        ${form.text('title', placeholder='My Comic')}
-        ${form.error_small('title')}
+      <div class="medium-8 columns">
+        ${form.label('license', 'License')}
+        ${form.select('license', selected_value='notspecified', options=view.licenses)}
+        ${form.error_small('license')}
       </div>
     </div>
 

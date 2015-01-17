@@ -115,6 +115,14 @@ class AdminView(BaseView):
     def markup_languages(self):
         return MARKUP_LANGUAGES
 
+    @reify
+    def licenses(self):
+        licenses = self.request.registry['licenses']().values()
+        return sorted((
+            (license.id, license.title)
+            for license in licenses
+            ), key=lambda i: i[1])
+
     @view_config(
             route_name='admin_index',
             permission=Permission.view_admin,

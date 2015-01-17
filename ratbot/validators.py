@@ -34,6 +34,7 @@ from formencode import (
     Invalid,
     validators,
     )
+from pyramid.threadlocal import get_current_registry
 
 from .markup import MARKUP_LANGUAGES
 from .models import (
@@ -130,4 +131,19 @@ class ValidIssueTitle(validators.UnicodeString):
     def __init__(self):
         super(ValidIssueTitle, self).__init__(
             not_empty=True, max=Issue.__table__.c.title.type.length)
+
+
+class ValidLicense(validators.OneOf):
+    def __init__(self):
+        super(ValidLicense, self).__init__(list=[], hideList=True)
+
+    def validate_python(self, value, state):
+        self.list = get_current_registry()['licenses']().keys()
+        super(ValidLicense, self).validate_python(value.id, state)
+
+    def _to_python(self, value, state):
+        return get_current_registry()['licenses']()[value]
+
+    def _from_python(self, value, state):
+        return value.id
 

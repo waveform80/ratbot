@@ -28,6 +28,7 @@ str = type('')
 
 import io
 import os
+import errno
 import logging
 log = logging.getLogger(__name__)
 
@@ -38,6 +39,30 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid_mailer import mailer_factory_from_settings
 from sqlalchemy import engine_from_config
 
+from .licenses import licenses_factory_from_settings
+
+
+def check_path(path):
+    log.debug('Testing existence of %s', path)
+    try:
+        os.mkdir(path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    if not os.path.isdir(path):
+        raise ValueError('%s is not a directory' % path)
+    log.debug('Testing write access to %s', path)
+    try:
+        with io.open(os.path.join(path, 'write_test'), 'wb') as f:
+            f.close()
+    except OSError:
+        raise ValueError('No write access to %s' % path)
+    finally:
+        try:
+            os.unlink(os.path.join(path, 'write_test'))
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
 
 def main(global_config, **settings):
@@ -62,24 +87,13 @@ def main(global_config, **settings):
 
     # Ensure path is configured appropriately
     files_dir = os.path.normpath(os.path.expanduser(settings['site.files']))
-    log.debug('Testing existence of %s', files_dir)
-    if not os.path.exists(files_dir):
-        os.mkdir(files_dir)
-    if not os.path.isdir(files_dir):
-        raise ValueError('%s is not a directory' % files_dir)
-    log.debug('Testing write access to %s', files_dir)
-    try:
-        io.open(os.path.join(files_dir, 'foo'), 'wb').close()
-    except:
-        raise ValueError('No write access to %s' % files_dir)
-    finally:
-        try:
-            os.unlink(os.path.join(files_dir, 'foo'))
-        except OSError:
-            pass
+    licenses_dir = os.path.normpath(os.path.expanduser(settings['licenses.cache_dir']))
+    check_path(settings['site.files'])
+    check_path(settings['licenses.cache_dir'])
 
     session_factory = session_factory_from_settings(settings)
     mailer_factory = mailer_factory_from_settings(settings)
+    licenses_factory = licenses_factory_from_settings(settings)
     engine = engine_from_config(settings, 'sqlalchemy.')
 
     # Configure the database session; the session is deliberately separated
@@ -114,6 +128,7 @@ def main(global_config, **settings):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
     config.registry['mailer'] = mailer_factory
+    config.registry['licenses'] = licenses_factory
     config.add_static_view('static', 'static', cache_max_age=3600)
 
     from .views.comics import routes as comic_routes

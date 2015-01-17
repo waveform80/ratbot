@@ -32,9 +32,15 @@
       </div>
     </div>
     <div class="row">
-      <div class="small-12 columns" id="details">
-        <p class="small-text-left medium-text-right">
+      <div class="medium-6 columns" id="details">
+        <p class="text-left">
         <strong>Published:</strong> ${context.page.published.strftime('%A, %d %B %Y')}
+        </p>
+      </div>
+      <div class="medium-6 columns" id="details">
+        <p class="small-text-left medium-text-right">
+        <strong>License:</strong> <a tal:condition="context.comic.license.url" href="${context.comic.license.url}">${context.comic.license.title}</a>
+        <span tal:omit-tag="" tal:condition="not context.comic.license.url">${context.comic.license.title}</span>
         </p>
       </div>
     </div>

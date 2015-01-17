@@ -33,6 +33,7 @@ CREATE TABLE comics_data (
     comic_id     varchar(20) NOT NULL,
     title        varchar(200) NOT NULL,
     author_id    varchar(200) NOT NULL,
+    license_id   varchar(50) NOT NULL,
     markup       varchar(8) DEFAULT 'html' NOT NULL,
     description  text DEFAULT '' NOT NULL,
     created      timestamp DEFAULT current_timestamp NOT NULL
@@ -369,11 +370,12 @@ SELECT
     c.comic_id,
     c.title,
     c.author_id,
+    c.license_id,
     c.markup,
     c.description,
     c.created,
-    MIN(p.issue_number) AS first_issue_number,
-    MAX(p.issue_number) AS last_issue_number,
+    MIN(p.issue_number)            AS first_issue_number,
+    MAX(p.issue_number)            AS last_issue_number,
     COUNT(DISTINCT p.issue_number) AS issue_count
 FROM
     comics_data c
@@ -386,6 +388,7 @@ GROUP BY
     c.comic_id,
     c.title,
     c.author_id,
+    c.license_id,
     c.markup,
     c.description,
     c.created;
@@ -401,6 +404,7 @@ BEGIN
             comic_id,
             title,
             author_id,
+            license_id,
             markup,
             description,
             created
@@ -409,6 +413,7 @@ BEGIN
             NEW.comic_id,
             NEW.title,
             NEW.author_id,
+            NEW.license_id,
             NEW.markup,
             NEW.description,
             NEW.created
@@ -419,6 +424,7 @@ BEGIN
             comic_id = NEW.comic_id,
             title = NEW.title,
             author_id = NEW.author_id,
+            license_id = NEW.license_id,
             markup = NEW.markup,
             description = NEW.description,
             created = NEW.created

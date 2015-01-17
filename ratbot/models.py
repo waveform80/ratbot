@@ -74,7 +74,9 @@ from sqlalchemy.orm.exc import (
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.ext.declarative import declarative_base
 from pyramid.decorator import reify
+from pyramid.threadlocal import get_current_registry
 
+from .licenses import License
 from .zip import ZipFile, ZIP_STORED
 from .locking import SELock
 from .db_session import DBSession
@@ -656,6 +658,13 @@ class Comic(Base):
     @property
     def last_issue(self):
         return DBSession.query(Issue).get((self.comic_id, self.last_issue_number))
+
+    def _get_license(self):
+        return get_current_registry()['licenses']()[self.license_id]
+    def _set_license(self, value):
+        assert isinstance(value, License)
+        self.license_id = value.id
+    license = property(_get_license, _set_license)
 
 
 class User(Base):

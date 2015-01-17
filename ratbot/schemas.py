@@ -45,6 +45,7 @@ from .validators import (
     ValidComicId,
     ValidComicTitle,
     ValidIssueTitle,
+    ValidLicense,
     )
 
 
@@ -69,6 +70,7 @@ class ComicSchema(FormSchema):
     comic_id = ValidComicId()
     title = ValidComicTitle()
     author = ValidAuthor()
+    license = ValidLicense()
     markup = ValidMarkupLanguage()
     description = ValidDescription()
 
