@@ -18,7 +18,7 @@ CREATE TABLE users (
 );
 
 ALTER TABLE users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON users TO ratbot;
 
@@ -69,7 +69,7 @@ CREATE TABLE issues_data (
 ALTER TABLE issues_data
     ADD CONSTRAINT issues_pkey PRIMARY KEY (comic_id, issue_number),
     ADD CONSTRAINT issues_comic_id_fkey FOREIGN KEY (comic_id)
-        REFERENCES comics(comic_id) ON UPDATE CASCADE ON DELETE CASCADE,
+        REFERENCES comics_data(comic_id) ON UPDATE CASCADE ON DELETE CASCADE,
     ADD CONSTRAINT issues_number_check CHECK (issue_number >= 1);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON issues_data TO ratbot;
@@ -98,7 +98,7 @@ CREATE TABLE pages_data (
 ALTER TABLE pages_data
     ADD CONSTRAINT pages_pkey PRIMARY KEY (comic_id, issue_number, page_number),
     ADD CONSTRAINT pages_comic_id_fkey FOREIGN KEY (comic_id, issue_number)
-        REFERENCES issues(comic_id, issue_number) ON UPDATE CASCADE ON DELETE CASCADE,
+        REFERENCES issues_data(comic_id, issue_number) ON UPDATE CASCADE ON DELETE CASCADE,
     ADD CONSTRAINT pages_number_check CHECK (page_number >= 1);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON pages_data TO ratbot;
@@ -110,25 +110,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON pages_data TO ratbot;
 -------------------------------------------------------------------------------
 
 CREATE VIEW pages AS
-WITH page_ordering AS (
-    SELECT
-        comic_id,
-        issue_number,
-        page_number,
-        LAG(page_number) OVER (
-            PARTITION BY comic_id, issue_number
-            ORDER BY page_number
-        ) AS prior_page_number,
-        LEAD(page_number) OVER (
-            PARTITION BY comic_id, issue_number
-            ORDER BY page_number
-        ) AS next_page_number
-    FROM
-        pages_data
-    WHERE
-        published IS NOT NULL
-        AND published <= current_timestamp
-)
 SELECT
     p.comic_id,
     p.issue_number,
@@ -143,8 +124,26 @@ SELECT
     o.prior_page_number,
     o.next_page_number
 FROM
-    pages_data p
-    LEFT JOIN page_ordering o
+    pages_data AS p
+    LEFT JOIN (
+        SELECT
+            comic_id,
+            issue_number,
+            page_number,
+            LAG(page_number) OVER (
+                PARTITION BY comic_id, issue_number
+                ORDER BY page_number
+            ) AS prior_page_number,
+            LEAD(page_number) OVER (
+                PARTITION BY comic_id, issue_number
+                ORDER BY page_number
+            ) AS next_page_number
+        FROM
+            pages_data
+        WHERE
+            published IS NOT NULL
+            AND published <= current_timestamp
+    ) AS o
         ON p.comic_id = o.comic_id
         AND p.issue_number = o.issue_number
         AND p.page_number = o.page_number;
@@ -233,42 +232,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON pages TO ratbot;
 -------------------------------------------------------------------------------
 
 CREATE VIEW issues AS
-WITH published_issues AS (
-    SELECT
-        comic_id,
-        issue_number,
-        MAX(published) AS published,
-        MIN(page_number) AS first_page_number,
-        MAX(page_number) AS last_page_number,
-        COUNT(page_number) AS page_count
-    FROM
-        pages_data
-    WHERE
-        published IS NOT NULL
-        AND published <= current_timestamp
-    GROUP BY
-        comic_id,
-        issue_number
-),
-issue_ordering AS (
-    SELECT
-        comic_id,
-        issue_number,
-        published,
-        first_page_number,
-        last_page_number,
-        page_count,
-        LAG(issue_number) OVER (
-            PARTITION BY comic_id
-            ORDER BY issue_number
-        ) AS prior_issue_number,
-        LEAD(issue_number) OVER (
-            PARTITION BY comic_id
-            ORDER BY issue_number
-        ) AS next_issue_number
-    FROM
-        published_issues
-)
 SELECT
     i.comic_id,
     i.issue_number,
@@ -285,8 +248,41 @@ SELECT
     o.last_page_number,
     o.page_count
 FROM
-    issues_data i
-    LEFT JOIN issue_ordering o
+    issues_data AS i
+    LEFT JOIN (
+        SELECT
+            comic_id,
+            issue_number,
+            published,
+            first_page_number,
+            last_page_number,
+            page_count,
+            LAG(issue_number) OVER (
+                PARTITION BY comic_id
+                ORDER BY issue_number
+            ) AS prior_issue_number,
+            LEAD(issue_number) OVER (
+                PARTITION BY comic_id
+                ORDER BY issue_number
+            ) AS next_issue_number
+        FROM (
+            SELECT
+                comic_id,
+                issue_number,
+                MAX(published) AS published,
+                MIN(page_number) AS first_page_number,
+                MAX(page_number) AS last_page_number,
+                COUNT(page_number) AS page_count
+            FROM
+                pages_data
+            WHERE
+                published IS NOT NULL
+                AND published <= current_timestamp
+            GROUP BY
+                comic_id,
+                issue_number
+        ) AS p
+    ) AS o
         ON i.comic_id = o.comic_id
         AND i.issue_number = o.issue_number;
 
