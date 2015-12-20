@@ -378,8 +378,8 @@ FROM
     LEFT JOIN pages_data p
         ON c.comic_id = p.comic_id
 WHERE
-    p.published IS NOT NULL
-    AND p.published <= current_timestamp
+    p.published IS NULL
+    OR p.published <= current_timestamp
 GROUP BY
     c.comic_id,
     c.title,
