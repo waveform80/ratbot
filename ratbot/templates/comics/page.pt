@@ -6,6 +6,8 @@
   </header>
 
   <header>
+    <div metal:use-macro="view.nav_page"></div>
+
     <div class="row">
       <div class="small-12 columns">
         <h1>${context.issue.title}</h1>
@@ -13,8 +15,6 @@
           class="subheader">Page ${context.page.page_number} of ${context.issue.last_page_number}</h4>
       </div>
     </div>
-
-    <div metal:use-macro="view.nav_page"></div>
   </header>
 
   <section id="page">
@@ -24,13 +24,14 @@
       </div>
     </div>
 
-    <div metal:use-macro="view.nav_page"></div>
-
     <div class="row" tal:condition="context.page.description">
       <div class="small-12 columns">
         ${markup.render(context.page.markup, context.page.description)}
       </div>
     </div>
+
+    <div metal:use-macro="view.nav_page"></div>
+
     <div class="row">
       <div class="medium-6 columns" id="details">
         <p class="text-left">
