@@ -1,113 +1,11 @@
-SET search_path = public, pg_catalog;
+DROP VIEW comics;
+DROP FUNCTION comics_redirect();
 
--- users
--------------------------------------------------------------------------------
--- Defines all authors and readers that have authenticated with the system.
--- No passwords are stored as all authentication activities are handled by
--- third party systems. The "admin" field indicates whether the user is an
--- administrator or not.
--------------------------------------------------------------------------------
+DROP VIEW issues;
+DROP FUNCTION issues_redirect();
 
-CREATE TABLE users (
-    user_id     varchar(200) NOT NULL,
-    name        varchar(200) NOT NULL,
-    admin       boolean DEFAULT false NOT NULL,
-    markup      varchar(8) DEFAULT 'html' NOT NULL,
-    description text DEFAULT '' NOT NULL,
-    bitmap      varchar(200) DEFAULT NULL
-);
-
-ALTER TABLE users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON users TO ratbot;
-
--- comics_data
--------------------------------------------------------------------------------
--- Defines all comics available from the site. All comics must be associated
--- with a single author (this relationship distinguishes reader users from
--- author users).
--------------------------------------------------------------------------------
-
-CREATE TABLE comics_data (
-    comic_id     varchar(20) NOT NULL,
-    title        varchar(200) NOT NULL,
-    author_id    varchar(200) NOT NULL,
-    license_id   varchar(50) NOT NULL,
-    markup       varchar(8) DEFAULT 'html' NOT NULL,
-    description  text DEFAULT '' NOT NULL,
-    created      timestamp DEFAULT current_timestamp NOT NULL
-);
-
-ALTER TABLE comics_data
-    ADD CONSTRAINT comics_pkey PRIMARY KEY (comic_id),
-    ADD CONSTRAINT comics_title_key UNIQUE (title),
-    ADD CONSTRAINT comics_author_id_fkey FOREIGN KEY (author_id)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE RESTRICT;
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON comics_data TO ratbot;
-
--- issues_data
--------------------------------------------------------------------------------
--- Defines issues of comics. Has a cascading delete relationship with the
--- comics table to ensure that if a comic is deleted, all issues belonging to
--- it are deleted too. The archive and pdf fields contain filenames for the
--- generated files which collect all pages of the issue.
--------------------------------------------------------------------------------
-
-CREATE TABLE issues_data (
-    comic_id      varchar(20) NOT NULL,
-    issue_number  integer NOT NULL,
-    title         varchar(500) NOT NULL,
-    markup        varchar(8) DEFAULT 'html' NOT NULL,
-    description   varchar DEFAULT '' NOT NULL,
-    created       timestamp DEFAULT current_timestamp NOT NULL,
-    archive       varchar(200) DEFAULT NULL,
-    pdf           varchar(200) DEFAULT NULL
-);
-
-ALTER TABLE issues_data
-    ADD CONSTRAINT issues_pkey PRIMARY KEY (comic_id, issue_number),
-    ADD CONSTRAINT issues_comic_id_fkey FOREIGN KEY (comic_id)
-        REFERENCES comics(comic_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    ADD CONSTRAINT issues_number_check CHECK (issue_number >= 1);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON issues_data TO ratbot;
-
--- pages_data
--------------------------------------------------------------------------------
--- Defines all comic pages. Has a cascading delete relationship with issues
--- to ensure pages are deleted when an issue is deleted. The thumbnail, bitmap,
--- and vector fields hold filenames of the actual images associated with the
--- page. Pages with a NULL or future published date are considered unpublished.
--------------------------------------------------------------------------------
-
-CREATE TABLE pages_data (
-    comic_id     varchar(20) NOT NULL,
-    issue_number integer NOT NULL,
-    page_number  integer NOT NULL,
-    created      timestamp DEFAULT current_timestamp NOT NULL,
-    published    timestamp DEFAULT NULL,
-    markup       varchar(8) DEFAULT 'html' NOT NULL,
-    description  text DEFAULT '' NOT NULL,
-    thumbnail    varchar(200) DEFAULT NULL,
-    bitmap       varchar(200) DEFAULT NULL,
-    vector       varchar(200) DEFAULT NULL
-);
-
-ALTER TABLE pages_data
-    ADD CONSTRAINT pages_pkey PRIMARY KEY (comic_id, issue_number, page_number),
-    ADD CONSTRAINT pages_comic_id_fkey FOREIGN KEY (comic_id, issue_number)
-        REFERENCES issues(comic_id, issue_number) ON UPDATE CASCADE ON DELETE CASCADE,
-    ADD CONSTRAINT pages_number_check CHECK (page_number >= 1);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON pages_data TO ratbot;
-
--- pages
--------------------------------------------------------------------------------
--- Provides a view of the pages table which includes additional columns for
--- the next and prior page numbers.
--------------------------------------------------------------------------------
+DROP VIEW pages;
+DROP FUNCTION pages_redirect();
 
 CREATE VIEW pages AS
 WITH page_ordering AS (
@@ -221,16 +119,6 @@ CREATE TRIGGER pages_redirect
     INSTEAD OF INSERT OR UPDATE OR DELETE ON pages
     FOR EACH ROW
     EXECUTE PROCEDURE pages_redirect();
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON pages TO ratbot;
-
--- issues
--------------------------------------------------------------------------------
--- Provides a view of the issues_data table with some extra columns detailing
--- the latest publication date of each issue, or NULL if no pages have been
--- published yet. Also calculates the first and last published page numbers,
--- along with the number of published pages in the issue.
--------------------------------------------------------------------------------
 
 CREATE VIEW issues AS
 WITH published_issues AS (
@@ -355,16 +243,6 @@ CREATE TRIGGER issues_redirect
     FOR EACH ROW
     EXECUTE PROCEDURE issues_redirect();
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON issues TO ratbot;
-
--- comics
--------------------------------------------------------------------------------
--- Provides a filtered view of the comics_data table with extra columns
--- detailing the latest published issue number, and the first page of that
--- issue. This view does NOT exclude comics with no published issues;
--- latest_issue will simply be NULL for such entries.
--------------------------------------------------------------------------------
-
 CREATE VIEW comics AS
 SELECT
     c.comic_id,
@@ -452,66 +330,4 @@ CREATE TRIGGER comics_redirect
     INSTEAD OF INSERT OR UPDATE OR DELETE ON comics
     FOR EACH ROW
     EXECUTE PROCEDURE comics_redirect();
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON comics TO ratbot;
-
--- front_pages
--------------------------------------------------------------------------------
--- Defines the set of pages that will appear on the front page of the site.
--- This consists of the most recently published pages from the blog and
--- non-blog comics, except that for non-blog comics, the first page of the last
--- published issue is returned.
--------------------------------------------------------------------------------
-
-CREATE VIEW front_pages AS
-WITH latest_issues AS (
-    SELECT
-        comic_id,
-        issue_number,
-        MIN(page_number) AS first_page,
-        MAX(published) AS last_published
-    FROM
-        pages_data
-    WHERE
-        published IS NOT NULL
-        AND published <= current_timestamp
-    GROUP BY
-        comic_id,
-        issue_number
-),
-blog_pages AS (
-    SELECT
-        p.comic_id,
-        p.issue_number,
-        p.page_number,
-        p.published
-    FROM
-        latest_issues l
-        JOIN pages_data p
-            ON l.comic_id = p.comic_id
-            AND l.issue_number = p.issue_number
-            AND l.last_published = p.published
-    WHERE
-        p.comic_id = 'blog'
-),
-non_blog_pages AS (
-    SELECT
-        p.comic_id,
-        p.issue_number,
-        l.first_page AS page_number,
-        l.last_published AS published
-    FROM
-        latest_issues l
-        JOIN pages_data p
-            ON l.comic_id = p.comic_id
-            AND l.issue_number = p.issue_number
-            AND l.first_page = p.page_number
-    WHERE
-        p.comic_id <> 'blog'
-)
-SELECT * FROM blog_pages
-UNION ALL
-SELECT * FROM non_blog_pages;
-
-GRANT SELECT ON front_pages TO ratbot;
 
