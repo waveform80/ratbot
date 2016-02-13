@@ -143,6 +143,7 @@ def main():
                 ][0],
             keywords             = __keywords__,
             packages             = find_packages(),
+            package_data         = {},
             include_package_data = True,
             platforms            = __platforms__,
             install_requires     = __requires__,
