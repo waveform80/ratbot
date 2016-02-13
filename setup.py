@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-# vim: set et sw=4 sts=4:
+#!/usr/bin/env python
+# vim: set et sw=4 sts=4 fileencoding=utf-8:
 
 # Copyright 2012-2014 Dave Jones <dave@waveform.org.uk>.
 #
@@ -56,7 +56,7 @@ __version__      = '2.0'
 __author__       = 'Dave Jones'
 __author_email__ = 'dave@waveform.org.uk'
 __url__          = 'https://github.com/waveform80/ratbot'
-__platforms__    = ['ALL']
+__platforms__    = 'ALL'
 
 __classifiers__ = [
     'Development Status :: 5 - Production/Stable',
@@ -78,7 +78,7 @@ __keywords__ = [
     ]
 
 __requires__ = [
-    'pyramid<1.6dev',
+    'pyramid<1.7dev',
     'sqlalchemy<1.0dev',
     'transaction',
     'pyramid_tm',
@@ -98,10 +98,21 @@ __requires__ = [
     'docutils<1.0dev',
     'velruse<2.0dev',
     'formencode<2.0dev',
+    'psycopg2',
     ]
 
 __extra_requires__ = {
+    'doc':   ['sphinx'],
+    'test':  ['pytest', 'coverage', 'mock'],
     }
+
+if sys.version_info[:2] == (3, 2):
+    # Particular versions are required for Python 3.2 compatibility
+    __extra_requires__['doc'].extend([
+        'Jinja2<2.7',
+        'MarkupSafe<0.16',
+        ])
+    __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
         'paste.app_factory': [
@@ -130,9 +141,8 @@ def main():
                 for c in __classifiers__
                 if c.startswith('License ::')
                 ][0],
-            keywords             = ' '.join(__keywords__),
+            keywords             = __keywords__,
             packages             = find_packages(),
-            package_data         = {},
             include_package_data = True,
             platforms            = __platforms__,
             install_requires     = __requires__,
@@ -144,3 +154,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
