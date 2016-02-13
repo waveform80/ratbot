@@ -24,7 +24,9 @@
               ${page.created.strftime('%A, %d %B %Y')}
             </div>
             ${markup.render(page.markup, page.description)}
-            <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
+            <a href="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
+              <img src="${request.route_url('page_bitmap', comic=page.comic_id, issue=page.issue_number, page=page.page_number)}">
+            </a>
           </span>
         </div>
       </section>
