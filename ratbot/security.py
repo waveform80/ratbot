@@ -29,6 +29,7 @@ str = type('')
 
 from pyramid.request import Request
 from pyramid.decorator import reify
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import (
     Allow,
     Everyone,
@@ -105,7 +106,8 @@ class ComicContextFactory(RootContextFactory):
     def __init__(self, request):
         super(ComicContextFactory, self).__init__(request)
         self.comic = DBSession.query(Comic).get(request.matchdict['comic'])
-        assert self.comic
+        if not self.comic:
+            raise HTTPNotFound()
 
 
 class IssueContextFactory(RootContextFactory):
@@ -115,7 +117,8 @@ class IssueContextFactory(RootContextFactory):
                 request.matchdict['comic'],
                 int(request.matchdict['issue']),
                 ))
-        assert self.issue
+        if not self.issue:
+            raise HTTPNotFound()
 
     @reify
     def comic(self):
@@ -130,7 +133,8 @@ class PageContextFactory(RootContextFactory):
                 int(request.matchdict['issue']),
                 int(request.matchdict['page']),
                 ))
-        assert self.page
+        if not self.page:
+            raise HTTPNotFound()
 
     @reify
     def issue(self):
