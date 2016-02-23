@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set et sw=4 sts=4 fileencoding=utf-8:
 
-# Copyright 2012-2014 Dave Jones <dave@waveform.org.uk>.
+# Copyright 2012-2016 Dave Jones <dave@waveform.org.uk>.
 #
 # This file is part of ratbot comics.
 #

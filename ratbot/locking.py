@@ -2,7 +2,7 @@
 # vim: set et sw=4 sts=4:
 
 # Copyright 2011 Mateusz Kobos <http://code.activestate.com/recipes/577803-reader-writer-lock-with-priority-for-writers/>.
-# Copyright 2014 Dave Jones <dave@waveform.org.uk>.
+# Copyright 2016 Dave Jones <dave@waveform.org.uk>.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
