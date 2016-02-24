@@ -1,54 +1,74 @@
 <nav metal:define-macro="nav-bar">
   <div class="row">
-    <div class="small-12 columns show-for-medium-up">
-      <div class="icon-bar radius ${('five-up', 'four-up')[request.matched_route.name == 'index']}">
-        <a class="item" href="${request.route_url('index')}" tal:condition="request.matched_route.name != 'index'">
-          <img src="${request.static_url('ratbot:static/home.opt.svg')}">
-          <label>Home</label>
-        </a>
-        <a class="item" href="${request.route_url('comics')}">
-          <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
-          <label>Comics</label>
-        </a>
-        <a class="item" href="${view.site_store}">
-          <img src="${request.static_url('ratbot:static/store.opt.svg')}">
-          <label>Store</label>
-        </a>
-        <a class="item" href="${request.route_url('blog_index', comic='blog')}">
-          <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
-          <label>Blog</label>
-        </a>
-        <a class="item" href="${request.route_url('bio')}">
-          <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
-          <label>Bio</label>
-        </a>
-      </div>
+    <div class="small-12 columns show-for-medium">
+      <ul class="menu expanded icon-top">
+        <li tal:condition="request.matched_route.name != 'index'">
+          <a class="item" href="${request.route_url('index')}">
+            <img src="${request.static_url('ratbot:static/home.opt.svg')}">
+            <span>Home</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${request.route_url('comics')}">
+            <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
+            <span>Comics</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${view.site_store}">
+            <img src="${request.static_url('ratbot:static/store.opt.svg')}">
+            <span>Store</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${request.route_url('blog_index', comic='blog')}">
+            <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
+            <span>Blog</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${request.route_url('bio')}">
+            <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
+            <span>Bio</span>
+          </a>
+        </li>
+      </ul>
     </div>
     <div class="small-12 columns show-for-small-only">
-      <div class="icon-bar ${('three-up', 'two-up')[request.matched_route.name == 'index']}">
-        <a class="item" href="${request.route_url('index')}" tal:condition="request.matched_route.name != 'index'">
-          <img src="${request.static_url('ratbot:static/home.opt.svg')}">
-          <label>Home</label>
-        </a>
-        <a class="item" href="${request.route_url('comics')}">
-          <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
-          <label>Comics</label>
-        </a>
-        <a class="item" href="${view.site_store}">
-          <img src="${request.static_url('ratbot:static/store.opt.svg')}">
-          <label>Store</label>
-        </a>
-      </div>
-      <div class="icon-bar two-up">
-        <a class="item" href="${request.route_url('blog_index', comic='blog')}">
-          <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
-          <label>Blog</label>
-        </a>
-        <a class="item" href="${request.route_url('bio')}">
-          <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
-          <label>Bio</label>
-        </a>
-      </div>
+      <ul class="menu expanded icon-top">
+        <li tal:condition="request.matched_route.name != 'index'">
+          <a class="item" href="${request.route_url('index')}">
+            <img src="${request.static_url('ratbot:static/home.opt.svg')}">
+            <span>Home</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${request.route_url('comics')}">
+            <img src="${request.static_url('ratbot:static/comics.opt.svg')}">
+            <span>Comics</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${view.site_store}">
+            <img src="${request.static_url('ratbot:static/store.opt.svg')}">
+            <span>Store</span>
+          </a>
+        </li>
+      </ul>
+      <ul class="menu expanded icon-top">
+        <li>
+          <a class="item" href="${request.route_url('blog_index', comic='blog')}">
+            <img src="${request.static_url('ratbot:static/blog.opt.svg')}">
+            <span>Blog</span>
+          </a>
+        </li>
+        <li>
+          <a class="item" href="${request.route_url('bio')}">
+            <img src="${request.static_url('ratbot:static/bio.opt.svg')}">
+            <span>Bio</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

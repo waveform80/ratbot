@@ -21,26 +21,22 @@
         <a class="small button radius" href="${request.route_url('admin_issue_new', comic=context.comic.comic_id)}" tal:condition="has_permission(Permission.edit_comic)"><i class="fi-page-add"></i> New Issue</a>
       </div>
     </div>
-    <div class="row">
-      <div class="small-12 columns">
-        <ul class="small-block-grid-2 medium-block-grid-4">
-          <li tal:repeat="issue reversed(context.comic.issues)" class="comic thumb">
-            <span tal:omit-tag="True" tal:condition="issue.published or has_permission(Permission.view_unpublished)">
-              <a class="th radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.issue_number)}">
-                <img tal:condition="issue.first_page_number" src="${request.route_url('page_thumb', comic=issue.comic_id, issue=issue.issue_number, page=issue.first_page_number)}" />
-                <img tal:condition="not issue.first_page_number" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
-              </a>
-              <a href="${request.route_url('issue', comic=issue.comic_id, issue=issue.issue_number)}">
-                <h5>#${issue.issue_number} - ${issue.title}</h5>
-              </a>
-              <p>
-              <a class="small button radius" href="${request.route_url('issue_pdf', comic=issue.comic_id, issue=issue.issue_number)}"><i class="fi-download"></i> PDF</a>
-              <a class="small button radius" href="${request.route_url('issue_archive', comic=issue.comic_id, issue=issue.issue_number)}"><i class="fi-download"></i> Zip</a>
-              <a class="small button radius" href="${request.route_url('admin_issue', comic=issue.comic_id, issue=issue.issue_number)}" tal:condition="has_permission(Permission.edit_comic)"><i class="fi-page-edit"></i> Edit Issue</a>
-              </p>
-            </span>
-          </li>
-        </ul>
+    <div class="row small-up-2 medium-up-4">
+      <div class="column comic thumb" tal:repeat="issue reversed(context.comic.issues)">
+        <span tal:omit-tag="True" tal:condition="issue.published or has_permission(Permission.view_unpublished)">
+          <a class="thumbnail radius" href="${request.route_url('issue', comic=issue.comic_id, issue=issue.issue_number)}">
+            <img tal:condition="issue.first_page_number" src="${request.route_url('page_thumb', comic=issue.comic_id, issue=issue.issue_number, page=issue.first_page_number)}" />
+            <img tal:condition="not issue.first_page_number" src="${request.static_url('ratbot:static/unpublished.opt.svg')}" />
+          </a>
+          <a href="${request.route_url('issue', comic=issue.comic_id, issue=issue.issue_number)}">
+            <h5>#${issue.issue_number} - ${issue.title}</h5>
+          </a>
+          <p>
+          <a class="small button radius" href="${request.route_url('issue_pdf', comic=issue.comic_id, issue=issue.issue_number)}"><i class="fi-download"></i> PDF</a>
+          <a class="small button radius" href="${request.route_url('issue_archive', comic=issue.comic_id, issue=issue.issue_number)}"><i class="fi-download"></i> Zip</a>
+          <a class="small button radius" href="${request.route_url('admin_issue', comic=issue.comic_id, issue=issue.issue_number)}" tal:condition="has_permission(Permission.edit_comic)"><i class="fi-page-edit"></i> Edit Issue</a>
+          </p>
+        </span>
       </div>
     </div>
   </section>

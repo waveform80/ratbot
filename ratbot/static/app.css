@@ -1,16 +1,6 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400);
 @import url(http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300);
 
-/* XXX Fix for foundation tabs content width */
-.tabs-content > .content {
-  float: none;
-}
-
-/* XXX Fix small in foundation form labels */
-label small {
-  text-transform: none;
-}
-
 body {
     font-family: 'Open Sans', 'Helvetica Neue', 'Helvetica', Arial, sansi-serif;
     font-size: 10pt;
@@ -52,20 +42,19 @@ header nav {
     z-index: 999;
 }
 
-nav .icon-bar {
-    background: white;
-    z-index: 999;
-}
-
-nav .icon-bar > * img {
-    width: auto;
-}
-
-nav .icon-bar > * label {
+nav .menu.expanded span {
     color: #6f6f6f;
     font-family: 'Open Sans', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
     font-weight: 300;
     font-size: 18pt;
+}
+
+nav .menu.expanded a:hover {
+    background-color: #008cba;
+}
+
+nav .menu.expanded a:hover span {
+    color: white;
 }
 
 header h1,
@@ -75,6 +64,15 @@ header h4,
 header h5,
 header h6 {
     text-align: center;
+}
+
+a h1,
+a h2,
+a h3,
+a h4,
+a h5,
+a h6 {
+    color: #222;
 }
 
 h1,
@@ -91,12 +89,11 @@ h6 {
     font-weight: bold;
 }
 
-nav ul li,
-ul li.comic {
+div.comic {
     text-align: center;
 }
 
-.thumb img {
+div.comic.thumb img {
     max-height: 300px;
 }
 
@@ -107,6 +104,11 @@ img.bio {
 input[type=submit],
 a.button {
   box-shadow: 0px -2px 0px rgba(0, 0, 0, 0.3) inset;
+  border: 0 none;
+}
+
+.radius {
+    border-radius: 3px;
 }
 
 section#latest {
@@ -186,10 +188,6 @@ section#page ul.pagination li:first-child a {
 
 textarea.mono {
     font-family: monospace;
-}
-
-textarea.mono {
     height: auto;
 }
-
 

@@ -33,10 +33,10 @@
     </div>
 
     <div class="medium-4 columns">
-      <div class="panel header-flush">
+      <div class="callout secondary">
         <h3>Other Posts</h3>
         <section id="bloglist">
-          <ul class="side-nav">
+          <ul class="menu vertical">
             <li tal:repeat="issue reversed(context.comic.issues)">
             <a
               tal:attributes="class 'active' if context.issue == issue else None"

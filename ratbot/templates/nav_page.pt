@@ -2,7 +2,7 @@
   tal:define="
     page context.page;
     issue context.issue">
-  <div class="row show-for-medium-up">
+  <div class="row show-for-medium">
     <div class="small-12 columns text-center">
       <a tal:condition="issue.prior_issue_number"
         href="${request.route_url('issue', comic=issue.comic_id, issue=issue.prior_issue_number)}"
@@ -51,7 +51,7 @@
       </a>
     </div>
   </div>
-  <div class="row hide-for-medium-up">
+  <div class="row hide-for-medium">
     <div class="small-12 columns text-center">
       <a tal:condition="issue.prior_issue_number"
         href="${request.route_url('issue', comic=issue.comic_id, issue=issue.prior_issue_number)}"
