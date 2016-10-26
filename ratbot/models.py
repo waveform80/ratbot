@@ -631,6 +631,7 @@ class Comic(Base):
             Column('first_issue_number', server_onupdate=FetchedValue()),
             Column('last_issue_number', server_onupdate=FetchedValue()),
             Column('issue_count', server_onupdate=FetchedValue()),
+            Column('latest_publication', server_onupdate=FetchedValue()),
             PrimaryKeyConstraint('comic_id'),
             ForeignKeyConstraint(
                 ['author_id'], ['users.user_id'],

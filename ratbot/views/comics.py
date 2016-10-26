@@ -117,7 +117,7 @@ class ComicsView(BaseView):
         return {
             'comics': DBSession.query(Comic).\
                     filter(Comic.comic_id != 'blog').\
-                    order_by(Comic.title),
+                    order_by(Comic.latest_publication.desc()),
             }
 
     @view_config(

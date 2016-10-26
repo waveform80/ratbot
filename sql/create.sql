@@ -372,7 +372,8 @@ SELECT
     c.created,
     MIN(p.issue_number)            AS first_issue_number,
     MAX(p.issue_number)            AS last_issue_number,
-    COUNT(DISTINCT p.issue_number) AS issue_count
+    COUNT(DISTINCT p.issue_number) AS issue_count,
+    MAX(p.published)               AS latest_publication
 FROM
     comics_data c
     LEFT JOIN pages_data p
