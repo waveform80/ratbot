@@ -4,7 +4,7 @@
   <header id="logo">
     <div class="row">
       <div class="small-12 columns">
-        <img src="${request.static_url('ratbot:static/logo.opt.svg')}" width="615" alt="Ratbot Comics Logo" />
+        <img src="${request.static_url('ratbot:static/logo.opt.svg')}" width="400" alt="Ratbot Comics Logo" />
       </div>
     </div>
   </header>
