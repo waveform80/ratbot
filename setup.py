@@ -99,6 +99,8 @@ __requires__ = [
     'velruse<2.0dev',
     'formencode<2.0dev',
     'psycopg2',
+    'pg8000',
+    'cherrypy',
     ]
 
 __extra_requires__ = {

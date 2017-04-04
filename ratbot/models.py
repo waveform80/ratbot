@@ -42,9 +42,9 @@ from collections import deque
 log = logging.getLogger(__name__)
 
 import pytz
-import rsvg
 import cairo
 import transaction
+from gi.repository import Rsvg
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.generic import NameObject, createStringObject
@@ -408,7 +408,7 @@ class Page(Base):
             # Load the SVG file with librsvg (using copyfileobj is a bit of a
             # dirty hack given that svg isn't a file-like object, but too
             # tempting given that it's got a simple write() method for loading)
-            svg = rsvg.Handle()
+            svg = Rsvg.Handle()
             with closing(self.vector) as source:
                 shutil.copyfileobj(source, svg)
             svg.close()
