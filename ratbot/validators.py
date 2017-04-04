@@ -39,12 +39,12 @@ from .models import (
 
 class ValidPositiveInt(validators.Int):
     def __init__(self):
-        super(ValidPositiveInt, self).__init__(not_empty=True, min=1)
+        super().__init__(not_empty=True, min=1)
 
 
 class ValidTimestamp(validators.DateValidator):
     def __init__(self):
-        super(ValidTimestamp, self).__init__(not_empty=True)
+        super().__init__(not_empty=True)
 
     def _to_python(self, value, state):
         try:
@@ -67,11 +67,11 @@ class ValidTimestamp(validators.DateValidator):
 
 class ValidAuthor(validators.OneOf):
     def __init__(self):
-        super(ValidAuthor, self).__init__(list=[], hideList=True, not_empty=True)
+        super().__init__(list=[], hideList=True, not_empty=True)
 
     def validate_python(self, value, state):
         self.list = [s for (s,) in DBSession.query(User.user_id)]
-        super(ValidAuthor, self).validate_python(value.user_id, state)
+        super().validate_python(value.user_id, state)
 
     def _to_python(self, value, state):
         return DBSession.query(User).get(value)
@@ -82,13 +82,12 @@ class ValidAuthor(validators.OneOf):
 
 class ValidUserId(validators.Email):
     def __init__(self):
-        super(ValidUserId, self).__init__(not_empty=True)
+        super().__init__(not_empty=True)
 
 
 class ValidUserName(validators.UnicodeString):
     def __init__(self):
-        super(ValidUserName, self).__init__(
-            not_empty=True, max=User.__table__.c.name.type.length)
+        super().__init__(not_empty=True, max=User.__table__.c.name.type.length)
 
 
 class ValidUserAdmin(validators.Bool):
@@ -97,40 +96,37 @@ class ValidUserAdmin(validators.Bool):
 
 class ValidMarkupLanguage(validators.OneOf):
     def __init__(self):
-        super(ValidMarkupLanguage, self).__init__(
-            MARKUP_LANGUAGES.keys(), not_empty=True)
+        super().__init__(MARKUP_LANGUAGES.keys(), not_empty=True)
 
 
 class ValidDescription(validators.UnicodeString):
     def __init__(self):
-        super(ValidDescription, self).__init__(not_empty=False)
+        super().__init__(not_empty=False)
 
 
 class ValidComicId(validators.Regex):
     def __init__(self):
-        super(ValidComicId, self).__init__(
+        super().__init__(
             r'^[A-Za-z][A-Za-z0-9_-]{,19}$', not_empty=True, strip=True)
 
 
 class ValidComicTitle(validators.UnicodeString):
     def __init__(self):
-        super(ValidComicTitle, self).__init__(
-            not_empty=True, max=Comic.__table__.c.title.type.length)
+        super().__init__(not_empty=True, max=Comic.__table__.c.title.type.length)
 
 
 class ValidIssueTitle(validators.UnicodeString):
     def __init__(self):
-        super(ValidIssueTitle, self).__init__(
-            not_empty=True, max=Issue.__table__.c.title.type.length)
+        super().__init__(not_empty=True, max=Issue.__table__.c.title.type.length)
 
 
 class ValidLicense(validators.OneOf):
     def __init__(self):
-        super(ValidLicense, self).__init__(list=[], hideList=True)
+        super().__init__(list=[], hideList=True)
 
     def validate_python(self, value, state):
         self.list = get_current_registry()['licenses']().keys()
-        super(ValidLicense, self).validate_python(value.id, state)
+        super().validate_python(value.id, state)
 
     def _to_python(self, value, state):
         return get_current_registry()['licenses']()[value]

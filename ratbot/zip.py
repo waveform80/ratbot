@@ -51,7 +51,7 @@ class ZipFile(zipfile.ZipFile):
         the original method.
         """
         if isinstance(filename_or_obj, (str, bytes)):
-            return super(ZipFile, self).write(filename_or_obj, arcname, compress_type)
+            return super().write(filename_or_obj, arcname, compress_type)
         fp = filename_or_obj
         if modified is None:
             modified = time.time()

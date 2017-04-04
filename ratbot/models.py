@@ -160,7 +160,7 @@ class FilesThread(threading.Thread):
     operation that follows changes to any filename attribute.
     """
     def __init__(self):
-        super(FilesThread, self).__init__()
+        super().__init__()
         self.lock = SELock()
         self.daemon = True
         self._event = threading.Event()

@@ -675,7 +675,7 @@ class FormRendererFoundation(FormRenderer):
         self.inline = inline
         self.label_columns = label_columns
         self.input_columns = input_columns
-        return super(FormRendererFoundation, self).begin(url, method, **attrs)
+        return super().begin(url, method, **attrs)
 
     def column(self, name, content, cols, errors=True):
         "Wraps content in a Foundation column"
@@ -725,7 +725,7 @@ class FormRendererFoundation(FormRenderer):
         if self.inline:
             attrs = css_add_class(attrs, 'right')
             attrs = css_add_class(attrs, 'inline')
-        result = super(FormRendererFoundation, self).label(name, label, **attrs)
+        result = super().label(name, label, **attrs)
         return self.column(
                 name, result, self.label_columns if cols is None else cols,
                 errors)
@@ -733,66 +733,66 @@ class FormRendererFoundation(FormRenderer):
     def input(self, name, value=None, id=None, **attrs):
         if self.is_error(name):
             attrs = css_add_class(attrs, 'error')
-        return super(FormRendererFoundation, self).input(name, value, id, **attrs)
+        return super().input(name, value, id, **attrs)
 
     def text(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).text(
+        result = super().text(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def email(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).email(
+        result = super().email(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def date(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).date(
+        result = super().date(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def datetime(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).datetime(
+        result = super().datetime(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def number(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).number(
+        result = super().number(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def range(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).range(
+        result = super().range(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def file(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).file(
+        result = super().file(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def password(self, name, value=None, id=None, cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).password(
+        result = super().password(
                 name, value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
                 errors)
 
     def textarea(self, name, content="", id=None, cols=None, **attrs):
-        result = super(FormRendererFoundation, self).textarea(
+        result = super().textarea(
                 name, content, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
@@ -800,7 +800,7 @@ class FormRendererFoundation(FormRenderer):
 
     def select(self, name, options=None, selected_value=None, id=None,
             cols=None, errors=True, **attrs):
-        result = super(FormRendererFoundation, self).select(
+        result = super().select(
                 name, options, selected_value, id, **attrs)
         return self.column(
                 name, result, self.input_columns if cols is None else cols,
@@ -809,7 +809,7 @@ class FormRendererFoundation(FormRenderer):
     def button(self, name, value='1', id=None, cols=None, **attrs):
         attrs = css_add_class(attrs, 'button')
         attrs = css_add_class(attrs, 'radius')
-        result = super(FormRendererFoundation, self).button(name, value, id, **attrs)
+        result = super().button(name, value, id, **attrs)
         return self.column(
                 name, result, self.label_columns + self.input_columns if cols is None else cols,
                 errors=False)
@@ -818,7 +818,7 @@ class FormRendererFoundation(FormRenderer):
             cols=None, **attrs):
         attrs = css_add_class(attrs, 'button')
         attrs = css_add_class(attrs, 'radius')
-        result = super(FormRendererFoundation, self).submit(
+        result = super().submit(
                 name, value, id, **attrs)
         if cancel and self.form.came_from:
             cancel_attrs = attrs.copy()

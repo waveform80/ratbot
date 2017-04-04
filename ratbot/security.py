@@ -95,7 +95,7 @@ class RootContextFactory():
 
 class ComicContextFactory(RootContextFactory):
     def __init__(self, request):
-        super(ComicContextFactory, self).__init__(request)
+        super().__init__(request)
         self.comic = DBSession.query(Comic).get(request.matchdict['comic'])
         if not self.comic:
             raise HTTPNotFound()
@@ -103,7 +103,7 @@ class ComicContextFactory(RootContextFactory):
 
 class IssueContextFactory(RootContextFactory):
     def __init__(self, request):
-        super(IssueContextFactory, self).__init__(request)
+        super().__init__(request)
         self.issue = DBSession.query(Issue).get((
                 request.matchdict['comic'],
                 int(request.matchdict['issue']),
@@ -118,7 +118,7 @@ class IssueContextFactory(RootContextFactory):
 
 class PageContextFactory(RootContextFactory):
     def __init__(self, request):
-        super(PageContextFactory, self).__init__(request)
+        super().__init__(request)
         self.page = DBSession.query(Page).get((
                 request.matchdict['comic'],
                 int(request.matchdict['issue']),
