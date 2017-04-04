@@ -57,10 +57,10 @@
     </div>
 
     <div class="row">
-      <div class="medium-3 columns hide-for-small" tal:condition="create">
-        <img class="th" src="${request.static_url('ratbot:static/unpublished.opt.svg')}">
+      <div class="medium-3 columns hide-for-small" tal:condition="create or not bitmap_stat">
+        <img class="th" src="${request.static_url('ratbot:static/unknown_user.opt.svg')}">
       </div>
-      <div class="medium-3 columns" tal:condition="not create">
+      <div class="medium-3 columns" tal:condition="not create and bitmap_stat">
         <img class="th" src="${request.route_url('user_bitmap', user=request.matchdict['user'])}">
       </div>
       <div class="medium-9 columns">
