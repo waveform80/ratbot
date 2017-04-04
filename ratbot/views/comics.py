@@ -49,13 +49,13 @@ class FileResponseEtag(FileResponse):
     """
     def __init__(self, path, request=None, cache_max_age=None,
             content_type=None, content_encoding=None):
-        super(FileResponseEtag, self).__init__(path, request, cache_max_age,
-                content_type, content_encoding)
+        super().__init__(path, request, cache_max_age, content_type, content_encoding)
         s = os.stat(path)
         h = hashlib.md5()
-        h.update(path)
-        h.update(str(s.st_size))
-        h.update(str(s.st_mtime))
+        # if there's non-ASCII chars in your path ... on your head be it
+        h.update(path.encode('ascii'))
+        h.update(b'%d' % s.st_size)
+        h.update(b'%d' % s.st_mtime)
         self.etag = h.hexdigest()
 
 
