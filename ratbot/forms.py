@@ -200,7 +200,7 @@ class Form():
 
     def all_errors(self):
         """Returns all errors in a single list."""
-        if isinstance(self.errors, basestring):
+        if isinstance(self.errors, str):
             return [self.errors]
         if isinstance(self.errors, list):
             return self.errors
@@ -212,7 +212,7 @@ class Form():
     def errors_for(self, field):
         """Returns any errors for a given field as a list."""
         errors = self.errors.get(field, [])
-        if isinstance(errors, basestring):
+        if isinstance(errors, str):
             errors = [errors]
         return errors
 
