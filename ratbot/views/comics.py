@@ -54,8 +54,8 @@ class FileResponseEtag(FileResponse):
         h = hashlib.md5()
         # if there's non-ASCII chars in your path ... on your head be it
         h.update(path.encode('ascii'))
-        h.update(b'%d' % s.st_size)
-        h.update(b'%d' % s.st_mtime)
+        h.update(str(s.st_size).encode('ascii'))
+        h.update(str(s.st_mtime).encode('ascii'))
         self.etag = h.hexdigest()
 
 
