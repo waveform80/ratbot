@@ -34,10 +34,7 @@ import time
 import errno
 from datetime import datetime, timedelta
 from contextlib import closing
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
+from urllib.request import urlopen
 
 from .locking import DirLock
 
@@ -144,7 +141,7 @@ class LicensesFactory():
             self.update_optional()
         return {
             key: License(**value)
-            for (key, value) in json.load(io.open(self._cache_file, 'rb')).items()
+            for (key, value) in json.load(io.open(self._cache_file, 'r')).items()
             }
 
 
