@@ -157,6 +157,6 @@ def render(language, source):
     # Sanitize all HTML output with bleach (don't rely on safe-mode of
     # converters above as they're not necessarily as good and sometimes
     # disable useful features like embedding HTML in MarkDown)
-    return webhelpers.html.builder.literal(bleach.clean(
+    return webhelpers2.html.builder.literal(bleach.clean(
         html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS))
 
