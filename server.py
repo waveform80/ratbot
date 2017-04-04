@@ -4,7 +4,7 @@ from pyramid.paster import get_app, setup_logging
 
 if __name__ == '__main__':
     # Construct the WSGI app
-    ini_path = os.path.join(os.path.dirname(__file__), 'production.ini'))
+    ini_path = os.path.join(os.path.dirname(__file__), 'production.ini')
     setup_logging(ini_path)
     app = get_app(ini_path, 'main')
     # Construct the server
