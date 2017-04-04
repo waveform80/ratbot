@@ -27,15 +27,6 @@ settings, and the resulting object can be refreshed from opendefinition.org at
 any time.  The license data is cached and only re-read weekly.
 """
 
-# Python 3 compatibility
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-str = type('')
-
 import os
 import io
 import json
@@ -64,7 +55,7 @@ __all__ = [
 LICENSES_API_ALL = 'http://licenses.opendefinition.org/licenses/groups/all.json'
 
 
-class License(object):
+class License():
     def __init__(self, **attr):
         self.domains = set()
         if attr.get('domain_content', False):
@@ -88,7 +79,7 @@ class License(object):
         return self.is_od_compliant or self.is_osd_compliant
 
 
-class DummyLicensesFactory(object):
+class DummyLicensesFactory():
     def __call__(self):
         return {'notspecified': License(
             id='notspecified',
@@ -97,7 +88,7 @@ class DummyLicensesFactory(object):
             title='License Not Specified')}
 
 
-class LicensesFactory(object):
+class LicensesFactory():
     """Factory class which returns a dictionary of licenses when called"""
 
     def __init__(self, cache_dir):

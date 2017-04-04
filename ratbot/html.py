@@ -18,16 +18,6 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-
-str = type('')
-
-
 class literal(str):
     "A str sub-class that assumes its content is HTML"
     def __html__(self):
@@ -77,7 +67,7 @@ EMPTY_ELEMENTS = (
     'wbr',
     )
 
-class TagFactory(object):
+class TagFactory():
     """
     A factory class for generating XML/HTML elements (or tags).
 

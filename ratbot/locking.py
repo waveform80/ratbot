@@ -22,23 +22,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Python 3 compatibility
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import os
 import errno
 import time
 import threading
 
 
-class Switch(object):
+class Switch():
     """
     An auxiliary "light switch"-like object. The first thread to acquire the
     switch also acquires the lock associated with the switch. The last thread
@@ -81,7 +71,7 @@ class Switch(object):
         self.release()
 
 
-class SELock(object):
+class SELock():
     """
     Synchronization object used in a solution of so-called second
     readers-writers problem.
@@ -118,7 +108,7 @@ class SELock(object):
         self.exclusive = _ExclusiveLock(no_writers, write_switch)
 
 
-class _SharedLock(object):
+class _SharedLock():
     def __init__(self, no_readers, read_switch):
         self._no_readers = no_readers
         self._read_switch = read_switch
@@ -140,7 +130,7 @@ class _SharedLock(object):
         self.release()
 
 
-class _ExclusiveLock(object):
+class _ExclusiveLock():
     def __init__(self, no_writers, write_switch):
         self._no_writers = no_writers
         self._write_switch = write_switch
@@ -161,7 +151,7 @@ class _ExclusiveLock(object):
         self.release()
 
 
-class DirLock(object):
+class DirLock():
     """Provides a cross-platform inter-process lock via dir creation"""
 
     def __init__(self, path):

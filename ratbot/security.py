@@ -18,15 +18,6 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 from pyramid.request import Request
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
@@ -45,7 +36,7 @@ from .models import (
     )
 
 
-class Permission(object):
+class Permission():
     create_user      = 'create_user'
     edit_user        = 'edit_user'
     destroy_user     = 'destroy_user'
@@ -73,7 +64,7 @@ class Permission(object):
             view_admin,
             )
 
-class Principal(object):
+class Principal():
     author = 'author'
     admin = 'admin'
 
@@ -90,7 +81,7 @@ class RequestWithUser(Request):
             return DBSession.query(User).get(user_id)
 
 
-class RootContextFactory(object):
+class RootContextFactory():
     __acl__ = [
         (Allow, Everyone,         Permission.anonymous),
         (Allow, Authenticated,    Permission.authenticated),

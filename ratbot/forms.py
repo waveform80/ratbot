@@ -26,13 +26,6 @@ as to_python), and the Foundation Grid being used for horizontal layout of form
 controls.
 """
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
-
 import logging
 
 from pyramid.i18n import get_localizer
@@ -84,7 +77,7 @@ def csrf_validation(event):
         logging.debug('CSRF token is valid')
 
 
-class State(object):
+class State():
     """
     Default "empty" state object.
 
@@ -115,7 +108,7 @@ class State(object):
         return getattr(self, k, default)
 
 
-class Form(object):
+class Form():
     """
     Represents an HTML form with formencode based schemas.
 
@@ -345,7 +338,7 @@ class Form(object):
         return result
 
 
-class FormRenderer(object):
+class FormRenderer():
     """
     A simple form helper. Uses WebHelpers to render individual form widgets:
     see the WebHelpers library for more information on individual widgets.

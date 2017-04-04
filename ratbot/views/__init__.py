@@ -18,28 +18,18 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 import os
 import datetime
 import logging
 log = logging.getLogger(__name__)
 
 import pytz
-import webhelpers
-import webhelpers.number
-import webhelpers.date
-import webhelpers.text
-import webhelpers.misc
-import webhelpers.util
-import webhelpers.constants
-import webhelpers.containers
+import webhelpers2
+import webhelpers2.number
+import webhelpers2.date
+import webhelpers2.text
+import webhelpers2.constants
+import webhelpers2.containers
 from pyramid.decorator import reify
 from pyramid.renderers import get_renderer
 from pyramid.events import subscriber, BeforeRender
@@ -55,13 +45,13 @@ def renderer_globals(event):
     event['html'] = html
     event['markup'] = markup
     event['datetime'] = datetime
-    event['webhelpers'] = webhelpers
+    event['webhelpers'] = webhelpers2
     event['has_permission'] = lambda perm: event['request'].has_permission(perm, event['context'])
     event['Permission'] = Permission
     event['Principal'] = Principal
 
 
-class BaseView(object):
+class BaseView():
     def __init__(self, context, request):
         self.context = context
         self.request = request

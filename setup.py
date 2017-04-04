@@ -20,26 +20,16 @@
 
 """A web application for publishing comics."""
 
-# Python 3 compatibility
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 import os
 import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 if sys.version_info[0] == 2:
-    if not sys.version_info >= (2, 7):
-        raise ValueError('This package requires Python 2.7 or newer')
+    raise ValueError('This package is no longer compatible with Python 2.x')
 elif sys.version_info[0] == 3:
-    if not sys.version_info >= (3, 2):
-        raise ValueError('This package requires Python 3.2 or newer')
+    if not sys.version_info >= (3, 4):
+        raise ValueError('This package requires Python 3.4 or newer')
 else:
     raise ValueError('Unrecognized major version of Python')
 
@@ -52,7 +42,7 @@ except ImportError:
     pass
 
 __project__      = 'ratbot'
-__version__      = '2.0'
+__version__      = '2.1'
 __author__       = 'Dave Jones'
 __author_email__ = 'dave@waveform.org.uk'
 __url__          = 'https://github.com/waveform80/ratbot'
@@ -87,15 +77,16 @@ __requires__ = [
     'pyramid_mailer',
     'pyramid_exclog',
     'pyramid_chameleon',
-    'webhelpers<2.0dev',
-    'zope.sqlalchemy',
-    'waitress',
-    'pillow<3.0dev',
-    'pypdf2',
-    'pytz',
-    'bleach<2.0dev',
+    'webhelpers2',
     'markdown<3.0dev',
     'docutils<1.0dev',
+    'textile',
+    'bleach<3.0dev',
+    'zope.sqlalchemy',
+    'waitress',
+    'pillow<5.0dev',
+    'pypdf2',
+    'pytz',
     'velruse<2.0dev',
     'formencode<2.0dev',
     'psycopg2',
@@ -107,14 +98,6 @@ __extra_requires__ = {
     'doc':   ['sphinx'],
     'test':  ['pytest', 'coverage', 'mock'],
     }
-
-if sys.version_info[:2] == (3, 2):
-    # Particular versions are required for Python 3.2 compatibility
-    __extra_requires__['doc'].extend([
-        'Jinja2<2.7',
-        'MarkupSafe<0.16',
-        ])
-    __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
         'paste.app_factory': [

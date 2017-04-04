@@ -18,15 +18,6 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-# Python 3 compatibility
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
 import os
 import sys
 import binascii
@@ -92,10 +83,7 @@ class ZipFile(zipfile.ZipFile):
         # We've no idea what the file-size is yet, but we need to write the
         # header here. If ZIP64 headers are permitted in the file we'll use
         # them regardless of whether we need them or not
-        if sys.version_info >= (2, 7, 4):
-            self.fp.write(zinfo.FileHeader(self._allowZip64))
-        else:
-            self.fp.write(zinfo.FileHeader())
+        self.fp.write(zinfo.FileHeader(self._allowZip64))
         if zinfo.compress_type == ZIP_DEFLATED:
             cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
                  zlib.DEFLATED, -15)
@@ -121,10 +109,7 @@ class ZipFile(zipfile.ZipFile):
         # correct CRC and file sizes)
         position = self.fp.tell()       # Preserve current position in file
         self.fp.seek(zinfo.header_offset, 0)
-        if sys.version_info >= (2, 7, 4):
-            self.fp.write(zinfo.FileHeader(self._allowZip64))
-        else:
-            self.fp.write(zinfo.FileHeader())
+        self.fp.write(zinfo.FileHeader(self._allowZip64))
         self.fp.seek(position, 0)
         self.filelist.append(zinfo)
         self.NameToInfo[zinfo.filename] = zinfo

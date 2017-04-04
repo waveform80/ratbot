@@ -18,26 +18,21 @@
 # You should have received a copy of the GNU General Public License along with
 # ratbot comics. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (
-    unicode_literals,
-    absolute_import,
-    print_function,
-    division,
-    )
-str = type('')
-
-
 import bleach
-import webhelpers
-import webhelpers.html.builder
-import webhelpers.html.converters
+import webhelpers2
+import webhelpers2.html.builder
+import webhelpers2.html.tools
 
 MARKUP_LANGUAGES = {
     'text':    'Plain Text',
     'html':    'HTML',
-    'textile': 'Textile',
-    'md':      'MarkDown',
     }
+
+try:
+    import markdown
+    MARKUP_LANGUAGES['md'] = 'MarkDown'
+except ImportError:
+    pass
 
 try:
     import docutils
@@ -50,6 +45,12 @@ try:
     import creole
     import creole.html_emitter
     MARKUP_LANGUAGES['creole'] = 'Creole'
+except ImportError:
+    pass
+
+try:
+    import textile
+    MARKUP_LANGUAGES['textile'] = 'Textile'
 except ImportError:
     pass
 
@@ -132,13 +133,13 @@ ALLOWED_ATTRS = {
 def render(language, source):
     if language == 'text':
         html = bleach.linkify(
-            webhelpers.html.converters.format_paragraphs(source))
+            webhelpers2.html.tools.text_to_html(source))
     elif language == 'html':
         html = source
     elif language == 'md':
-        html = webhelpers.html.converters.markdown(source)
+        html = markdown.markdown(source)
     elif language == 'textile':
-        html = webhelpers.html.converters.textile(source)
+        html = textile.textile(source)
     elif language == 'rst':
         overrides = {
             'input_encoding':       'unicode',
