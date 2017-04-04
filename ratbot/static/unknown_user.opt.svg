@@ -10,6 +10,9 @@
   </rdf:RDF>
  </metadata>
  <g transform="translate(0 -852.36)">
-  <path style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m100 13.143c-21.598-0.001-39.108 17.509-39.107 39.107 0.0097 9.0333 3.1463 17.785 8.877 24.768-20.916 10.943-34.306 32.312-35.028 55.912h-0.09961v53.93h130.71v-53.93h-0.0703c-0.73-23.6-14.13-44.965-35.06-55.895 5.74-6.986 8.88-15.744 8.89-24.785 0-21.598-17.51-39.108-39.11-39.107z" transform="translate(0 852.36)" fill="#3b576a"/>
+  <g transform="translate(.75293 -4.9897)" fill="#3b576a">
+   <path style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m75.344 75.877a46.72 46.72 0 0 0 -22.782 39.333h-0.03516v0.69532 80.621h93.439v-80.621-0.69532h-0.0254a46.72 46.72 0 0 0 -22.01 -38.905c-2.6512 2.3642-5.688 4.3254-9.0898 5.7266-13.034 6.5133-28.927 3.1147-39.498-6.1543z" transform="translate(0 852.36)"/>
+   <circle style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" cx="99.763" cy="901.26" r="35.446"/>
+  </g>
  </g>
 </svg>
