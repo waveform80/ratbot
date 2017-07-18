@@ -532,7 +532,7 @@ class Issue(Base):
                     try:
                         # Render the page's vector image if it has one
                         if page.vector_filename:
-                            svg = rsvg.Handle()
+                            svg = Rsvg.Handle()
                             shutil.copyfileobj(page.vector, svg)
                             svg.close()
                             surface.set_size(
