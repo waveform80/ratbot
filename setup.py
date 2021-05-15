@@ -69,7 +69,7 @@ __keywords__ = [
 
 __requires__ = [
     'pyramid<1.7dev',
-    'sqlalchemy<1.0dev',
+    'sqlalchemy<1.4dev',
     'transaction',
     'pyramid_tm',
     'pyramid_beaker',
