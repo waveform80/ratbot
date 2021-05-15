@@ -32,6 +32,8 @@ from contextlib import closing
 from collections import deque
 log = logging.getLogger(__name__)
 
+import gi
+gi.require_version('Rsvg', '2.0')
 import pytz
 import cairo
 import transaction
