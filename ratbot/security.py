@@ -141,9 +141,14 @@ def group_finder(user_name, request):
     if not user:
         return None
     principals = []
-    if isinstance(request.context, (ComicContextFactory, IssueContextFactory, PageContextFactory)):
-        if user.user_id == request.context.comic.author_id:
-            principals.append(Principal.author)
+    try:
+        context = request.context
+    except AttributeError:
+        pass
+    else:
+        if isinstance(context, (ComicContextFactory, IssueContextFactory, PageContextFactory)):
+            if user.user_id == context.comic.author_id:
+                principals.append(Principal.author)
     if user.admin:
         principals.append(Principal.admin)
     return principals
