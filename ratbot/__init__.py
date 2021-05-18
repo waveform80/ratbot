@@ -112,9 +112,9 @@ def main(global_config, **settings):
         config.include('velruse.providers.github')
         config.add_github_login_from_settings(prefix='login.github.')
     config.include('pyramid_chameleon')
-    # XXX Need some way of grabbing the authentication secret from config
     authn_policy = AuthTktAuthenticationPolicy(
-        'secret', hashalg='sha512', callback=group_finder)
+        settings.get('session.secret', 'secret'),
+        hashalg='sha512', callback=group_finder)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
